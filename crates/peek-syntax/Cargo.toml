@@ -1,0 +1,11 @@
+[package]
+name = "peek-syntax"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+peek-core = { path = "../peek-core" }
+syntect.workspace = true
+anyhow.workspace = true

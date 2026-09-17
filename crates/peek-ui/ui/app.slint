@@ -1,0 +1,554 @@
+import { ListView, ScrollView, LineEdit, Palette } from "std-widgets.slint";
+import "../assets/codicon-subset.ttf";
+import "../assets/devicon-subset.ttf";
+export global Theme {
+    in-out property <bool> light: false;
+    out property <color> disabled-surface: light ? #e8edf2 : #19212b;
+    out property <color> button-hover: light ? #dce8f5 : #34465a;
+    out property <color> button-selected: light ? #d2e4f7 : #274e70;
+    out property <color> button-surface: light ? #ffffff : #243140;
+    out property <color> focus: light ? #004a91 : #8cc8ff;
+    out property <color> border: light ? #68788a : #3a4b5c;
+    out property <color> folder-icon: light ? #694300 : #e1b66f;
+    out property <color> button-text: light ? #152233 : #e0e9f2;
+    out property <color> disabled-text: light ? #35465a : #8292a3;
+    out property <color> canvas: light ? #ffffff : #131c26;
+    out property <color> header: light ? #edf2f7 : #1b2836;
+    out property <color> heading: light ? #152233 : #edf4fc;
+    out property <color> error-surface: light ? #fff0e8 : #48322c;
+    out property <color> error-text: light ? #8b2500 : #ffe0cf;
+    out property <color> muted: light ? #35465a : #acbfd0;
+    out property <color> splitter-hover: light ? #004a91 : #638bad;
+    out property <color> splitter: light ? #728196 : #263849;
+    out property <color> sidebar: light ? #f5f7fa : #172330;
+    out property <color> caption: light ? #35465a : #9fb0c1;
+    out property <color> tree-selected: light ? #d2e4f7 : #2b455d;
+    out property <color> tree-hover: light ? #e4edf6 : #26384a;
+    out property <color> file-text: light ? #152233 : #dbe5ee;
+    out property <color> empty-text: light ? #35465a : #aab9c8;
+    out property <color> toolbar: light ? #edf2f7 : #1a2633;
+    out property <color> find-surface: light ? #e4edf6 : #263b4e;
+    out property <color> title: light ? #152233 : #ecf3fa;
+    out property <color> description: light ? #35465a : #aebed0;
+    out property <color> hint: light ? #35465a : #91a9bd;
+    out property <color> line-selected: light ? #e4edf6 : #203246;
+    out property <color> line-number: light ? #35465a : #829ab0;
+    out property <color> scroll-hover: light ? #334b65 : #8ba6bf;
+    out property <color> scroll-thumb: light ? #52667c : #4b637a;
+    out property <color> scrim: light ? #18263866 : #07111ccc;
+    out property <color> dialog: light ? #ffffff : #203040;
+    out property <color> dialog-border: light ? #68788a : #58728b;
+    out property <color> result-selected: light ? #d2e4f7 : #34536d;
+    out property <color> result-hover: light ? #e4edf6 : #2b4156;
+    out property <color> result-text: light ? #152233 : #e1ebf4;
+    out property <color> dialog-description: light ? #35465a : #b7c8d8;
+    out property <color> dialog-hint: light ? #35465a : #a6bbcf;
+    out property <color> dialog-error: light ? #8b2500 : #ffcfb5;
+}
+
+export global Typography { in-out property <length> size: 15px; }
+
+export struct FileItem { path: string, name: string, is-dir: bool, depth: int, is-expanded: bool, icon: string, icon-family: string, icon-color: color }
+export struct SearchItem { path: string, display-path: string }
+export struct ProjectItem { path: string, display-path: string, logo: image, has-logo: bool }
+export struct CodeSpanItem { text: string, color: color }
+export struct CodeLineItem { line-number: int, continuation: bool, spans: [CodeSpanItem] }
+
+component Action inherits Rectangle {
+    in property <string> text;
+    in property <string> accessible-text: text;
+    in property <bool> primary: false;
+    in property <bool> text-left: false;
+    in property <bool> enabled: true;
+    in property <string> icon: "";
+    callback clicked();
+    callback middle-clicked();
+    min-width: root.text-left ? 40px : label.preferred-width + 20px + (root.icon == "" ? 0px : 24px);
+    height: Typography.size + 17px;
+    border-radius: 5px;
+    background: !enabled ? Theme.disabled-surface : touch.has-hover || keys.has-focus ? Theme.button-hover : primary ? Theme.button-selected : Theme.button-surface;
+    border-width: 1px;
+    border-color: keys.has-focus ? Theme.focus : Theme.border;
+    accessible-role: button;
+    accessible-label: accessible-text;
+    accessible-enabled: enabled;
+    accessible-action-default => { if root.enabled { root.clicked(); } }
+    forward-focus: keys;
+    keys := FocusScope {
+        enabled: root.enabled;
+        key-pressed(e) => {
+            if e.text == " " || e.text == Key.Return { root.clicked(); return accept; }
+            reject
+        }
+    }
+    if root.icon != "": Text { text: root.icon; font-family: "codicon"; font-size: Typography.size + 2px; x: 8px; width: 20px; color: Theme.folder-icon; vertical-alignment: center; }
+    label := Text { text: root.text; color: root.enabled ? Theme.button-text : Theme.disabled-text; font-size: Typography.size - 1px; horizontal-alignment: root.text-left ? left : center; overflow: elide; x: root.icon == "" ? 8px : 32px; width: parent.width - self.x - 8px; vertical-alignment: center; }
+    touch := TouchArea { enabled: root.enabled; clicked => { keys.focus(); root.clicked(); } pointer-event(e) => { if e.button == PointerEventButton.middle && e.kind == PointerEventKind.up { root.middle-clicked(); } } }
+}
+
+export component MainWindow inherits Window {
+    init => { Palette.color-scheme = root.light-mode ? ColorScheme.light : ColorScheme.dark; }
+    in-out property <bool> light-mode: false;
+    changed light-mode => { Theme.light = root.light-mode; Palette.color-scheme = root.light-mode ? ColorScheme.light : ColorScheme.dark; }
+    callback toggle-theme();
+    callback set-panels(bool, bool);
+    title: project-name == "" ? "CodePeek" : project-name + " — CodePeek";
+    icon: @image-url("../assets/icon.png");
+    min-width: 960px; min-height: 600px;
+    preferred-width: 1320px; preferred-height: 820px;
+    background: Theme.canvas;
+    default-font-family: "Segoe UI";
+    default-font-size: Typography.size;
+    in-out property <string> project-name;
+    in-out property <string> project-path;
+    in-out property <string> library-path;
+    in-out property <string> default-path;
+    in-out property <string> current-file-path;
+    in-out property <string> selected-path;
+    in-out property <string> status-info: "Abriendo CodePeek…";
+    in-out property <string> error-message;
+    in-out property <bool> is-dirty;
+    in-out property <bool> busy: true;
+    in-out property <bool> indexing;
+    in-out property <bool> show-confirm;
+    in-out property <bool> show-edit;
+    in-out property <bool> show-settings;
+    in-out property <string> project-menu-path;
+    in-out property <string> project-menu-name;
+    in-out property <string> edit-text;
+    in-out property <int> selected-line: 1;
+    in-out property <int> total-lines;
+    in-out property <float> scroll-ratio;
+    in-out property <float> visible-ratio: 1;
+    in-out property <length> code-font-size: 14px;
+    in-out property <string> code-font-family: "Consolas";
+    in-out property <length> ui-font-size: 15px;
+    changed ui-font-size => { Typography.size = self.ui-font-size; }
+    out property <length> tree-font-size: root.ui-font-size;
+    in-out property <[FileItem]> library-items;
+    in-out property <[FileItem]> tree-items;
+    in-out property <[ProjectItem]> recent-projects;
+    in-out property <[SearchItem]> recent-files;
+    in-out property <[SearchItem]> search-results;
+    in-out property <[CodeLineItem]> code-lines;
+    in-out property <int> palette-mode: 0; // 1 files, 2 projects, 3 environment
+    in-out property <string> query;
+    in-out property <int> result-index: 0;
+    in-out property <bool> show-path;
+    in-out property <bool> browsing;
+    in-out property <bool> show-find;
+    in-out property <string> find-query;
+    in-out property <string> selected-text;
+    in-out property <string> path-input;
+    in-out property <bool> show-library: true;
+    in-out property <bool> show-tree: true;
+    in-out property <length> library-width: 225px;
+    in-out property <length> tree-width: 245px;
+    in-out property <length> horizontal-offset: 0px;
+    in-out property <length> content-width: 0px;
+    private property <bool> modal: palette-mode > 0 || show-path || show-confirm || show-settings;
+
+    callback open-project(string);
+    callback open-file(string);
+    callback toggle-folder(string, bool);
+    callback set-library(string);
+    callback set-default();
+    callback go-default();
+    callback library-parent();
+    callback search(string, int);
+    callback save();
+    callback revert();
+    callback reload();
+    callback edit-line(int);
+    callback apply-edit(string);
+    callback resolve-pending(int); // cancel, discard, save
+    callback scroll-lines(int);
+    callback scroll-to(float);
+    callback viewport-changed(int);
+    callback zoom(int);
+    callback zoom-ui(int);
+    callback wrap-columns-changed(int);
+    callback close-file(string);
+    callback close-project(string);
+    callback select-line(int);
+    callback undo();
+    callback find-text(string, bool);
+    callback cancel-edit();
+    callback browse-folder(string);
+
+    public function copy-line() { clipboard.text = root.selected-text; clipboard.select-all(); clipboard.copy(); clipboard.text = ""; }
+
+    public function focus-content() { main.focus(); }
+    public function open-palette(mode: int) {
+        if root.modal { return; }
+        root.palette-mode = mode;
+        root.query = "";
+        root.result-index = 0;
+        root.search-results = [];
+        root.search("", mode);
+    }
+    public function choose-result() {
+        if root.result-index >= 0 && root.result-index < root.search-results.length {
+            if root.palette-mode == 2 { root.open-project(root.search-results[root.result-index].path); }
+            else { root.open-file(root.search-results[root.result-index].path); }
+            root.palette-mode = 0;
+            main.focus();
+        }
+    }
+    forward-focus: main;
+    main := FocusScope {
+        capture-key-pressed(e) => {
+            if e.text == Key.Escape {
+                if root.show-confirm { root.resolve-pending(0); }
+                if root.show-edit { root.cancel-edit(); }
+                root.palette-mode = 0; root.show-path = false; root.show-edit = false; root.show-settings = false;
+                root.project-menu-path = "";
+                root.show-find = false;
+                root.edit-text = "";
+                main.focus(); return accept;
+            }
+            if root.show-edit { return reject; }
+            if root.palette-mode > 0 {
+                if e.text == Key.DownArrow { root.result-index = min(root.result-index + 1, root.search-results.length - 1); return accept; }
+                if e.text == Key.UpArrow { root.result-index = max(0, root.result-index - 1); return accept; }
+                if e.text == Key.Return { root.choose-result(); return accept; }
+            }
+            if root.modal { return reject; }
+            if e.modifiers.control && (e.text == "w" || e.text == "W" || e.text == "\u{17}") { root.close-file(root.selected-path); return accept; }
+            if e.modifiers.control && (e.text == "f" || e.text == "F" || e.text == "\u{6}") { root.show-find = true; return accept; }
+            if root.show-find { return reject; }
+            if e.modifiers.control && (e.text == "c" || e.text == "C" || e.text == "\u{3}") { root.copy-line(); return accept; }
+            if e.modifiers.control && (e.text == "p" || e.text == "P" || e.text == "\u{10}") { root.open-palette(e.modifiers.shift ? 2 : 1); return accept; }
+            if e.modifiers.alt && (e.text == "c" || e.text == "C") { root.open-palette(2); return accept; }
+            if e.modifiers.control && (e.text == "o" || e.text == "O" || e.text == "\u{f}") { root.path-input = root.project-path; root.show-path = true; return accept; }
+            if e.modifiers.control && (e.text == "s" || e.text == "S" || e.text == "\u{13}") { root.save(); return accept; }
+            if e.modifiers.control && (e.text == "b" || e.text == "B" || e.text == "\u{2}") { root.show-tree = !root.show-tree; return accept; }
+            if e.modifiers.control && (e.text == "z" || e.text == "Z" || e.text == "\u{1a}") { root.undo(); return accept; }
+            if e.modifiers.control && (e.text == "+" || e.text == "=") { if e.modifiers.shift { root.zoom-ui(1); } else { root.zoom(1); } return accept; }
+            if e.modifiers.control && (e.text == "-" || e.text == "_") { if e.modifiers.shift { root.zoom-ui(-1); } else { root.zoom(-1); } return accept; }
+            if e.text == Key.F5 { root.reload(); return accept; }
+            reject
+        }
+
+        clipboard := TextInput { visible: false; width: 0px; height: 0px; }
+        key-pressed(e) => {
+            if root.modal { return reject; }
+            if e.text == Key.DownArrow { root.scroll-lines(1); return accept; }
+            if e.text == Key.UpArrow { root.scroll-lines(-1); return accept; }
+            if e.text == Key.PageDown { root.scroll-lines(30); return accept; }
+            if e.text == Key.PageUp { root.scroll-lines(-30); return accept; }
+            if e.text == Key.Home { root.scroll-to(0); return accept; }
+            if e.text == Key.End { root.scroll-to(1); return accept; }
+            reject
+        }
+
+        VerticalLayout {
+            padding: 0px; spacing: 0px;
+            Rectangle {
+                height: Typography.size + 42px; background: Theme.header;
+                HorizontalLayout {
+                    padding: 12px; spacing: 10px;
+                    Text { text: "CodePeek"; font-size: Typography.size + 4px; font-weight: 700; color: Theme.heading; vertical-alignment: center; }
+                    Action { text: "Proyectos"; clicked => { root.open-palette(2); } }
+                    Action { text: "Abrir carpeta"; clicked => { root.path-input = root.project-path; root.show-path = true; } }
+                    Rectangle { horizontal-stretch: 1; }
+                    Action { text: "Buscar archivo"; primary: true; clicked => { root.open-palette(1); } }
+                    Action { text: "Entornos"; clicked => { root.open-palette(3); } }
+                    Action { text: "Configuración"; clicked => { root.show-settings = true; } }
+                    Action { text: "Recargar  F5"; enabled: !root.busy && !root.show-edit; clicked => { root.reload(); } }
+                }
+            }
+            if root.error-message != "": Rectangle {
+                height: 54px; background: Theme.error-surface;
+                HorizontalLayout {
+                    padding: 10px; spacing: 12px;
+                    Text { text: root.error-message; color: Theme.error-text; wrap: word-wrap; vertical-alignment: center; horizontal-stretch: 1; }
+                    Action { text: "Cerrar"; clicked => { root.error-message = ""; } }
+                }
+            }
+            HorizontalLayout {
+                spacing: 1px;
+                if root.show-library: Rectangle {
+                    width: root.library-width; background: Theme.header;
+                    VerticalLayout {
+                        padding: 10px; spacing: 8px;
+                        Text { text: "Tus proyectos"; color: Theme.button-text; font-weight: 600; font-size: Typography.size + 1px; }
+                        Action { text: "Abrir proyecto…"; text-left: true; clicked => { root.path-input = ""; root.show-path = true; } }
+                        ListView {
+                            for item in root.recent-projects: HorizontalLayout {
+                                height: Typography.size + 22px; spacing: 4px;
+                                Rectangle {
+                                    horizontal-stretch: 1; border-radius: 5px;
+                                    background: item.path == root.project-path ? Theme.button-selected : project-touch.has-hover ? Theme.button-hover : Theme.button-surface;
+                                    border-width: 1px; border-color: Theme.border;
+                                    accessible-role: button; accessible-label: "Abrir " + item.display-path;
+                                    accessible-action-default => { root.project-menu-path = ""; root.open-project(item.path); main.focus(); }
+                                    if item.has-logo: Image { x: 7px; y: 6px; width: Typography.size + 8px; height: Typography.size + 8px; source: item.logo; image-fit: contain; }
+                                    if !item.has-logo: Text { x: 7px; width: Typography.size + 8px; text: "\u{ea83}"; font-family: "codicon"; color: Theme.folder-icon; font-size: Typography.size + 2px; vertical-alignment: center; }
+                                    Text { x: Typography.size + 22px; width: parent.width - self.x - 6px; text: item.display-path; color: Theme.button-text; overflow: elide; vertical-alignment: center; }
+                                    project-touch := TouchArea {
+                                        clicked => { root.project-menu-path = ""; root.open-project(item.path); main.focus(); }
+                                        pointer-event(e) => { if e.button == PointerEventButton.middle && e.kind == PointerEventKind.up { root.close-project(item.path); } }
+                                    }
+                                }
+                                Action { text: "⋯"; accessible-text: "Opciones de " + item.display-path; horizontal-stretch: 0; clicked => { root.project-menu-path = root.project-menu-path == item.path ? "" : item.path; root.project-menu-name = item.display-path; } }
+                            }
+                        }
+                        if root.project-menu-path != "": Rectangle {
+                            height: 86px; background: Theme.dialog; border-width: 1px; border-color: Theme.dialog-border; border-radius: 6px;
+                            VerticalLayout { padding: 8px; spacing: 5px;
+                                Text { text: root.project-menu-name; color: Theme.muted; overflow: elide; }
+                                Action { text: "Eliminar de la lista"; text-left: true; clicked => { root.close-project(root.project-menu-path); root.project-menu-path = ""; } }
+                            }
+                        }
+                        if root.recent-projects.length == 0: Text { text: "Abre un proyecto. Quedará aquí aunque esté en otra carpeta."; color: Theme.muted; wrap: word-wrap; }
+                    }
+                }
+                if root.show-library: TouchArea {
+                    width: 4px; mouse-cursor: ew-resize;
+                    moved => { if self.pressed { root.library-width = clamp(root.library-width + self.mouse-x, 200px, 340px); } }
+                    Rectangle { background: parent.has-hover || parent.pressed ? Theme.splitter-hover : Theme.splitter; }
+                }
+                if root.show-tree: Rectangle {
+                    width: root.tree-width; background: Theme.sidebar;
+                    VerticalLayout {
+                        padding: 10px; spacing: 8px;
+                        Text { text: root.project-name == "" ? "Explorador" : root.project-name; color: Theme.heading; font-size: Typography.size + 1px; font-weight: 600; overflow: elide; }
+                        Text { text: "Archivos y configuración"; color: Theme.caption; font-size: Typography.size - 1px; }
+                        ListView {
+                            for item in root.tree-items: TouchArea {
+                                height: root.tree-font-size + 16px;
+                                clicked => {
+                                    if item.is-dir { root.toggle-folder(item.path, false); }
+                                    else { root.open-file(item.path); }
+                                    main.focus();
+                                }
+                                Rectangle { border-radius: 3px; background: item.path == root.selected-path ? Theme.tree-selected : parent.has-hover ? Theme.tree-hover : transparent; }
+                                HorizontalLayout {
+                                    padding-left: item.depth * 12px + 4px; spacing: 6px;
+                                    Text { text: item.icon; font-family: item.icon-family; font-size: Typography.size + 3px; width: Typography.size + 7px; color: item.icon-color; vertical-alignment: center; }
+                                    Text { text: item.name; font-size: root.tree-font-size; color: Theme.file-text; overflow: elide; vertical-alignment: center; }
+                                }
+                            }
+                        }
+                        if root.tree-items.length == 0: Text { text: "Carpeta vacía o sin archivos visibles."; color: Theme.empty-text; wrap: word-wrap; }
+                    }
+                }
+                if root.show-tree: TouchArea {
+                    width: 4px; mouse-cursor: ew-resize;
+                    moved => { if self.pressed { root.tree-width = clamp(root.tree-width + self.mouse-x, 180px, 400px); } }
+                    Rectangle { background: parent.has-hover || parent.pressed ? Theme.splitter-hover : Theme.splitter; }
+                }
+                VerticalLayout {
+                    spacing: 0px;
+                    Rectangle {
+                        height: Typography.size + 32px; background: Theme.toolbar;
+                        HorizontalLayout {
+                            padding: 7px; spacing: 8px;
+                            Text { text: root.current-file-path == "" ? "Inspeccionar código" : root.current-file-path + (root.is-dirty ? "  ●" : ""); color: Theme.file-text; overflow: elide; vertical-alignment: center; horizontal-stretch: 1; }
+                            if root.is-dirty: Action { text: "Revertir"; enabled: !root.busy; clicked => { root.revert(); } }
+                            if root.is-dirty: Action { text: "Guardar cambios"; primary: true; enabled: !root.busy; clicked => { root.save(); } }
+                        }
+                    }
+                    if root.recent-files.length > 0: Rectangle {
+                        height: Typography.size + 20px; background: Theme.sidebar;
+                        ScrollView {
+                            viewport-width: history.preferred-width;
+                            history := HorizontalLayout {
+                                spacing: 4px;
+                                for item in root.recent-files: HorizontalLayout { spacing: 2px;
+                                    Action { text: item.display-path; primary: root.selected-path == item.path; clicked => { root.open-file(item.path); main.focus(); } middle-clicked => { root.close-file(item.path); } }
+                                    Action { text: "×"; clicked => { root.close-file(item.path); } }
+                                }
+                            }
+                        }
+                    }
+                    if root.show-find: Rectangle {
+                        height: Typography.size + 30px; background: Theme.find-surface;
+                        HorizontalLayout {
+                            padding: 6px; spacing: 6px;
+                            LineEdit { placeholder-text: "Buscar texto en el archivo…"; text <=> root.find-query; init => { self.focus(); } accepted => { root.find-text(self.text, true); } }
+                            Action { text: "Anterior"; clicked => { root.find-text(root.find-query, false); } }
+                            Action { text: "Siguiente"; clicked => { root.find-text(root.find-query, true); } }
+                            Action { text: "Cerrar"; clicked => { root.show-find = false; main.focus(); } }
+                        }
+                    }
+                    viewport := Rectangle {
+                        clip: true;
+                        private property <int> visible-count: max(1, ceil(self.height / (root.code-font-size + 9px)));
+                        changed visible-count => { root.viewport-changed(self.visible-count); }
+                        measure := Text { visible: false; text: "0000000000"; font-family: root.code-font-family; font-size: root.code-font-size; }
+                        private property <int> wrap-columns: max(4, floor((self.width - 85px) / max(1px, measure.preferred-width / 10)));
+                        changed wrap-columns => { root.wrap-columns-changed(self.wrap-columns); }
+                        if root.selected-path == "": VerticalLayout {
+                            padding: 36px; spacing: 16px; alignment: center;
+                            Text { text: "Tu código, a mano."; color: Theme.title; font-size: 26px; font-weight: 600; }
+                            Text { text: "Elige un proyecto a la izquierda y abre un archivo.\nEncuentra código, configuraciones y entornos sin salir de aquí."; color: Theme.description; wrap: word-wrap; }
+                            HorizontalLayout {
+                                alignment: start; spacing: 8px;
+                                Action { text: "Buscar archivo"; primary: true; clicked => { root.open-palette(1); } }
+                                Action { text: "Ver entornos"; clicked => { root.open-palette(3); } }
+                            }
+                            Text { text: "Ctrl+P archivos    Alt+C proyectos    Doble clic para editar"; color: Theme.hint; font-size: Typography.size - 1px; }
+                        }
+                        if root.selected-path != "": TouchArea {
+                            width: parent.width - 14px;
+                            scroll-event(e) => {
+                                if !root.show-edit && e.delta-y != 0px { root.scroll-lines(e.delta-y < 0px ? 3 : -3); }
+                                accept
+                            }
+                            VerticalLayout {
+                                padding: 0px; spacing: 0px; alignment: start;
+                                for line in root.code-lines: Rectangle {
+                                    height: root.code-font-size + 9px;
+                                    background: line.line-number == root.selected-line ? Theme.line-selected : transparent;
+                                    clip: true;
+                                    Text { x: 0px; width: 53px; text: line.continuation ? "" : "\{line.line-number}"; color: Theme.line-number; font-family: root.code-font-family; font-size: root.code-font-size; horizontal-alignment: right; vertical-alignment: center; }
+                                    Rectangle {
+                                        x: 65px; width: parent.width - 65px; height: parent.height; clip: true;
+                                        HorizontalLayout {
+                                            width: parent.width; height: parent.height;
+                                            padding: 0px; spacing: 0px; alignment: start;
+                                            for span in line.spans: Text { text: span.text; color: span.color; font-family: root.code-font-family; font-size: root.code-font-size; vertical-alignment: center; }
+                                        }
+                                    }
+                                    if !root.show-edit: TouchArea { clicked => { root.select-line(line.line-number); main.focus(); } double-clicked => { root.edit-line(line.line-number); } }
+                                    if root.show-edit && line.line-number == root.selected-line && !line.continuation: Rectangle {
+                                        x: 61px; width: parent.width - 65px; height: parent.height; background: Theme.canvas;
+                                        inline-edit := LineEdit { text <=> root.edit-text; font-family: root.code-font-family; font-size: root.code-font-size; init => { self.focus(); } accepted => { root.apply-edit(self.text); } }
+                                    }
+                                }
+                            }
+                        }
+                        if root.selected-path != "": Rectangle {
+                            x: parent.width - 14px; width: 14px; height: parent.height; background: Theme.toolbar;
+                            TouchArea {
+                                pointer-event(e) => { if e.button == PointerEventButton.left { root.scroll-to(clamp((self.mouse-y - thumb.height / 2) / max(1px, self.height - thumb.height), 0, 1)); } }
+                                moved => { if self.pressed { root.scroll-to(clamp((self.mouse-y - thumb.height / 2) / max(1px, self.height - thumb.height), 0, 1)); } }
+                                thumb := Rectangle { x: 3px; width: 8px; height: min(parent.height, max(28px, root.visible-ratio * parent.height)); y: root.scroll-ratio * (parent.height - self.height); border-radius: 4px; background: parent.has-hover ? Theme.scroll-hover : Theme.scroll-thumb; }
+                            }
+                        }
+                    }
+
+                }
+            }
+            Rectangle {
+                height: Typography.size + 20px; background: Theme.header;
+                HorizontalLayout {
+                    padding-left: 10px; padding-right: 10px; spacing: 10px;
+                    Text { text: root.show-edit ? "Editando en el archivo · Enter aplica · Esc cancela" : root.busy ? "Cargando…" : root.status-info + (root.indexing ? " · Indexando archivos…" : ""); color: Theme.muted; vertical-alignment: center; overflow: elide; horizontal-stretch: 1; }
+                    Text { text: root.is-dirty ? "Cambios sin guardar" : "Guardado"; color: Theme.muted; vertical-alignment: center; }
+                }
+            }
+        }
+
+        if root.modal: Rectangle {
+            background: Theme.scrim;
+            TouchArea { clicked => { if root.palette-mode > 0 { root.palette-mode = 0; } if root.show-settings { root.show-settings = false; } main.focus(); } }
+            Rectangle {
+                width: min(680px, parent.width - 60px);
+                height: root.show-settings ? 520px : (root.palette-mode > 0 ? 460px : root.show-confirm ? 240px : 290px) + (root.error-message != "" && root.show-confirm ? 70px : 0px);
+                x: (parent.width - self.width) / 2; y: 90px;
+                background: Theme.dialog; border-radius: 10px; border-width: 1px; border-color: Theme.dialog-border;
+                TouchArea {}
+                if root.palette-mode > 0: VerticalLayout {
+                    padding: 20px; spacing: 12px;
+                    HorizontalLayout {
+                        Text { text: root.palette-mode == 2 ? "Cambiar de proyecto" : root.palette-mode == 3 ? "Archivos de entorno" : "Ir a un archivo"; font-size: Typography.size + 4px; font-weight: 600; color: Theme.title; horizontal-stretch: 1; }
+                        Action { text: "×"; clicked => { root.palette-mode = 0; main.focus(); } }
+                    }
+                    input := LineEdit { placeholder-text: root.palette-mode == 2 ? "Nombre o ruta de una carpeta…" : "Buscar por nombre o ruta…"; text <=> root.query; init => { self.focus(); } edited => { root.result-index = 0; root.search-results = []; root.search(self.text, root.palette-mode); } }
+                    results := ListView {
+                        viewport-y: -max(0px, root.result-index * 36px - self.height + 36px);
+                        for item[index] in root.search-results: TouchArea {
+                            height: 36px;
+                            clicked => { root.result-index = index; root.choose-result(); }
+                            Rectangle { border-radius: 4px; background: index == root.result-index ? Theme.result-selected : parent.has-hover ? Theme.result-hover : transparent; }
+                            Text { x: 10px; width: parent.width - 20px; text: item.display-path; color: Theme.result-text; overflow: elide; vertical-alignment: center; }
+                        }
+                    }
+                    if root.search-results.length == 0: Text { text: root.busy || (root.indexing && root.palette-mode != 2) ? "Buscando…" : "Sin resultados. Prueba otro nombre o abre una carpeta."; color: Theme.dialog-description; wrap: word-wrap; }
+                    Text { text: "↑ ↓ seleccionar     Enter abrir     Esc cerrar"; color: Theme.dialog-hint; font-size: Typography.size - 1px; }
+                }
+                if root.show-path: VerticalLayout {
+                    padding: 22px; spacing: 14px;
+                    HorizontalLayout {
+                    Text { text: "Abrir una carpeta"; font-size: Typography.size + 5px; color: Theme.title; font-weight: 600; }
+                        Action { text: "×"; clicked => { root.show-path = false; main.focus(); } }
+                    }
+                    Text { text: "Elige una carpeta con Examinar o pega su ruta. El proyecto quedará guardado en tu lista."; color: Theme.dialog-description; wrap: word-wrap; }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        LineEdit { text <=> root.path-input; placeholder-text: "Ruta de una carpeta"; init => { self.focus(); } accepted => { root.open-project(root.path-input); root.show-path = false; main.focus(); } }
+                        Action { text: "Examinar…"; enabled: !root.browsing; clicked => { root.browsing = true; root.browse-folder(root.path-input); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Action { text: "Cancelar"; clicked => { root.show-path = false; main.focus(); } }
+                        Action { text: "Abrir proyecto"; primary: true; clicked => { root.open-project(root.path-input); root.show-path = false; main.focus(); } }
+                    }
+                }
+                if root.show-settings: VerticalLayout {
+                    padding: 22px; spacing: 18px;
+                    HorizontalLayout {
+                        Text { text: "Configuración"; font-size: Typography.size + 5px; color: Theme.title; font-weight: 600; horizontal-stretch: 1; }
+                        Action { text: "×"; clicked => { root.show-settings = false; main.focus(); } }
+                    }
+                    Text { text: "Apariencia"; color: Theme.title; font-weight: 600; }
+                    HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "Tema"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.light-mode ? "Claro" : "Oscuro"; primary: true; clicked => { root.toggle-theme(); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Text { text: "Interfaz"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: "−"; clicked => { root.zoom-ui(-1); } }
+                        Text { text: "\{round(root.ui-font-size / 1px)} px"; color: Theme.dialog-description; vertical-alignment: center; }
+                        Action { text: "+"; clicked => { root.zoom-ui(1); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Text { text: "Código"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: "−"; clicked => { root.zoom(-1); } }
+                        Text { text: "\{round(root.code-font-size / 1px)} px"; color: Theme.dialog-description; vertical-alignment: center; }
+                        Action { text: "+"; clicked => { root.zoom(1); } }
+                    }
+                    Text { text: "Paneles"; color: Theme.title; font-weight: 600; }
+                    HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "Lista de proyectos"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.show-library ? "Visible" : "Oculta"; primary: root.show-library; clicked => { root.show-library = !root.show-library; root.set-panels(root.show-library, root.show-tree); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "Explorador de archivos"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.show-tree ? "Visible" : "Oculto"; primary: root.show-tree; clicked => { root.show-tree = !root.show-tree; root.set-panels(root.show-library, root.show-tree); } }
+                    }
+                    Text { text: "Inicio"; color: Theme.title; font-weight: 600; }
+                    Text { text: root.default-path == "" ? "Se abrirá el último proyecto usado." : "Proyecto predeterminado: " + root.default-path; color: Theme.dialog-description; overflow: elide; }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Action { text: root.default-path == root.project-path && root.project-path != "" ? "Quitar proyecto predeterminado" : "Usar el proyecto actual"; enabled: root.project-path != ""; clicked => { root.set-default(); } }
+                        Action { text: "Ir al predeterminado"; enabled: root.default-path != ""; clicked => { root.go-default(); root.show-settings = false; } }
+                    }
+                }
+                if root.show-confirm: VerticalLayout {
+                    padding: 22px; spacing: 16px;
+                    HorizontalLayout {
+                    Text { text: "Tienes cambios sin guardar"; font-size: Typography.size + 5px; color: Theme.title; font-weight: 600; }
+                        Action { text: "×"; clicked => { root.resolve-pending(0); } }
+                    }
+                    Text { text: "Guarda antes de continuar o descarta tus cambios locales. Cancelar mantiene el archivo abierto."; color: Theme.dialog-description; wrap: word-wrap; }
+                    if root.error-message != "": Text { text: root.error-message; color: Theme.dialog-error; wrap: word-wrap; }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Action { text: "Cancelar"; init => { self.focus(); } clicked => { root.resolve-pending(0); } }
+                        Action { text: "Descartar"; clicked => { root.resolve-pending(1); } }
+                        Action { text: "Guardar y continuar"; primary: true; clicked => { root.resolve-pending(2); } }
+                    }
+                }
+            }
+        }
+    }
+}

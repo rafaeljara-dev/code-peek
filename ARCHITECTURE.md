@@ -1,6 +1,8 @@
 # Arquitectura Técnica de CodePeek (`peek`)
 
-Este documento detalla los principios de diseño, la estructura de módulos y las decisiones de ingeniería para lograr un rendimiento determinista sub-milisegundo en Windows 11.
+Este documento conserva el diseño aspiracional original. Para el comportamiento implementado y sus límites, consultar [README.md](README.md) y [la auditoría de septiembre de 2026](docs/AUDIT.md). Las cifras de rendimiento de este documento son objetivos sin mediciones verificadas.
+
+La implementación actual usa un controlador en `crates/peek-ui/src/controller.rs` que recibe comandos por canal y realiza I/O, búsqueda y resaltado fuera de la UI. Slint recibe modelos de navegación y el viewport mediante `upgrade_in_event_loop`. El buffer se carga directamente en Rope; no se usa `mmap` para archivos que otro proceso puede truncar. La edición es por línea y el seguimiento externo del archivo activo se hace comprobando metadatos durante la inactividad del trabajador. La configuración JSON separa biblioteca, inicio y último proyecto.
 
 ---
 
