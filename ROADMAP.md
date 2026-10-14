@@ -21,6 +21,15 @@ Estado revisado el 14 de octubre de 2026. La prioridad es completar el flujo de 
 - [x] Indexación independiente y cancelable al cambiar de proyecto, con descarte de resultados antiguos.
 - [x] Pruebas de buffers, configuración, navegación, Markdown, conflictos y teclado de la paleta.
 
+## Optimización para equipos modestos
+
+La [auditoría de recursos](docs/PERFORMANCE-AUDIT.md) prioriza trabajo medido y conserva la versión aprobada.
+
+- [ ] P0: miniaturas/favicons fuera del hilo UI, presupuesto de píxeles y conversión única de imágenes.
+- [ ] P1: publicar el modo activo, reutilizar resaltado y evitar materializar filas ocultas en líneas minificadas.
+- [ ] P1: índice compartido, consultas cancelables, búsqueda progresiva y concurrencia limitada.
+- [ ] P2: estado de cambios/guardado por trozos, perfiles de memoria base y primer fotograma, comparación de backends en equipos reales.
+
 ## Pendiente, con alcance acotado
 
 - [ ] Medir arranque frío/caliente, RAM y latencia de interacción en release sobre proyectos reales y archivos de 500.000 líneas.

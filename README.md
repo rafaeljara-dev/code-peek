@@ -72,6 +72,10 @@ La primera vez, al abrir sin argumentos, CodePeek te invita a elegir una carpeta
 
 La comparación se mantiene en [docs/BENCHMARKS.md](docs/BENCHMARKS.md), con metodología reproducible y espacios para peso, apertura y RAM. El binario release local compilado el 14 de octubre de 2026 ocupa **17.629.696 bytes (16,8 MiB)**. Los datos de VS Code se publicarán únicamente después de medir ambas aplicaciones en la misma computadora y con el mismo proyecto.
 
+## Auditoría de recursos
+
+La [auditoría de RAM, CPU y arranque](docs/PERFORMANCE-AUDIT.md) registra mediciones del release y una lista priorizada para laptops con menos recursos. La configuración probada mantiene aproximadamente 95 MiB residentes y 102 MiB privados; las metas originales de memoria y primer fotograma siguen pendientes de validar. El informe detalla qué se midió y qué mejoras todavía son propuestas.
+
 ## Instalación desde el código fuente
 
 En Windows, `scripts/install.ps1` compila e instala por usuario, crea accesos directos en Inicio y escritorio y registra la aplicación. Después basta buscar **CodePeek** en Inicio. No requiere una terminal para usarla.

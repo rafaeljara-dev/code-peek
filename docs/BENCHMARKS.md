@@ -2,7 +2,11 @@
 
 CodePeek no busca reemplazar Visual Studio Code. VS Code es un editor e IDE extensible para desarrollar, depurar y ejecutar proyectos completos. CodePeek es una alternativa complementaria para abrir rápidamente un proyecto, revisar código y hacer una corrección puntual.
 
-## Resultados
+## Auditoría actual de CodePeek
+
+La medición del 14 de octubre de 2026 está en [PERFORMANCE-AUDIT.md](PERFORMANCE-AUDIT.md), con [datos completos](performance/2026-10-14.json). El release local ocupa 17.629.696 bytes (16,8 MiB); la configuración probada registra una mediana de ventana observada de 68,81 ms, 94,91 MiB residentes y 102,33 MiB privados. La ventana se ocultó para medir reposo; no se midió primer fotograma, arranque frío ni VS Code. La tabla siguiente conserva la referencia histórica de septiembre.
+
+## Resultados históricos
 
 Mediciones del 17 de septiembre de 2026 sobre Windows 11. Los valores de tiempo y RAM se publicarán cuando se midan ambos programas bajo las mismas condiciones.
 
