@@ -12,7 +12,7 @@ use peek_core::{TextBuffer, UserSettings, Workspace};
 use peek_syntax::ExtensionRegistry;
 use peek_tree::{walk_project_files, FlatNode, FlatTree, FuzzySearcher};
 use rayon::prelude::*;
-use slint::{ModelRc, SharedString, VecModel, Weak};
+use slint::{Model, ModelRc, SharedString, VecModel, Weak};
 use std::sync::atomic::AtomicUsize;
 
 use crate::editor::{self, EditSnapshot, EditorState};
@@ -65,7 +65,7 @@ pub enum Command {
     CancelEdit,
     IndexReady(u64, Vec<PathBuf>),
     ContentReady(u64, String, Vec<ContentMatch>),
-    ThumbnailsReady(u64, Images, Images),
+    ThumbnailsReady(u64, Images, Images, bool),
     Preview(bool),
     TreeViewport(usize, usize),
 }
@@ -136,7 +136,6 @@ pub struct Controller {
     image_info: String,
     image_dirty: bool,
     thumbnail_loader: Option<Arc<thumbnails::Loader>>,
-    thumbnail_refresh: bool,
     tree_viewport: (usize, usize),
     thumbnail_generation: u64,
     thumbnails: Images,
@@ -208,9 +207,12 @@ impl Controller {
             }
         });
         let thumb_tx = tx.clone();
-        let thumbnail_loader = thumbnails::Loader::new(move |generation, files, projects| {
-            let _ = thumb_tx.send(Command::ThumbnailsReady(generation, files, projects));
-        });
+        let thumbnail_loader =
+            thumbnails::Loader::new(move |generation, files, projects, complete| {
+                let _ = thumb_tx.send(Command::ThumbnailsReady(
+                    generation, files, projects, complete,
+                ));
+            });
         let loaded = UserSettings::load();
         let settings_writable = loaded.is_ok();
         let settings = match loaded {
@@ -282,7 +284,6 @@ impl Controller {
             image_info: String::new(),
             image_dirty: false,
             thumbnail_loader: Some(Arc::new(thumbnail_loader)),
-            thumbnail_refresh: true,
             tree_viewport: (0, 64),
             thumbnail_generation: 0,
             thumbnails: Images::new(),
@@ -329,6 +330,12 @@ impl Controller {
             }
             let closing = matches!(command, Command::Resolve(1 | 2))
                 && matches!(app.pending, Some(Command::Close));
+            if matches!(command, Command::ThumbnailsReady(..)) {
+                if let Err(e) = app.handle(command) {
+                    app.error(e);
+                }
+                continue;
+            }
             app.set_busy(true);
             if let Err(e) = app.handle(command) {
                 app.error(e);
@@ -427,12 +434,47 @@ impl Controller {
             Command::Preview(preview) => {
                 self.preview = preview;
             }
-            Command::ThumbnailsReady(generation, files, projects) => {
+            Command::ThumbnailsReady(generation, mut files, projects, complete) => {
                 if generation == self.thumbnail_generation {
+                    if !complete {
+                        for (path, image) in &self.thumbnails {
+                            files.entry(path.clone()).or_insert_with(|| image.clone());
+                        }
+                    }
+                    let file_changes = image_changes(&self.thumbnails, &files);
+                    let logo_changes = image_changes(&self.project_logos, &projects);
+                    let file_updates = self
+                        .tree_nodes
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(index, node)| {
+                            file_changes.get(&node.path).map(|image| {
+                                (
+                                    index,
+                                    node.path.to_string_lossy().into_owned(),
+                                    image.clone(),
+                                )
+                            })
+                        })
+                        .collect::<Vec<_>>();
+                    let logo_updates = self
+                        .settings
+                        .open_projects
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(index, path)| {
+                            logo_changes.get(path).map(|image| {
+                                (index, path.to_string_lossy().into_owned(), image.clone())
+                            })
+                        })
+                        .collect::<Vec<_>>();
                     self.thumbnails = files;
                     self.project_logos = projects;
-                    self.navigation_dirty = true;
-                    self.thumbnail_refresh = false;
+                    if !file_updates.is_empty() || !logo_updates.is_empty() {
+                        let _ = self.window.upgrade_in_event_loop(move |w| {
+                            apply_image_updates(&w, file_updates, logo_updates)
+                        });
+                    }
                 }
             }
             Command::OpenProject(path) => self.open_project(&path)?,
@@ -1402,9 +1444,8 @@ impl Controller {
 
     fn publish(&mut self) {
         let navigation_dirty = std::mem::take(&mut self.navigation_dirty);
-        let thumbnail_refresh = std::mem::replace(&mut self.thumbnail_refresh, true);
         let mut thumbnail_job = None;
-        if navigation_dirty && thumbnail_refresh {
+        if navigation_dirty {
             let request = thumbnails::Request {
                 files: self
                     .tree_nodes
@@ -1732,6 +1773,55 @@ impl Controller {
     }
 }
 
+type ImageUpdate = (usize, String, Option<image_loader::RawRgbaImage>);
+
+fn image_changes(
+    old: &Images,
+    new: &Images,
+) -> HashMap<PathBuf, Option<image_loader::RawRgbaImage>> {
+    let mut changes = HashMap::new();
+    for (path, previous) in old {
+        let image = new.get(path);
+        if image
+            .is_none_or(|image| image.data.as_bytes().as_ptr() != previous.data.as_bytes().as_ptr())
+        {
+            changes.insert(path.clone(), image.cloned());
+        }
+    }
+    for (path, image) in new {
+        if !old.contains_key(path) {
+            changes.insert(path.clone(), Some(image.clone()));
+        }
+    }
+    changes
+}
+
+/// Update only existing matching rows; preserve the model, scroll and document properties.
+fn apply_image_updates(window: &MainWindow, files: Vec<ImageUpdate>, logos: Vec<ImageUpdate>) {
+    let model = window.get_tree_items();
+    for (index, path, image) in files {
+        if let Some(mut row) = model
+            .row_data(index)
+            .filter(|row| row.path.as_str() == path)
+        {
+            row.has_thumb = image.is_some();
+            row.thumb = image.map_or_else(slint::Image::default, |raw| raw.to_slint_image());
+            model.set_row_data(index, row);
+        }
+    }
+    let model = window.get_recent_projects();
+    for (index, path, image) in logos {
+        if let Some(mut row) = model
+            .row_data(index)
+            .filter(|row| row.path.as_str() == path)
+        {
+            row.has_logo = image.is_some();
+            row.logo = image.map_or_else(slint::Image::default, |raw| raw.to_slint_image());
+            model.set_row_data(index, row);
+        }
+    }
+}
+
 fn file_stamp(path: &Path) -> Option<(SystemTime, u64)> {
     let metadata = std::fs::metadata(path).ok()?;
     Some((metadata.modified().ok()?, metadata.len()))
@@ -1919,7 +2009,6 @@ mod tests {
             image_info: String::new(),
             image_dirty: false,
             thumbnail_loader: None,
-            thumbnail_refresh: true,
             tree_viewport: (0, 64),
             thumbnail_generation: 0,
             thumbnails: Images::new(),
@@ -2408,12 +2497,72 @@ mod tests {
             path.clone(),
             image_loader::RawRgbaImage::new(vec![0; 4], 1, 1),
         );
-        app.handle(Command::ThumbnailsReady(1, images.clone(), Images::new()))
-            .unwrap();
+        app.navigation_dirty = false;
+        app.handle(Command::ThumbnailsReady(
+            1,
+            images.clone(),
+            Images::new(),
+            false,
+        ))
+        .unwrap();
         assert!(app.thumbnails.is_empty());
-        app.handle(Command::ThumbnailsReady(2, images, Images::new()))
+        app.handle(Command::ThumbnailsReady(2, images, Images::new(), false))
             .unwrap();
         assert!(app.thumbnails.contains_key(&path));
-        assert!(!app.thumbnail_refresh);
+        assert!(!app.navigation_dirty);
+        app.handle(Command::ThumbnailsReady(
+            2,
+            Images::new(),
+            Images::new(),
+            false,
+        ))
+        .unwrap();
+        assert!(app.thumbnails.contains_key(&path));
+        app.handle(Command::ThumbnailsReady(
+            2,
+            Images::new(),
+            Images::new(),
+            true,
+        ))
+        .unwrap();
+        assert!(app.thumbnails.is_empty());
+    }
+
+    #[test]
+    fn thumbnail_updates_keep_models_and_document_state_and_ignore_replaced_rows() {
+        i_slint_backend_testing::init_no_event_loop();
+        let window = MainWindow::new().unwrap();
+        let model = ModelRc::new(VecModel::from(vec![FileItem {
+            path: "image.png".into(),
+            name: "Imagen".into(),
+            ..Default::default()
+        }]));
+        window.set_tree_items(model.clone());
+        window.set_recent_projects(ModelRc::new(VecModel::from(vec![ProjectItem {
+            path: "root".into(),
+            ..Default::default()
+        }])));
+        window.set_selected_path("main.rs".into());
+        window.set_caret_column(7);
+        window.set_busy(true);
+        let raw = image_loader::RawRgbaImage::new(vec![1, 2, 3, 255], 1, 1);
+        apply_image_updates(
+            &window,
+            vec![(0, "image.png".into(), Some(raw.clone()))],
+            vec![(0, "root".into(), Some(raw.clone()))],
+        );
+        assert_eq!(window.get_tree_items(), model);
+        assert!(model.row_data(0).unwrap().has_thumb);
+        assert!(window.get_recent_projects().row_data(0).unwrap().has_logo);
+        assert_eq!(window.get_selected_path().as_str(), "main.rs");
+        assert_eq!(window.get_caret_column(), 7);
+        assert!(window.get_busy());
+        apply_image_updates(&window, vec![(0, "stale.png".into(), None)], Vec::new());
+        assert!(model.row_data(0).unwrap().has_thumb);
+        apply_image_updates(&window, vec![(0, "image.png".into(), None)], Vec::new());
+        assert!(!model.row_data(0).unwrap().has_thumb);
+        let mut images = Images::new();
+        images.insert(PathBuf::from("image.png"), raw);
+        assert!(image_changes(&images, &images.clone()).is_empty());
     }
 }

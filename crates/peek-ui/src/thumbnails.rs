@@ -25,7 +25,7 @@ pub(crate) struct Loader {
 }
 
 impl Loader {
-    pub fn new(deliver: impl Fn(u64, Images, Images) + Send + 'static) -> Self {
+    pub fn new(deliver: impl Fn(u64, Images, Images, bool) + Send + 'static) -> Self {
         let mailbox = Arc::new((Mutex::new(Mailbox::default()), Condvar::new()));
         let worker = mailbox.clone();
         std::thread::spawn(move || {
@@ -57,7 +57,7 @@ impl Loader {
                     }
                 }
                 if valid() {
-                    deliver(generation, files.clone(), projects.clone());
+                    deliver(generation, files.clone(), projects.clone(), false);
                 }
                 for (index, path) in request.files.into_iter().enumerate() {
                     if !valid() {
@@ -69,11 +69,11 @@ impl Loader {
                         }
                     }
                     if index % 16 == 15 && valid() {
-                        deliver(generation, files.clone(), projects.clone());
+                        deliver(generation, files.clone(), projects.clone(), false);
                     }
                 }
                 if valid() {
-                    deliver(generation, files, projects);
+                    deliver(generation, files, projects, true);
                 }
             }
         });
@@ -108,8 +108,8 @@ mod tests {
             .save(&path)
             .unwrap();
         let (tx, rx) = std::sync::mpsc::channel();
-        let loader = Loader::new(move |generation, files, projects| {
-            tx.send((generation, files, projects)).unwrap();
+        let loader = Loader::new(move |generation, files, projects, _| {
+            let _ = tx.send((generation, files, projects));
         });
         for generation in 1..=100 {
             loader.request(
