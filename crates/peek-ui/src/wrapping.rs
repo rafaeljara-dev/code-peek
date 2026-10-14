@@ -20,45 +20,69 @@ pub struct Row {
 }
 
 /// Break display rows, never the source. Grapheme clusters and token colors remain intact.
+#[cfg(test)]
 pub fn wrap(
     source: &str,
     highlights: &[HighlightSpan],
     columns: usize,
     formatted: bool,
 ) -> Vec<Vec<Span>> {
+    wrap_visible(source, highlights, columns, formatted, 0, usize::MAX).1
+}
+
+/// Returns the clamped first fragment and only the requested visible rows.
+pub fn wrap_visible(
+    source: &str,
+    highlights: &[HighlightSpan],
+    columns: usize,
+    formatted: bool,
+    skip: usize,
+    count: usize,
+) -> (usize, Vec<Vec<Span>>) {
+    if count == 0 {
+        return (skip, Vec::new());
+    }
     let columns = columns.max(4);
-    let joined: String = highlights.iter().map(|s| s.text.as_str()).collect();
-    let fallback = [HighlightSpan::new(
-        source.to_owned(),
-        ColorRgb::new(218, 229, 240),
-    )];
-    let highlights = if formatted || joined == source {
+    let fallback;
+    let mut remaining = source;
+    let source_preserved = highlights.iter().all(|span| {
+        if let Some(tail) = remaining.strip_prefix(span.text.as_str()) {
+            remaining = tail;
+            true
+        } else {
+            false
+        }
+    }) && remaining.is_empty();
+    let highlights = if formatted || source_preserved {
         highlights
     } else {
+        fallback = [HighlightSpan::new(source, ColorRgb::new(218, 229, 240))];
         &fallback
     };
-    let mut rows = vec![Vec::<Span>::new()];
+    let mut rows = Vec::new();
+    let mut row = Vec::<Span>::new();
+    let mut fragment = 0usize;
     let mut column = 0;
     for span in highlights {
         for grapheme in span.text.graphemes(true) {
-            let display = if grapheme == "\t" {
-                " ".repeat(4 - column % 4)
-            } else {
-                grapheme.to_owned()
-            };
-            // Tabs may straddle a wrap boundary; ordinary graphemes remain indivisible.
-            let parts: Vec<&str> = if grapheme == "\t" {
-                display.graphemes(true).collect()
-            } else {
-                vec![&display]
-            };
-            for part in parts {
+            let tab = grapheme == "\t";
+            let parts = if tab { 4 - column % 4 } else { 1 };
+            for _ in 0..parts {
+                let part = if tab { " " } else { grapheme };
                 let width = UnicodeWidthStr::width(part);
                 if column + width > columns && column > 0 {
-                    rows.push(Vec::new());
+                    if fragment >= skip {
+                        rows.push(std::mem::take(&mut row));
+                        if rows.len() >= count {
+                            return (skip, rows);
+                        }
+                    } else {
+                        row.clear();
+                    }
+                    fragment += 1;
                     column = 0;
                 }
-                let row = rows.last_mut().unwrap();
+                // Retain the last skipped row to preserve clamping beyond end-of-line.
                 if let Some(last) = row.last_mut().filter(|s| {
                     s.color == span.color && s.bold == span.bold && s.italic == span.italic
                 }) {
@@ -75,17 +99,29 @@ pub fn wrap(
             }
         }
     }
-    rows
+    rows.push(row);
+    (skip.min(fragment), rows)
 }
 
 pub fn row_count(buffer: &TextBuffer, line: usize, columns: usize) -> usize {
-    wrap(
-        &buffer.line_trimmed(line).unwrap_or_default(),
-        &[],
-        columns,
-        false,
-    )
-    .len()
+    let source = buffer.line_trimmed(line).unwrap_or_default();
+    let (mut count, mut column) = (1, 0);
+    for grapheme in source.graphemes(true) {
+        let tab = grapheme == "\t";
+        for _ in 0..if tab { 4 - column % 4 } else { 1 } {
+            let width = if tab {
+                1
+            } else {
+                UnicodeWidthStr::width(grapheme)
+            };
+            if column + width > columns.max(4) && column > 0 {
+                count += 1;
+                column = 0;
+            }
+            column += width;
+        }
+    }
+    count
 }
 
 /// Move through visual rows without building an index of the entire document.
@@ -120,6 +156,40 @@ pub fn advance(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn visible_wrapping_matches_full_rows_and_bounds_minified_output() {
+        for source in ["\t😀ab e\u{301}xyz\tlast", "", "\u{301}a", "abcdefghi"] {
+            let spans = [HighlightSpan::new(source, ColorRgb::new(1, 2, 3))];
+            let full = wrap(source, &spans, 4, false);
+            let buffer = TextBuffer::from_text(source);
+            assert_eq!(row_count(&buffer, 0, 4), full.len());
+            for skip in 0..full.len() + 2 {
+                let (first, visible) = wrap_visible(source, &spans, 4, false, skip, 2);
+                assert_eq!(first, skip.min(full.len() - 1));
+                let text = |rows: &[Vec<Span>]| {
+                    rows.iter()
+                        .map(|row| row.iter().map(|s| s.text.as_str()).collect::<String>())
+                        .collect::<Vec<_>>()
+                };
+                assert_eq!(
+                    text(&visible),
+                    text(&full[first..(first + 2).min(full.len())])
+                );
+            }
+        }
+        let source = "x".repeat(4 * 1024 * 1024);
+        let spans = [HighlightSpan::new(&source, ColorRgb::new(1, 2, 3))];
+        let (_, visible) = wrap_visible(&source, &spans, 100, false, 0, 40);
+        assert_eq!(visible.len(), 40);
+        assert_eq!(
+            visible
+                .iter()
+                .flatten()
+                .map(|s| s.text.len())
+                .sum::<usize>(),
+            4000
+        );
+    }
     #[test]
     fn wrapping_preserves_unicode_source_colors_and_blank_lines() {
         let source = "abc😀defe\u{301}gh";

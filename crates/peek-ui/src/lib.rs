@@ -2,6 +2,8 @@ mod controller;
 mod editor;
 pub mod image_loader;
 mod theme;
+mod thumbnails;
+pub mod viewport;
 mod wrapping;
 
 use controller::{Command, Controller};
@@ -124,6 +126,10 @@ pub fn run_app(initial_path: Option<PathBuf>) -> Result<(), slint::PlatformError
         forward
     ));
     connect!(on_cancel_edit, || Command::CancelEdit);
+    connect!(on_preview_changed, |preview| Command::Preview(preview));
+    connect!(on_tree_viewport_changed, |first, count| {
+        Command::TreeViewport(first.max(0) as usize, count.max(1) as usize)
+    });
     {
         let weak = window.as_weak();
         window.on_browse_folder(move |start| {

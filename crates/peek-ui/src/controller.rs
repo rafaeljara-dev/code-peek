@@ -16,7 +16,9 @@ use slint::{ModelRc, SharedString, VecModel, Weak};
 use std::sync::atomic::AtomicUsize;
 
 use crate::editor::{self, EditSnapshot, EditorState};
-use crate::image_loader::{self, ThumbnailCache};
+use crate::image_loader;
+use crate::thumbnails::{self, Images};
+use crate::viewport::HighlightCache;
 use crate::{CodeLineItem, CodeSpanItem, FileItem, MainWindow, ProjectItem, SearchItem};
 
 pub enum Command {
@@ -63,6 +65,9 @@ pub enum Command {
     CancelEdit,
     IndexReady(u64, Vec<PathBuf>),
     ContentReady(u64, String, Vec<ContentMatch>),
+    ThumbnailsReady(u64, Images, Images),
+    Preview(bool),
+    TreeViewport(usize, usize),
 }
 
 #[derive(Clone)]
@@ -129,7 +134,15 @@ pub struct Controller {
     is_image: bool,
     current_image: Option<image_loader::RawRgbaImage>,
     image_info: String,
-    thumbnail_cache: ThumbnailCache,
+    image_dirty: bool,
+    thumbnail_loader: Option<thumbnails::Loader>,
+    thumbnail_refresh: bool,
+    tree_viewport: (usize, usize),
+    thumbnail_generation: u64,
+    thumbnails: Images,
+    project_logos: Images,
+    highlight_cache: HighlightCache,
+    preview: bool,
 }
 
 impl Controller {
@@ -193,6 +206,10 @@ impl Controller {
                     break;
                 }
             }
+        });
+        let thumb_tx = tx.clone();
+        let thumbnail_loader = thumbnails::Loader::new(move |generation, files, projects| {
+            let _ = thumb_tx.send(Command::ThumbnailsReady(generation, files, projects));
         });
         let loaded = UserSettings::load();
         let settings_writable = loaded.is_ok();
@@ -263,7 +280,15 @@ impl Controller {
             is_image: false,
             current_image: None,
             image_info: String::new(),
-            thumbnail_cache: ThumbnailCache::new(),
+            image_dirty: false,
+            thumbnail_loader: Some(thumbnail_loader),
+            thumbnail_refresh: true,
+            tree_viewport: (0, 64),
+            thumbnail_generation: 0,
+            thumbnails: Images::new(),
+            project_logos: Images::new(),
+            highlight_cache: HighlightCache::default(),
+            preview: false,
         };
         if needs_setup {
             app.status = "Abre un proyecto; quedará guardado en tu lista".into();
@@ -342,6 +367,9 @@ impl Controller {
                     | Command::Viewport(_)
                     | Command::IndexReady(..)
                     | Command::ContentReady(..)
+                    | Command::ThumbnailsReady(..)
+                    | Command::Preview(_)
+                    | Command::TreeViewport(..)
             )
         {
             return Ok(());
@@ -377,7 +405,36 @@ impl Controller {
         ) {
             self.navigation_dirty = true;
         }
+        if matches!(
+            command,
+            Command::Undo
+                | Command::Redo
+                | Command::Revert
+                | Command::DocumentEdited(..)
+                | Command::Apply(_)
+                | Command::Replace(..)
+        ) {
+            self.highlight_cache.invalidate();
+        }
         match command {
+            Command::TreeViewport(first, count) => {
+                let viewport = (first, count.clamp(1, 256));
+                if self.tree_viewport != viewport {
+                    self.tree_viewport = viewport;
+                    self.navigation_dirty = true;
+                }
+            }
+            Command::Preview(preview) => {
+                self.preview = preview;
+            }
+            Command::ThumbnailsReady(generation, files, projects) => {
+                if generation == self.thumbnail_generation {
+                    self.thumbnails = files;
+                    self.project_logos = projects;
+                    self.navigation_dirty = true;
+                    self.thumbnail_refresh = false;
+                }
+            }
             Command::OpenProject(path) => self.open_project(&path)?,
             Command::CloseFile(path) => {
                 if self.workspace.current_file.as_ref() == Some(&path) {
@@ -730,6 +787,7 @@ impl Controller {
                         control,
                     );
                     if buffer.revision != snapshot.buffer.revision {
+                        self.highlight_cache.invalidate();
                         buffer.is_dirty = self
                             .original
                             .as_ref()
@@ -978,6 +1036,7 @@ impl Controller {
     }
 
     fn clear_file(&mut self) {
+        self.highlight_cache.invalidate();
         self.workspace.close_file();
         self.original = None;
         self.undo.clear();
@@ -985,6 +1044,7 @@ impl Controller {
         self.editor = EditorState::default();
         self.is_image = false;
         self.current_image = None;
+        self.image_dirty = true;
         self.image_info.clear();
         self.stamp = None;
         self.top = 0;
@@ -1001,6 +1061,9 @@ impl Controller {
     fn open_file(&mut self, path: &Path) -> Result<()> {
         if image_loader::is_image_file(path) {
             let details = image_loader::load_image_full(path)?;
+            self.highlight_cache.invalidate();
+            self.image_dirty = true;
+            self.preview = false;
             let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
             self.workspace.current_file = Some(canonical.clone());
             self.workspace.buffer = None;
@@ -1013,7 +1076,7 @@ impl Controller {
             self.selected = 0;
             let raw = details.raw;
             self.is_image = true;
-            self.current_image = Some(raw.clone());
+            self.current_image = Some(raw);
             self.image_info = details.summary.clone();
             self.stamp = file_stamp(&canonical);
             self.content_width = 0.0;
@@ -1031,7 +1094,6 @@ impl Controller {
             let info = details.summary;
             let _ = self.window.upgrade_in_event_loop(move |w| {
                 w.set_is_image(true);
-                w.set_image_source(raw.to_slint_image());
                 w.set_image_info(info.into());
                 w.set_document_text("".into());
                 w.set_markdown_file(false);
@@ -1043,12 +1105,13 @@ impl Controller {
             return Ok(());
         }
 
-        self.is_image = false;
-        self.current_image = None;
-        self.image_info.clear();
-
         // Read first: a missing/binary/invalid file must not clear the current buffer.
         let buffer = TextBuffer::from_file(path)?;
+        self.highlight_cache.invalidate();
+        self.is_image = false;
+        self.current_image = None;
+        self.image_dirty = true;
+        self.image_info.clear();
         let canonical = buffer.path.clone().context("No se pudo resolver la ruta")?;
         self.workspace.current_file = Some(canonical.clone());
         self.original = Some(buffer.clone());
@@ -1147,13 +1210,16 @@ impl Controller {
         Ok(())
     }
 
-    fn sync_document(&self) {
+    fn sync_document(&mut self) {
         let markdown = self
             .workspace
             .current_file
             .as_deref()
             .and_then(|path| self.syntax.find_extension(path))
             .is_some_and(|extension| extension.is_markdown());
+        if !markdown {
+            self.preview = false;
+        }
         let _ = self.window.upgrade_in_event_loop(move |w| {
             w.set_is_image(false);
             w.set_document_text("".into());
@@ -1336,6 +1402,36 @@ impl Controller {
 
     fn publish(&mut self) {
         let navigation_dirty = std::mem::take(&mut self.navigation_dirty);
+        let thumbnail_refresh = std::mem::replace(&mut self.thumbnail_refresh, true);
+        if navigation_dirty && thumbnail_refresh {
+            let request = thumbnails::Request {
+                files: self
+                    .tree_nodes
+                    .iter()
+                    .skip(self.tree_viewport.0.saturating_sub(16))
+                    .take(self.tree_viewport.1 + 32)
+                    .filter(|n| !n.is_dir)
+                    .map(|n| n.path.clone())
+                    .collect(),
+                projects: self
+                    .settings
+                    .open_projects
+                    .iter()
+                    .take(100)
+                    .cloned()
+                    .collect(),
+            };
+            {
+                self.thumbnail_generation += 1;
+                self.thumbnails
+                    .retain(|path, _| request.files.contains(path));
+                self.project_logos
+                    .retain(|path, _| request.projects.contains(path));
+                if let Some(loader) = &self.thumbnail_loader {
+                    loader.request(self.thumbnail_generation, request.clone());
+                }
+            }
+        }
         let project = self.workspace.root_dir.clone().unwrap_or_default();
         let project_name = name(&project);
         let project_path = project.to_string_lossy().into_owned();
@@ -1438,15 +1534,17 @@ impl Controller {
             .map(|p| self.syntax.language_name(p))
             .unwrap_or_default();
         let mut editor_rows = Vec::new();
-        if let Some(buffer) = &self.workspace.buffer {
+        if let Some(buffer) = self.workspace.buffer.as_ref().filter(|_| !self.preview) {
             let selection = self.editor.selection();
-            let highlighted = self.syntax.highlight_source(
+            let highlighted = self.highlight_cache.get(
+                &self.syntax,
                 buffer,
                 self.workspace.current_file.as_deref(),
                 self.top,
                 self.visible,
+                false,
             );
-            for line in highlighted {
+            for line in highlighted.iter() {
                 let index = line.line_number - 1;
                 let source = buffer.line_trimmed(index).unwrap_or_default();
                 let start = buffer.line_to_char(index);
@@ -1471,12 +1569,14 @@ impl Controller {
             }
         }
         let mut rows = Vec::new();
-        if let Some(buffer) = &self.workspace.buffer {
-            let highlighted = self.syntax.highlight_viewport(
+        if let Some(buffer) = self.workspace.buffer.as_ref().filter(|_| self.preview) {
+            let highlighted = self.highlight_cache.get(
+                &self.syntax,
                 buffer,
                 self.workspace.current_file.as_deref(),
                 self.top,
                 self.visible,
+                true,
             );
             let mut line = self.top;
             while rows.len() < self.visible && line < total {
@@ -1485,19 +1585,25 @@ impl Controller {
                 let spans = highlighted_line.map(|l| l.spans.as_slice()).unwrap_or(&[]);
                 let line_type = highlighted_line.map_or(0, |l| l.line_type as i32);
                 let is_markdown = highlighted_line.is_some_and(|l| l.is_markdown);
-                let wrapped = crate::wrapping::wrap(&source, spans, self.wrap_columns, is_markdown);
-                let skip = if line == self.top {
-                    self.top_fragment.min(wrapped.len() - 1)
-                } else {
-                    0
-                };
-                for (fragment, spans) in wrapped.into_iter().enumerate().skip(skip) {
+                let (skip, wrapped) = crate::wrapping::wrap_visible(
+                    &source,
+                    spans,
+                    self.wrap_columns,
+                    is_markdown,
+                    if line == self.top {
+                        self.top_fragment
+                    } else {
+                        0
+                    },
+                    self.visible - rows.len(),
+                );
+                for (fragment, spans) in wrapped.into_iter().enumerate() {
                     if rows.len() >= self.visible {
                         break;
                     }
                     rows.push(crate::wrapping::Row {
                         line: line + 1,
-                        continuation: fragment > 0,
+                        continuation: fragment + skip > 0,
                         line_type,
                         is_markdown,
                         spans,
@@ -1509,9 +1615,14 @@ impl Controller {
         let visible_ratio =
             rows.iter().filter(|row| !row.continuation).count().max(1) as f32 / total.max(1) as f32;
         let is_image = self.is_image;
-        let image_source = self.current_image.clone();
+        let image_source = if std::mem::take(&mut self.image_dirty) {
+            Some(self.current_image.clone())
+        } else {
+            None
+        };
         let image_info = self.image_info.clone();
-        let thumbs = self.thumbnail_cache.clone();
+        let thumbs = self.thumbnails.clone();
+        let logos = self.project_logos.clone();
         let _ = self.window.upgrade_in_event_loop(move |w| {
             w.set_caret_line(caret.0 as i32 + 1);
             w.set_caret_column(caret.1.saturating_sub(left) as i32);
@@ -1555,16 +1666,18 @@ impl Controller {
             w.set_current_file_path(current_file.into());
             w.set_selected_path(selected_path.into());
             w.set_is_image(is_image);
+            if let Some(source) = image_source {
+                w.set_image_source(
+                    source.map_or_else(slint::Image::default, |raw| raw.to_slint_image()),
+                );
+            }
             if is_image {
-                if let Some(ref raw) = image_source {
-                    w.set_image_source(raw.to_slint_image());
-                }
                 w.set_image_info(image_info.into());
             }
             if navigation_dirty {
                 w.set_tree_items(tree_model(tree, light_mode, &thumbs));
                 w.set_library_items(tree_model(library, light_mode, &thumbs));
-                w.set_recent_projects(project_model(recent_projects));
+                w.set_recent_projects(project_model(recent_projects, &logos));
                 w.set_recent_files(search_model(recent_files));
             }
             w.set_is_dirty(dirty);
@@ -1693,20 +1806,12 @@ fn display_path(path: &Path) -> String {
     }
 }
 
-fn tree_model(
-    nodes: Vec<FlatNode>,
-    light_mode: bool,
-    thumbs: &ThumbnailCache,
-) -> ModelRc<FileItem> {
+fn tree_model(nodes: Vec<FlatNode>, light_mode: bool, thumbs: &Images) -> ModelRc<FileItem> {
     ModelRc::new(VecModel::from(
         nodes
             .into_iter()
             .map(|n| {
-                let thumb = if !n.is_dir && image_loader::is_image_file(&n.path) {
-                    thumbs.get_or_create(&n.path).map(|r| r.to_slint_image())
-                } else {
-                    None
-                };
+                let thumb = thumbs.get(&n.path).map(|r| r.to_slint_image());
                 let has_thumb = thumb.is_some();
                 FileItem {
                     path: n.path.to_string_lossy().as_ref().into(),
@@ -1741,12 +1846,12 @@ fn search_model(items: Vec<(String, String)>) -> ModelRc<SearchItem> {
     ))
 }
 
-fn project_model(items: Vec<(String, String)>) -> ModelRc<ProjectItem> {
+fn project_model(items: Vec<(String, String)>, logos: &Images) -> ModelRc<ProjectItem> {
     ModelRc::new(VecModel::from(
         items
             .into_iter()
             .map(|(path, display_path)| {
-                let logo = project_logo(Path::new(&path));
+                let logo = logos.get(Path::new(&path)).map(|r| r.to_slint_image());
                 ProjectItem {
                     path: path.into(),
                     display_path: display_path.into(),
@@ -1756,34 +1861,6 @@ fn project_model(items: Vec<(String, String)>) -> ModelRc<ProjectItem> {
             })
             .collect::<Vec<_>>(),
     ))
-}
-
-fn project_logo(root: &Path) -> Option<slint::Image> {
-    const CANDIDATES: &[&str] = &[
-        "favicon.ico",
-        "icon.png",
-        "public/favicon.ico",
-        "public/favicon.png",
-        "public/icon.png",
-        "app/favicon.ico",
-        "app/icon.png",
-        "src/app/favicon.ico",
-        "src/app/icon.png",
-        "src/favicon.ico",
-        "static/favicon.ico",
-        "assets/favicon.ico",
-    ];
-    CANDIDATES
-        .iter()
-        .map(|relative| root.join(relative))
-        .find_map(|path| load_project_image(&path))
-}
-
-fn load_project_image(path: &Path) -> Option<slint::Image> {
-    if !path.is_file() {
-        return None;
-    }
-    image_loader::load_image_thumbnail_raw(path, 64).map(|r| r.to_slint_image())
 }
 
 #[cfg(test)]
@@ -1835,7 +1912,15 @@ mod tests {
             is_image: false,
             current_image: None,
             image_info: String::new(),
-            thumbnail_cache: ThumbnailCache::new(),
+            image_dirty: false,
+            thumbnail_loader: None,
+            thumbnail_refresh: true,
+            tree_viewport: (0, 64),
+            thumbnail_generation: 0,
+            thumbnails: Images::new(),
+            project_logos: Images::new(),
+            highlight_cache: HighlightCache::default(),
+            preview: false,
         };
         app.open_project(root).unwrap();
         (window, app)
@@ -2144,7 +2229,10 @@ mod tests {
             &favicon,
         )
         .unwrap();
-        assert!(project_logo(dir.path()).is_some());
+        assert!(
+            image_loader::project_logo_raw(dir.path(), &image_loader::ThumbnailCache::new())
+                .is_some()
+        );
 
         let source = dir.path().join("source.txt");
         fs::write(&source, "original\n").unwrap();
@@ -2236,5 +2324,91 @@ mod tests {
             app.workspace.current_file,
             Some(img_path.canonicalize().unwrap())
         );
+    }
+
+    #[test]
+    fn viewport_cache_survives_cursor_motion_but_not_undo_branches_or_failed_image_navigation() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("main.rs");
+        fs::write(&path, "let answer = 42;\n").unwrap();
+        let (_, mut app) = fixture(dir.path());
+        app.open_file(&path).unwrap();
+        let canonical = path.canonicalize().unwrap();
+        let tokens = |app: &mut Controller| {
+            app.highlight_cache.get(
+                &app.syntax,
+                app.workspace.buffer.as_ref().unwrap(),
+                Some(&canonical),
+                0,
+                40,
+                false,
+            )
+        };
+        let first = tokens(&mut app);
+        app.handle(Command::EditorAction(
+            canonical.clone(),
+            "right".into(),
+            "".into(),
+            false,
+            false,
+        ))
+        .unwrap();
+        assert!(Arc::ptr_eq(&first, &tokens(&mut app)));
+        app.handle(Command::EditorAction(
+            canonical.clone(),
+            "insert".into(),
+            "a".into(),
+            false,
+            false,
+        ))
+        .unwrap();
+        let edited = tokens(&mut app);
+        app.handle(Command::Undo).unwrap();
+        app.handle(Command::EditorAction(
+            canonical.clone(),
+            "insert".into(),
+            "b".into(),
+            false,
+            false,
+        ))
+        .unwrap();
+        assert_ne!(edited[0].spans, tokens(&mut app)[0].spans);
+        app.handle(Command::Revert).unwrap();
+        app.handle(Command::Preview(true)).unwrap();
+        assert!(app.preview);
+        app.open_file(&canonical).unwrap();
+        assert!(!app.preview);
+        let image_path = dir.path().join("photo.png");
+        image::RgbaImage::new(32, 32).save(&image_path).unwrap();
+        app.open_file(&image_path).unwrap();
+        assert!(app.image_dirty);
+        app.publish();
+        assert!(!app.image_dirty);
+        app.handle(Command::Zoom(1)).unwrap();
+        assert!(!app.image_dirty);
+        assert!(app.open_file(&dir.path().join("missing.txt")).is_err());
+        assert!(app.is_image && app.current_image.is_some());
+        app.clear_file();
+        assert!(app.current_image.is_none());
+    }
+
+    #[test]
+    fn stale_thumbnail_batches_cannot_replace_current_navigation() {
+        let dir = tempfile::tempdir().unwrap();
+        let (_, mut app) = fixture(dir.path());
+        app.thumbnail_generation = 2;
+        let path = dir.path().join("previous.png");
+        let mut images = Images::new();
+        images.insert(
+            path.clone(),
+            image_loader::RawRgbaImage::new(vec![0; 4], 1, 1),
+        );
+        app.handle(Command::ThumbnailsReady(1, images.clone(), Images::new()))
+            .unwrap();
+        assert!(app.thumbnails.is_empty());
+        app.handle(Command::ThumbnailsReady(2, images, Images::new()))
+            .unwrap();
+        assert!(app.thumbnails.contains_key(&path));
+        assert!(!app.thumbnail_refresh);
     }
 }

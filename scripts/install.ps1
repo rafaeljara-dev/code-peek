@@ -12,7 +12,29 @@ $releaseExe = Join-Path $projectRoot 'target\release\peek.exe'
 $installDir = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Programs\CodePeek'
 $installedExe = Join-Path $installDir 'peek.exe'
 New-Item -ItemType Directory -Path $installDir -Force | Out-Null
-Copy-Item -LiteralPath $releaseExe -Destination $installedExe -Force
+$stagedExe = Join-Path $installDir ('peek.staged-{0}.exe' -f [guid]::NewGuid().ToString('N'))
+$previousExe = Join-Path $installDir ('peek.previous-{0}.exe' -f [guid]::NewGuid().ToString('N'))
+Copy-Item -LiteralPath $releaseExe -Destination $stagedExe
+if ((Get-FileHash -LiteralPath $releaseExe).Hash -ne (Get-FileHash -LiteralPath $stagedExe).Hash) {
+    Remove-Item -LiteralPath $stagedExe
+    throw 'La copia provisional no coincide con la compilación.'
+}
+try {
+    # Windows permits renaming a mapped executable; preserve any open application.
+    if (Test-Path -LiteralPath $installedExe) { Move-Item -LiteralPath $installedExe -Destination $previousExe }
+    try {
+        Move-Item -LiteralPath $stagedExe -Destination $installedExe
+    } catch {
+        if (Test-Path -LiteralPath $previousExe) { Move-Item -LiteralPath $previousExe -Destination $installedExe }
+        throw
+    }
+} finally {
+    if (Test-Path -LiteralPath $stagedExe) { Remove-Item -LiteralPath $stagedExe }
+}
+# A running previous version keeps its executable until Windows releases the mapping.
+Get-ChildItem -LiteralPath $installDir -Filter 'peek.previous-*.exe' -File | ForEach-Object {
+    try { Remove-Item -LiteralPath $_.FullName -ErrorAction Stop } catch { Write-Verbose 'La versión anterior sigue abierta; se limpiará en una instalación posterior.' }
+}
 foreach ($asset in @('icon.ico', 'icon.png')) {
     Copy-Item -LiteralPath (Join-Path $projectRoot "assets\$asset") -Destination $installDir -Force
 }

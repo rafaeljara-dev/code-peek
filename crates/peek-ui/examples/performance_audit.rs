@@ -1,4 +1,4 @@
-//! Read-only probes of the existing implementation, not production optimizations.
+//! Isolated probes of production operations and reusable caches.
 //! Run with `cargo run --release -p peek-ui --example performance_audit -- <case>`.
 #[allow(dead_code)]
 #[path = "../src/editor.rs"]
@@ -67,6 +67,11 @@ fn main() -> Result<()> {
                 black_box(a.len() + b.len())
             });
             measure("rope_clone", 1000, || black_box(buffer.clone()).len_bytes());
+            let mut cache = peek_ui::viewport::HighlightCache::default();
+            cache.get(&syntax, &buffer, path, 499_900, 40, false);
+            measure("cached_source_viewport_40_deep", 1000, || {
+                cache.get(&syntax, &buffer, path, 499_900, 40, false).len()
+            });
         }
         "editing" => {
             let original = large_buffer()?;
@@ -126,6 +131,32 @@ fn main() -> Result<()> {
                 let image = raw.to_slint_image();
                 black_box(image.size().width as usize)
             });
+        }
+        "minified-visible" | "minified-full" => {
+            for mib in [4, 16] {
+                let source = "x".repeat(mib * 1024 * 1024);
+                let spans = [peek_syntax::HighlightSpan::new(
+                    &source,
+                    peek_syntax::ColorRgb::new(1, 2, 3),
+                )];
+                let count = if case == "minified-full" {
+                    usize::MAX
+                } else {
+                    40
+                };
+                measure(
+                    &format!(
+                        "wrap_{mib}mib_{}",
+                        if count == 40 { "visible40" } else { "all_rows" }
+                    ),
+                    7,
+                    || {
+                        wrapping::wrap_visible(&source, &spans, 100, false, 0, count)
+                            .1
+                            .len()
+                    },
+                );
+            }
         }
         "thumbnail" => {
             let fixture = tempfile::Builder::new().suffix(".png").tempfile()?;

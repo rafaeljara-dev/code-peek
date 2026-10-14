@@ -139,6 +139,9 @@ export component MainWindow inherits Window {
     in-out property <string> image-info;
     in-out property <bool> image-actual-size: false;
     in-out property <bool> preview: false;
+    callback preview-changed(bool);
+    callback tree-viewport-changed(int, int);
+    changed preview => { root.preview-changed(root.preview); }
     in-out property <string> document-text;
     in-out property <[EditorRowItem]> editor-rows;
     in-out property <int> caret-line: 1;
@@ -397,6 +400,10 @@ export component MainWindow inherits Window {
                         Text { text: root.project-name == "" ? "Explorador" : root.project-name; color: Theme.heading; font-size: Typography.size + 1px; font-weight: 600; overflow: elide; }
                         Text { text: "Archivos y configuración"; color: Theme.caption; font-size: Typography.size - 1px; }
                         ListView {
+                            private property <int> first-visible-row: floor(max(0px, -self.viewport-y) / (root.tree-font-size + 16px));
+                            private property <int> visible-row-count: ceil(self.height / (root.tree-font-size + 16px));
+                            changed first-visible-row => { root.tree-viewport-changed(self.first-visible-row, self.visible-row-count); }
+                            changed visible-row-count => { root.tree-viewport-changed(self.first-visible-row, self.visible-row-count); }
                             for item in root.tree-items: TouchArea {
                                 height: root.tree-font-size + 16px;
                                 clicked => {

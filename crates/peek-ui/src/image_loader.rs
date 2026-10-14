@@ -3,12 +3,13 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
+use image::ImageDecoder;
 
 /// Decoded pixel buffer that is safely Send + Sync across worker and UI threads.
 #[derive(Clone)]
 pub struct RawRgbaImage {
-    pub data: Arc<[u8]>,
+    pub data: slint::SharedPixelBuffer<slint::Rgba8Pixel>,
     pub width: u32,
     pub height: u32,
 }
@@ -16,7 +17,7 @@ pub struct RawRgbaImage {
 impl RawRgbaImage {
     pub fn new(data: Vec<u8>, width: u32, height: u32) -> Self {
         Self {
-            data: data.into(),
+            data: slint::SharedPixelBuffer::clone_from_slice(&data, width, height),
             width,
             height,
         }
@@ -24,13 +25,40 @@ impl RawRgbaImage {
 
     /// Converts raw RGBA pixels into a Slint Image on the UI thread.
     pub fn to_slint_image(&self) -> slint::Image {
-        let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
-            &self.data,
-            self.width,
-            self.height,
-        );
-        slint::Image::from_rgba8(buffer)
+        slint::Image::from_rgba8(self.data.clone())
     }
+}
+
+const MAX_DECODE_BYTES: u64 = 128 * 1024 * 1024;
+const MAX_DIMENSION: u32 = 16_384;
+
+fn validate_dimensions(width: u32, height: u32, bytes: u64) -> Result<()> {
+    if width == 0
+        || height == 0
+        || width > MAX_DIMENSION
+        || height > MAX_DIMENSION
+        || u64::from(width) * u64::from(height) * 4 > MAX_DECODE_BYTES
+        || bytes > MAX_DECODE_BYTES
+    {
+        bail!("La imagen supera el límite de 128 MiB de píxeles o 16.384 px por dimensión");
+    }
+    Ok(())
+}
+
+fn decode_raster(
+    reader: image::ImageReader<std::io::BufReader<std::fs::File>>,
+) -> Result<image::DynamicImage> {
+    let mut limits = image::Limits::default();
+    limits.max_image_width = Some(MAX_DIMENSION);
+    limits.max_image_height = Some(MAX_DIMENSION);
+    limits.max_alloc = Some(MAX_DECODE_BYTES);
+    let mut reader = reader;
+    reader.limits(limits);
+    let decoder = reader.into_decoder()?;
+    let (width, height) = decoder.dimensions();
+    // Check area and decoder output before DynamicImage allocates the complete buffer.
+    validate_dimensions(width, height, decoder.total_bytes())?;
+    Ok(image::DynamicImage::from_decoder(decoder)?)
 }
 
 #[derive(Clone)]
@@ -130,16 +158,13 @@ pub fn load_svg_raw(path: &Path) -> Result<(RawRgbaImage, u32, u32)> {
     let native_w = size.width().round() as u32;
     let native_h = size.height().round() as u32;
 
-    let target_w = if native_w < 512 && native_h < 512 {
-        let scale = (512.0 / native_w.max(1) as f32).max(1.0);
-        (native_w as f32 * scale).round() as u32
+    let scale = if native_w < 512 && native_h < 512 {
+        512.0 / size.width().max(size.height())
     } else {
-        native_w.min(4096)
+        (4096.0 / size.width().max(size.height())).min(1.0)
     };
-    let target_h = ((target_w as f32 / size.width()) * size.height()).round() as u32;
-
-    let target_w = target_w.max(1);
-    let target_h = target_h.max(1);
+    let target_w = (size.width() * scale).round().max(1.0) as u32;
+    let target_h = (size.height() * scale).round().max(1.0) as u32;
 
     let mut pixmap = tiny_skia::Pixmap::new(target_w, target_h)
         .context("No se pudo crear el buffer para el SVG")?;
@@ -150,7 +175,7 @@ pub fn load_svg_raw(path: &Path) -> Result<(RawRgbaImage, u32, u32)> {
 
     resvg::render(&tree, transform, &mut pixmap.as_mut());
 
-    let raw = RawRgbaImage::new(pixmap.data().to_vec(), pixmap.width(), pixmap.height());
+    let raw = RawRgbaImage::new(pixmap.take(), target_w, target_h);
 
     Ok((raw, native_w.max(target_w), native_h.max(target_h)))
 }
@@ -173,11 +198,7 @@ pub fn load_svg_thumb_raw(path: &Path, max_dim: u32) -> Result<RawRgbaImage> {
     let transform =
         tiny_skia::Transform::from_scale(w as f32 / size.width(), h as f32 / size.height());
     resvg::render(&tree, transform, &mut pixmap.as_mut());
-    Ok(RawRgbaImage::new(
-        pixmap.data().to_vec(),
-        pixmap.width(),
-        pixmap.height(),
-    ))
+    Ok(RawRgbaImage::new(pixmap.take(), w, h))
 }
 
 /// Loads raster images (PNG, JPEG, WebP, GIF, BMP, ICO, TIFF, QOI, TGA, etc.) into raw RGBA pixels.
@@ -220,13 +241,12 @@ pub fn load_raster_image_raw(path: &Path) -> Result<(RawRgbaImage, u32, u32, &'s
         _ => "Imagen",
     };
 
-    let decoded = reader
-        .decode()
+    let decoded = decode_raster(reader)
         .with_context(|| format!("No se pudo decodificar la imagen: {}", path.display()))?;
 
     let width = decoded.width();
     let height = decoded.height();
-    let rgba = decoded.to_rgba8();
+    let rgba = decoded.into_rgba8();
 
     let raw = RawRgbaImage::new(rgba.into_raw(), width, height);
 
@@ -249,8 +269,13 @@ pub fn load_raster_thumb_raw(path: &Path, max_dim: u32) -> Result<RawRgbaImage> 
                     if let Ok(icon) = entry.decode() {
                         let w = icon.width();
                         let h = icon.height();
-                        let raw = RawRgbaImage::new(icon.rgba_data().to_vec(), w, h);
-                        return Ok(raw);
+                        let rgba = image::RgbaImage::from_raw(w, h, icon.rgba_data().to_vec())
+                            .context("Píxeles ICO no válidos")?;
+                        let thumb = image::DynamicImage::ImageRgba8(rgba)
+                            .thumbnail(max_dim, max_dim)
+                            .into_rgba8();
+                        let (width, height) = thumb.dimensions();
+                        return Ok(RawRgbaImage::new(thumb.into_raw(), width, height));
                     }
                 }
             }
@@ -258,14 +283,11 @@ pub fn load_raster_thumb_raw(path: &Path, max_dim: u32) -> Result<RawRgbaImage> 
     }
 
     let reader = image::ImageReader::open(path)?.with_guessed_format()?;
-    let decoded = reader.decode()?;
+    let decoded = decode_raster(reader)?;
     let thumb = decoded.thumbnail(max_dim, max_dim);
-    let rgba = thumb.to_rgba8();
-    Ok(RawRgbaImage::new(
-        rgba.into_raw(),
-        thumb.width(),
-        thumb.height(),
-    ))
+    let (width, height) = (thumb.width(), thumb.height());
+    let rgba = thumb.into_rgba8();
+    Ok(RawRgbaImage::new(rgba.into_raw(), width, height))
 }
 
 /// Fully loads an image and computes its presentation metadata.
@@ -315,8 +337,20 @@ pub fn load_image_thumbnail_raw(path: &Path, max_dimension: u32) -> Option<RawRg
     }
 }
 
-type CachedThumbnail = (SystemTime, Option<RawRgbaImage>);
-type ThumbnailMap = Arc<Mutex<HashMap<PathBuf, CachedThumbnail>>>;
+struct CachedThumbnail {
+    stamp: (SystemTime, u64),
+    image: Option<RawRgbaImage>,
+    used: u64,
+}
+
+#[derive(Default)]
+struct ThumbnailStore {
+    entries: HashMap<(PathBuf, u32), CachedThumbnail>,
+    bytes: usize,
+    clock: u64,
+}
+
+type ThumbnailMap = Arc<Mutex<ThumbnailStore>>;
 
 /// Thread-safe in-memory cache for file tree thumbnails (Send + Sync).
 #[derive(Clone, Default)]
@@ -330,37 +364,160 @@ impl ThumbnailCache {
     }
 
     pub fn get_or_create(&self, path: &Path) -> Option<RawRgbaImage> {
+        self.get_or_create_sized(path, 36)
+    }
+
+    /// Disk access and decoding: call only from a worker, never from the event loop.
+    pub fn get_or_create_sized(&self, path: &Path, dimension: u32) -> Option<RawRgbaImage> {
         let metadata = std::fs::metadata(path).ok()?;
         // Ignore files larger than 40 MB for thumbnailing to keep UI fast
         if metadata.len() > 40 * 1024 * 1024 {
             return None;
         }
-        let mtime = metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+        let stamp = (
+            metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH),
+            metadata.len(),
+        );
+        let key = (path.to_path_buf(), dimension.clamp(1, 64));
 
-        if let Ok(lock) = self.cache.lock() {
-            if let Some((cached_mtime, cached_thumb)) = lock.get(path) {
-                if *cached_mtime == mtime {
-                    return cached_thumb.clone();
+        if let Ok(mut lock) = self.cache.lock() {
+            lock.clock += 1;
+            let used = lock.clock;
+            if let Some(entry) = lock.entries.get_mut(&key) {
+                if entry.stamp == stamp {
+                    entry.used = used;
+                    return entry.image.clone();
                 }
             }
         }
 
-        let thumb = load_image_thumbnail_raw(path, 36);
+        let thumb = load_image_thumbnail_raw(path, key.1);
 
         if let Ok(mut lock) = self.cache.lock() {
-            if lock.len() > 600 {
-                lock.clear();
+            if let Some(old) = lock.entries.remove(&key) {
+                lock.bytes -= thumbnail_bytes(&old.image);
             }
-            lock.insert(path.to_path_buf(), (mtime, thumb.clone()));
+            lock.bytes += thumbnail_bytes(&thumb);
+            lock.clock += 1;
+            let used = lock.clock;
+            lock.entries.insert(
+                key,
+                CachedThumbnail {
+                    stamp,
+                    image: thumb.clone(),
+                    used,
+                },
+            );
+            while lock.bytes > 4 * 1024 * 1024 || lock.entries.len() > 600 {
+                let oldest = lock
+                    .entries
+                    .iter()
+                    .min_by_key(|(_, e)| e.used)
+                    .map(|(key, _)| key.clone());
+                if let Some(oldest) = oldest {
+                    if let Some(old) = lock.entries.remove(&oldest) {
+                        lock.bytes -= thumbnail_bytes(&old.image);
+                    }
+                }
+            }
         }
 
         thumb
     }
 }
 
+fn thumbnail_bytes(image: &Option<RawRgbaImage>) -> usize {
+    image.as_ref().map_or(0, |i| i.data.as_bytes().len())
+}
+
+pub(crate) fn project_logo_raw(root: &Path, cache: &ThumbnailCache) -> Option<RawRgbaImage> {
+    const CANDIDATES: &[&str] = &[
+        "favicon.ico",
+        "icon.png",
+        "public/favicon.ico",
+        "public/favicon.png",
+        "public/icon.png",
+        "app/favicon.ico",
+        "app/icon.png",
+        "src/app/favicon.ico",
+        "src/app/icon.png",
+        "src/favicon.ico",
+        "static/favicon.ico",
+        "assets/favicon.ico",
+    ];
+    CANDIDATES
+        .iter()
+        .find_map(|relative| cache.get_or_create_sized(&root.join(relative), 64))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn pixels_are_shared_across_worker_and_ui_without_copying() {
+        let raw = RawRgbaImage::new(vec![255; 256 * 256 * 4], 256, 256);
+        let pointer = raw.data.as_bytes().as_ptr() as usize;
+        let copy = std::thread::spawn(move || raw.clone()).join().unwrap();
+        assert_eq!(pointer, copy.data.as_bytes().as_ptr() as usize);
+        let image = copy.to_slint_image();
+        let pixels = image.to_rgba8().unwrap();
+        assert_eq!(pointer, pixels.as_bytes().as_ptr() as usize);
+    }
+
+    #[test]
+    fn oversized_raster_is_rejected_and_tall_svg_has_bounded_pixels() {
+        let dir = tempfile::tempdir().unwrap();
+        let raster = dir.path().join("wide.png");
+        image::RgbaImage::new(32_768, 1).save(&raster).unwrap();
+        assert!(load_raster_image_raw(&raster).is_err());
+        assert!(load_raster_thumb_raw(&raster, 36).is_err());
+        let vector = dir.path().join("tall.svg");
+        std::fs::write(&vector, r#"<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1000000"><rect width="1" height="1000000"/></svg>"#).unwrap();
+        let (raw, _, height) = load_svg_raw(&vector).unwrap();
+        assert_eq!(height, 1_000_000);
+        assert!(raw.width <= 4096 && raw.height <= 4096);
+    }
+
+    #[test]
+    fn thumbnail_cache_respects_byte_budget_dimensions_and_file_changes() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("hot.png");
+        image::RgbaImage::from_pixel(64, 64, image::Rgba([1, 2, 3, 255]))
+            .save(&path)
+            .unwrap();
+        let cache = ThumbnailCache::new();
+        let first = cache.get_or_create_sized(&path, 64).unwrap();
+        let hit = cache.get_or_create_sized(&path, 64).unwrap();
+        assert_eq!(first.data.as_bytes().as_ptr(), hit.data.as_bytes().as_ptr());
+        assert_eq!(cache.get_or_create(&path).unwrap().width, 36);
+        for index in 0..270 {
+            let other = dir.path().join(format!("{index}.png"));
+            std::fs::copy(&path, &other).unwrap();
+            cache.get_or_create_sized(&other, 64).unwrap();
+            cache.get_or_create_sized(&path, 64).unwrap();
+        }
+        {
+            let store = cache.cache.lock().unwrap();
+            assert!(store.bytes <= 4 * 1024 * 1024);
+            assert!(store.entries.len() <= 600);
+        }
+        assert_eq!(
+            first.data.as_bytes().as_ptr(),
+            cache
+                .get_or_create_sized(&path, 64)
+                .unwrap()
+                .data
+                .as_bytes()
+                .as_ptr()
+        );
+        image::RgbaImage::from_pixel(20, 10, image::Rgba([9, 8, 7, 255]))
+            .save(&path)
+            .unwrap();
+        let changed = cache.get_or_create_sized(&path, 64).unwrap();
+        assert_eq!((changed.width, changed.height), (64, 32));
+        assert_eq!(&changed.data.as_bytes()[..4], &[9, 8, 7, 255]);
+    }
 
     #[test]
     fn test_is_image_file_extensions() {
