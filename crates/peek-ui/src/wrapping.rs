@@ -7,23 +7,32 @@ use unicode_width::UnicodeWidthStr;
 pub struct Span {
     pub text: String,
     pub color: ColorRgb,
+    pub bold: bool,
+    pub italic: bool,
 }
 
 pub struct Row {
     pub line: usize,
     pub continuation: bool,
+    pub line_type: i32,
+    pub is_markdown: bool,
     pub spans: Vec<Span>,
 }
 
 /// Break display rows, never the source. Grapheme clusters and token colors remain intact.
-pub fn wrap(source: &str, highlights: &[HighlightSpan], columns: usize) -> Vec<Vec<Span>> {
+pub fn wrap(
+    source: &str,
+    highlights: &[HighlightSpan],
+    columns: usize,
+    formatted: bool,
+) -> Vec<Vec<Span>> {
     let columns = columns.max(4);
     let joined: String = highlights.iter().map(|s| s.text.as_str()).collect();
     let fallback = [HighlightSpan::new(
         source.to_owned(),
         ColorRgb::new(218, 229, 240),
     )];
-    let highlights = if joined == source {
+    let highlights = if formatted || joined == source {
         highlights
     } else {
         &fallback
@@ -50,12 +59,16 @@ pub fn wrap(source: &str, highlights: &[HighlightSpan], columns: usize) -> Vec<V
                     column = 0;
                 }
                 let row = rows.last_mut().unwrap();
-                if let Some(last) = row.last_mut().filter(|s| s.color == span.color) {
+                if let Some(last) = row.last_mut().filter(|s| {
+                    s.color == span.color && s.bold == span.bold && s.italic == span.italic
+                }) {
                     last.text.push_str(part);
                 } else {
                     row.push(Span {
                         text: part.to_owned(),
                         color: span.color,
+                        bold: span.bold,
+                        italic: span.italic,
                     });
                 }
                 column += width;
@@ -66,7 +79,13 @@ pub fn wrap(source: &str, highlights: &[HighlightSpan], columns: usize) -> Vec<V
 }
 
 pub fn row_count(buffer: &TextBuffer, line: usize, columns: usize) -> usize {
-    wrap(&buffer.line_trimmed(line).unwrap_or_default(), &[], columns).len()
+    wrap(
+        &buffer.line_trimmed(line).unwrap_or_default(),
+        &[],
+        columns,
+        false,
+    )
+    .len()
 }
 
 /// Move through visual rows without building an index of the entire document.
@@ -105,7 +124,7 @@ mod tests {
     fn wrapping_preserves_unicode_source_colors_and_blank_lines() {
         let source = "abc😀defe\u{301}gh";
         let color = ColorRgb::new(1, 2, 3);
-        let rows = wrap(source, &[HighlightSpan::new(source, color)], 5);
+        let rows = wrap(source, &[HighlightSpan::new(source, color)], 5, false);
         let joined: String = rows.iter().flatten().map(|s| s.text.as_str()).collect();
         assert_eq!(joined, source);
         assert!(rows.iter().all(|r| r
@@ -114,8 +133,8 @@ mod tests {
             .sum::<usize>()
             <= 5));
         assert!(rows.iter().flatten().all(|s| s.color == color));
-        assert_eq!(wrap("", &[], 5).len(), 1);
-        assert_eq!(wrap("\tX", &[], 4).len(), 2);
+        assert_eq!(wrap("", &[], 5, false).len(), 1);
+        assert_eq!(wrap("\tX", &[], 4, false).len(), 2);
     }
     #[test]
     fn scrolling_reaches_continuations_and_previous_lines() {
@@ -127,5 +146,14 @@ mod tests {
         assert_eq!((line, fragment), (1, 0));
         advance(&buffer, &mut line, &mut fragment, -2, 4);
         assert_eq!((line, fragment), (0, 1));
+    }
+
+    #[test]
+    fn formatted_markdown_keeps_presentational_spans() {
+        let source = "**important**";
+        let color = ColorRgb::new(1, 2, 3);
+        let rows = wrap(source, &[HighlightSpan::bold("important", color)], 80, true);
+        assert_eq!(rows[0][0].text, "important");
+        assert!(rows[0][0].bold);
     }
 }

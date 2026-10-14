@@ -11,8 +11,8 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-authors = ["Rafael Jara", "CodePeek Contributors"]
-license = "MIT OR Apache-2.0"
+authors = ["CodePeek Contributors"]
+license = "MIT"
 repository = "https://github.com/rafaeljara-dev/code-peek"
 
 [workspace.dependencies]
@@ -29,6 +29,10 @@ syntect = { version = "5.2", default-features = false, features = ["default-fanc
 # UI & Graphics
 slint = { version = "1.9", default-features = false, features = ["compat-1-2", "renderer-femtovg", "backend-winit"] }
 slint-build = "1.9"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "gif", "bmp", "ico", "tiff", "qoi", "tga"] }
+resvg = { version = "0.47", default-features = false, features = ["raster-images"] }
+tiny-skia = "0.12"
+usvg = { version = "0.47", default-features = false }
 
 # Concurrency & Filesystem
 tokio = { version = "1.43", features = ["full"] }

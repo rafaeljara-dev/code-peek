@@ -91,7 +91,7 @@ mod tests {
     }
 
     #[test]
-    fn environment_and_hidden_config_are_visible_without_build_folders() {
+    fn hidden_config_is_visible_without_build_folders() {
         let dir = tempfile::tempdir().unwrap();
         let root = dir.path();
         for folder in [".git", ".github", "nested", "node_modules", "target"] {

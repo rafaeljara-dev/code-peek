@@ -38,6 +38,46 @@ impl ExtensionRegistry {
         self.extensions.push(ext);
     }
 
+    /// Source-preserving highlighting for editing; Markdown formatting is preview-only.
+    pub fn highlight_source(
+        &self,
+        buffer: &TextBuffer,
+        path: Option<&Path>,
+        start: usize,
+        count: usize,
+    ) -> Vec<HighlightedLine> {
+        if let Some(extension) = path
+            .and_then(|p| self.find_extension(p))
+            .filter(|e| !e.is_markdown() && e.id() != "rust")
+        {
+            let mut context = LineContext::default();
+            return (start.saturating_sub(64)..(start + count).min(buffer.line_count()))
+                .filter_map(|line| {
+                    let source = buffer.line_trimmed(line).unwrap_or_default();
+                    let highlighted = extension.tokenize_line(&source, line + 1, &mut context);
+                    (line >= start).then_some(highlighted)
+                })
+                .collect();
+        }
+        self.fallback_syntect
+            .highlight_viewport(buffer, path, start, count)
+    }
+
+    pub fn language_name(&self, path: &Path) -> String {
+        self.find_extension(path)
+            .map(|e| e.name().to_owned())
+            .unwrap_or_else(|| {
+                path.extension()
+                    .and_then(|s| s.to_str())
+                    .and_then(|ext| {
+                        self.fallback_syntect
+                            .syntax_set
+                            .find_syntax_by_extension(ext)
+                    })
+                    .map_or_else(|| "Texto plano".into(), |syntax| syntax.name.clone())
+            })
+    }
+
     /// Find matching language extension for a given path
     pub fn find_extension(&self, path: &Path) -> Option<Arc<dyn LanguageExtension>> {
         let file_name = path

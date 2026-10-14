@@ -13,6 +13,15 @@ fn install_dir() -> Result<PathBuf> {
     Ok(local_app_data.join("Programs").join("CodePeek"))
 }
 
+#[cfg(target_os = "windows")]
+pub fn launch_installed() -> Result<()> {
+    let executable = install_dir()?.join("peek.exe");
+    Command::new(&executable)
+        .spawn()
+        .with_context(|| format!("Failed to launch {}", executable.display()))?;
+    Ok(())
+}
+
 /// Installs CodePeek as a first-class Windows application:
 /// 1. Copies `peek.exe`, `icon.ico`, and `icon.png` to `%LOCALAPPDATA%\Programs\CodePeek\`
 /// 2. Creates a Windows Start Menu shortcut with the custom app icon.
@@ -101,7 +110,7 @@ pub fn install() -> Result<()> {
     let reg_entries = [
         ("DisplayName", "CodePeek"),
         ("DisplayVersion", "0.1.0"),
-        ("Publisher", "Rafael Jara"),
+        ("Publisher", "CodePeek Contributors"),
         ("DisplayIcon", ico_str.as_ref()),
         ("InstallLocation", &dest_dir_str),
         ("UninstallString", &uninstaller_cmd),

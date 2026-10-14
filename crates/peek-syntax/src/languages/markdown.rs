@@ -13,7 +13,7 @@ impl LanguageExtension for MarkdownExtension {
     }
 
     fn file_extensions(&self) -> &'static [&'static str] {
-        &["md", "markdown", "mdown", "mkdn"]
+        &["md", "mdx", "markdown", "mdown", "mkdn"]
     }
 
     fn is_markdown(&self) -> bool {
@@ -76,7 +76,7 @@ impl LanguageExtension for MarkdownExtension {
         if trimmed.starts_with('#') {
             let hash_count = trimmed.chars().take_while(|&c| c == '#').count();
             if hash_count <= 6 && trimmed[hash_count..].starts_with(' ') {
-                let (line_type, hash_color, text_color) = match hash_count {
+                let (line_type, _hash_color, text_color) = match hash_count {
                     1 => (
                         LineType::Heading1,
                         ColorRgb::new(56, 189, 248),
@@ -94,16 +94,12 @@ impl LanguageExtension for MarkdownExtension {
                     ), // violet-400
                 };
 
-                let prefix = &trimmed[0..hash_count];
-                let title = &trimmed[hash_count..];
+                let title = trimmed[hash_count..].trim();
 
                 return HighlightedLine {
                     line_number,
                     line_type,
-                    spans: vec![
-                        HighlightSpan::bold(prefix, hash_color),
-                        HighlightSpan::bold(title, text_color),
-                    ],
+                    spans: vec![HighlightSpan::bold(title, text_color)],
                     is_markdown: true,
                 };
             }
@@ -127,7 +123,7 @@ impl LanguageExtension for MarkdownExtension {
         if trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ ") {
             let indent = line.len() - line.trim_start().len();
             let indent_str = " ".repeat(indent);
-            let bullet_char = &trimmed[0..2];
+            let bullet_char = "• ";
             let rest = &trimmed[2..];
 
             let mut spans = Vec::new();
@@ -161,6 +157,34 @@ impl LanguageExtension for MarkdownExtension {
                 spans,
                 is_markdown: true,
             };
+        }
+
+        // Ordered lists: 1. item or 1) item
+        let digits = trimmed.bytes().take_while(u8::is_ascii_digit).count();
+        if digits > 0 {
+            let suffix = &trimmed[digits..];
+            if suffix.starts_with(". ") || suffix.starts_with(") ") {
+                let indent = line.len() - line.trim_start().len();
+                let marker_end = digits + 2;
+                let mut spans = Vec::new();
+                if indent > 0 {
+                    spans.push(HighlightSpan::new(
+                        " ".repeat(indent),
+                        ColorRgb::new(113, 113, 122),
+                    ));
+                }
+                spans.push(HighlightSpan::bold(
+                    &trimmed[..marker_end],
+                    ColorRgb::new(245, 158, 11),
+                ));
+                tokenize_inline_markdown(&trimmed[marker_end..], &mut spans);
+                return HighlightedLine {
+                    line_number,
+                    line_type: LineType::ListItem,
+                    spans,
+                    is_markdown: true,
+                };
+            }
         }
 
         // 7. General text with inline formatting
@@ -198,7 +222,7 @@ fn tokenize_inline_markdown(text: &str, spans: &mut Vec<HighlightSpan>) {
                 if start > 0 {
                     spans.push(HighlightSpan::new(&remaining[..start], text_color));
                 }
-                let code_content = &remaining[start..=actual_end];
+                let code_content = &remaining[start + 1..actual_end];
                 spans.push(HighlightSpan::new(code_content, code_color));
                 remaining = &remaining[actual_end + 1..];
                 continue;

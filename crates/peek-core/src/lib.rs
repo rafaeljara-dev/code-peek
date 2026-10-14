@@ -150,4 +150,21 @@ mod tests {
         fs::write(&path, b"a\0b").unwrap();
         assert!(TextBuffer::from_file(&path).is_err());
     }
+
+    #[test]
+    fn document_edit_preserves_bom_unicode_and_untouched_line_endings() {
+        let mut buffer = TextBuffer::from_text("\u{feff}niño😀\r\noriginal\nlast\r\n");
+        buffer.replace_text("niño😀\r\nchanged\nnew line\nlast\r\n");
+        assert_eq!(
+            buffer.to_string_with_endings(),
+            "\u{feff}niño😀\r\nchanged\nnew line\nlast\r\n"
+        );
+        let revision = buffer.revision;
+        buffer.replace_text("niño😀\r\nchanged\nnew line\nlast\r\n");
+        assert_eq!(buffer.revision, revision);
+        buffer.replace_text("");
+        assert_eq!(buffer.to_string_with_endings(), "\u{feff}");
+        buffer.replace_text("restored\n");
+        assert_eq!(buffer.to_string_with_endings(), "\u{feff}restored\n");
+    }
 }

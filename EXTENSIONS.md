@@ -53,7 +53,7 @@ Soporte de primer nivel para proyectos modernos de Next.js y React:
 
 ## 3. Arquitectura del Motor de Extensiones
 
-El sistema reside en el crate [`crates/peek-syntax`](file:///C:/Users/rafael/dev/PersonalProjects/code-peek/crates/peek-syntax):
+El sistema reside en el crate [`crates/peek-syntax`](crates/peek-syntax):
 
 ```
 crates/peek-syntax/src/
@@ -71,7 +71,7 @@ crates/peek-syntax/src/
 
 ### El Trait `LanguageExtension`
 
-Cada extensión implementa el trait definido en [`traits.rs`](file:///C:/Users/rafael/dev/PersonalProjects/code-peek/crates/peek-syntax/src/languages/traits.rs):
+Cada extensión implementa el trait definido en [`traits.rs`](crates/peek-syntax/src/languages/traits.rs):
 
 ```rust
 pub trait LanguageExtension: Send + Sync {
@@ -161,7 +161,7 @@ impl LanguageExtension for PythonExtension {
 ```
 
 ### Paso 2: Exponer la extensión en `languages/mod.rs`
-En [`crates/peek-syntax/src/languages/mod.rs`](file:///C:/Users/rafael/dev/PersonalProjects/code-peek/crates/peek-syntax/src/languages/mod.rs):
+En [`crates/peek-syntax/src/languages/mod.rs`](crates/peek-syntax/src/languages/mod.rs):
 
 ```rust
 pub mod python;
@@ -169,7 +169,7 @@ pub use python::PythonExtension;
 ```
 
 ### Paso 3: Registrar la extensión en `registry.rs`
-En [`crates/peek-syntax/src/languages/registry.rs`](file:///C:/Users/rafael/dev/PersonalProjects/code-peek/crates/peek-syntax/src/languages/registry.rs):
+En [`crates/peek-syntax/src/languages/registry.rs`](crates/peek-syntax/src/languages/registry.rs):
 
 ```rust
 impl ExtensionRegistry {
@@ -187,7 +187,7 @@ impl ExtensionRegistry {
 ```
 
 ### Paso 4: (Opcional) Asignar icono oficial Codicon en el árbol
-En [`crates/peek-tree/src/icons.rs`](file:///C:/Users/rafael/dev/PersonalProjects/code-peek/crates/peek-tree/src/icons.rs), asocia la extensión al glifo correspondiente de la fuente Codicons:
+En [`crates/peek-tree/src/icons.rs`](crates/peek-tree/src/icons.rs), asocia la extensión al glifo correspondiente de la fuente Codicons:
 
 ```rust
 "py" | "pyw" => codicons::FILE_CODE, // o icono de python

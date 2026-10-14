@@ -14,7 +14,7 @@ CodePeek debe reducir el tiempo entre «quiero revisar ese proyecto» y «estoy 
 | --- | --- | --- |
 | Proyectos inferidos desde padres, abuelos y carpetas del usuario | Lista impredecible, sin biblioteca elegida | Lista persistente de proyectos abiertos, sin depender de una carpeta común |
 | Sin inicio configurable | Abrir la aplicación dependía del directorio de trabajo | Inicio persistente; último proyecto como alternativa; CLI prioritario |
-| Se descartaban todos los nombres con punto | `.env`, `.github` y `.gitignore` no aparecían | Ocultos útiles visibles; acceso dedicado a entornos |
+| Se descartaban todos los nombres con punto | Configuraciones ocultas útiles no aparecían | Archivos ocultos útiles visibles en el flujo normal |
 | Paletas sin gestión explícita del foco ni selección por teclado | Los atajos abrían un panel que no completaba el flujo | Entrada enfocada, flechas, Enter, Escape y estados sin resultados |
 | Lectura, recorrido y guardado en callbacks de UI | Congelamientos al inspeccionar proyectos grandes | Controlador serializado en un trabajador; publicación por event loop |
 | Botón de guardar sin edición en la UI | Funcionalidad anunciada pero inaccesible | Editor de línea, estado modificado y deshacer |
@@ -22,7 +22,8 @@ CodePeek debe reducir el tiempo entre «quiero revisar ese proyecto» y «estoy 
 | Reemplazar el workspace podía perder cambios | Riesgo de pérdida de correcciones locales | Guardar/descartar/cancelar antes de navegar, recargar o cerrar |
 | Guardado sin comparar la versión de disco | Podía pisar cambios de un agente | Comparación contra la versión original antes de guardar |
 | Temporal de nombre fijo y sin preservar permisos | Colisiones y cambios de permisos | Temporal único con limpieza automática y permisos conservados |
-| Markdown transformado y líneas envueltas con scroll de altura fija | Código diferente del original y cálculo de scroll incorrecto | Fuente sin transformar, ajuste al ancho y navegación por filas visuales |
+| El formato Markdown se perdía antes de renderizar | Títulos, negritas y listas parecían texto plano | Presentación semántica por línea sin alterar el texto fuente editable |
+| Solo se podía buscar por nombre de archivo | Encontrar una función o valor exigía conocer su ruta | Buscador de contenido cancelable que abre cada coincidencia en su línea |
 | Resaltado de todo el prefijo al desplazarse | El coste crecía con el número de línea | Resaltado local; colores multilínea aproximados documentados |
 | `mmap.to_vec()` duplicaba archivos grandes | Memoria adicional y mapa inseguro frente a truncados externos | Lectura por bloques directamente al Rope |
 | README presentaba prestaciones aspiracionales como medidas | Expectativas sin evidencia | Documentación del comportamiento real y límites explícitos |
@@ -37,9 +38,9 @@ Paleta: fondo `#131c26`, panel `#1b2836`, selección `#2b455d`, texto `#edf4fc`,
 
 El modo claro para exteriores sustituye los colores fijos por una paleta compartida: blanco, superficies grises claras, texto oscuro y selección azul pálido. Incluye diálogos y controles nativos. El botón de tema guarda la preferencia sin modificar los zooms. Los colores del resaltado y del árbol conservan su tono, reduciendo su luminancia; una prueba recorre 4.096 colores y comprueba contraste mínimo de 7:1 sobre blanco y dos fondos de selección. Esto verifica contraste digital, no legibilidad física bajo reflejos solares.
 
-Las pruebas cubren prioridad y persistencia del inicio, rutas Unicode, entornos ignorados, cambios de proyecto, restauración de posición, cancelar/guardar/descartar, navegación fallida, conflictos con cambios externos, deshacer, búsqueda circular, BOM y saltos mixtos. La prueba de Slint comprueba escritura inmediata en la paleta y apertura con flechas/Enter sin abrir ventanas.
+Las pruebas cubren prioridad y persistencia del inicio, rutas Unicode, configuraciones ocultas, cambios de proyecto, Markdown, restauración de posición, cancelar/guardar/descartar, navegación fallida, conflictos con cambios externos, deshacer, búsqueda circular, BOM y saltos mixtos. La prueba de Slint comprueba escritura inmediata en la paleta y apertura con flechas/Enter sin abrir ventanas.
 
-El diseño mantiene solo el buffer activo, una versión original compartida mediante Rope y hasta 50 versiones de deshacer. Los proyectos inactivos guardan rutas y estado de navegación en memoria. Ni el contenido de archivos ni los valores de entornos se escriben en configuración.
+El diseño mantiene solo el buffer activo, una versión original compartida mediante Rope y hasta 50 versiones de deshacer. Los proyectos inactivos guardan rutas y estado de navegación en memoria. El contenido de los archivos no se escribe en configuración.
 
 Quedan fuera de esta iteración: mediciones de RAM/arranque, revisión visual nativa, validación en Linux/macOS, diffs Git, selección multilínea, redo y actualización incremental del árbol. La indexación usa un segundo trabajador, se cancela al cambiar de proyecto y descarta resultados de generaciones anteriores; abrir archivos y navegar no esperan a que termine el índice. No se prometen latencias sin medir.
 

@@ -1,0 +1,26 @@
+name: Windows release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --workspace -- --test-threads=1
+      - run: cargo build --release --bin peek
+      - name: Prepare installer
+        shell: pwsh
+        run: Copy-Item target/release/peek.exe CodePeek-Setup.exe
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create $env:GITHUB_REF_NAME CodePeek-Setup.exe --generate-notes --verify-tag

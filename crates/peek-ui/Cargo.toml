@@ -15,10 +15,15 @@ rfd = "0.17"
 unicode-segmentation = "1"
 unicode-width = "0.2"
 ico = "0.4"
+rayon.workspace = true
+image.workspace = true
+resvg.workspace = true
+tiny-skia.workspace = true
+usvg.workspace = true
 
 [build-dependencies]
 slint-build.workspace = true
 
 [dev-dependencies]
-i-slint-backend-testing = "=1.17.1"
+i-slint-backend-testing = { version = "=1.17.1", features = ["renderer-software"] }
 tempfile = "3"

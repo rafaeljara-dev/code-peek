@@ -16,6 +16,33 @@ mod tests {
     use std::path::Path;
 
     #[test]
+    fn editor_highlights_source_without_removing_markdown_markers() {
+        let registry = ExtensionRegistry::new();
+        for (file, text) in [
+            ("README.md", "# **Título**"),
+            ("main.rs", "let niño = 42;"),
+            ("page.tsx", "return <div className=\"x\">hola</div>;"),
+            ("data.json", "{\"answer\": 42}"),
+        ] {
+            let buffer = TextBuffer::from_text(text);
+            let highlighted = registry.highlight_source(&buffer, Some(Path::new(file)), 0, 1);
+            assert_eq!(
+                highlighted[0]
+                    .spans
+                    .iter()
+                    .map(|s| s.text.as_str())
+                    .collect::<String>(),
+                text,
+                "{file}"
+            );
+            assert!(
+                highlighted[0].spans.len() > 1,
+                "{file} should have colored tokens"
+            );
+        }
+    }
+
+    #[test]
     fn test_theme_definition() {
         let theme = EditorTheme::fluent_dark();
         assert_eq!(theme.name, "Fluent Dark");
@@ -61,17 +88,31 @@ mod tests {
 
     #[test]
     fn test_markdown_formatting() {
-        let md = "# Title\n> Quote\n- List item\n```rust\nlet x = 1;\n```";
+        let md = "# Title\n> Quote\n- List item\n1. Ordered\n```rust\nlet x = 1;\n```";
         let buffer = TextBuffer::from_text(md);
         let registry = ExtensionRegistry::new();
 
-        let highlighted = registry.highlight_viewport(&buffer, Some(Path::new("README.md")), 0, 5);
+        let highlighted = registry.highlight_viewport(&buffer, Some(Path::new("README.md")), 0, 6);
 
-        assert_eq!(highlighted.len(), 5);
+        assert_eq!(highlighted.len(), 6);
         assert_eq!(highlighted[0].line_type, LineType::Heading1);
         assert_eq!(highlighted[1].line_type, LineType::Blockquote);
         assert_eq!(highlighted[2].line_type, LineType::ListItem);
-        assert_eq!(highlighted[3].line_type, LineType::CodeFence);
+        assert_eq!(highlighted[3].line_type, LineType::ListItem);
+        assert_eq!(highlighted[4].line_type, LineType::CodeFence);
+    }
+
+    #[test]
+    fn markdown_inline_markers_become_semantic_styles() {
+        let buffer = TextBuffer::from_text("Text with **bold** and *italic*");
+        let registry = ExtensionRegistry::new();
+        let highlighted = registry.highlight_viewport(&buffer, Some(Path::new("README.md")), 0, 1);
+        assert!(highlighted[0].spans.iter().any(|span| span.bold));
+        assert!(highlighted[0].spans.iter().any(|span| span.italic));
+        assert!(!highlighted[0]
+            .spans
+            .iter()
+            .any(|span| span.text.contains("**")));
     }
 
     #[test]

@@ -18,3 +18,6 @@ Desktop.ini
 .env
 .env.local
 *.local
+
+# Local native UI audit snapshots
+/.audit-ui/

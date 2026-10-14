@@ -211,6 +211,38 @@ impl TextBuffer {
         Ok(())
     }
 
+    /// Apply only the changed character range, preserving untouched line endings.
+    pub fn replace_text(&mut self, text: &str) {
+        let prefix = self
+            .rope
+            .chars()
+            .zip(text.chars())
+            .take_while(|(a, b)| a == b)
+            .count();
+        let old_len = self.rope.len_chars();
+        let new_len = text.chars().count();
+        if prefix == old_len && prefix == new_len {
+            return;
+        }
+        let suffix = self
+            .rope
+            .chars()
+            .reversed()
+            .zip(text.chars().rev())
+            .take((old_len - prefix).min(new_len - prefix))
+            .take_while(|(a, b)| a == b)
+            .count();
+        let replacement: String = text
+            .chars()
+            .skip(prefix)
+            .take(new_len - prefix - suffix)
+            .collect();
+        self.rope.remove(prefix..old_len - suffix);
+        self.rope.insert(prefix, &replacement);
+        self.revision += 1;
+        self.is_dirty = true;
+    }
+
     /// Converts a line index to character index.
     #[inline]
     pub fn line_to_char(&self, line_idx: usize) -> usize {

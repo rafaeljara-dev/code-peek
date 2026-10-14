@@ -56,7 +56,9 @@ pub fn icon_for_path(path: &Path, is_dir: bool, is_expanded: bool) -> &'static s
                 "ts" | "tsx" | "js" | "jsx" | "mjs" | "py" | "go" | "c" | "cpp" | "h" | "hpp"
                 | "html" | "css" | "sh" | "ps1" => codicons::FILE_CODE,
                 "json" | "toml" | "yaml" | "yml" | "ini" | "lock" | "env" => codicons::FILE_CONFIG,
-                "svg" | "png" | "jpg" | "jpeg" | "webp" | "ico" => codicons::FILE_MEDIA,
+                "svg" | "svgz" | "png" | "jpg" | "jpeg" | "jpe" | "jfif" | "webp" | "gif"
+                | "bmp" | "ico" | "tiff" | "tif" | "avif" | "qoi" | "tga" | "dds" | "hdr"
+                | "exr" => codicons::FILE_MEDIA,
                 "zip" | "tar" | "gz" | "7z" => codicons::FILE_ZIP,
                 _ => codicons::FILE,
             },

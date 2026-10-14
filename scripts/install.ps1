@@ -37,7 +37,7 @@ New-Item -Path $registryPath -Force | Out-Null
 $entries = @{
     DisplayName = 'CodePeek'
     DisplayVersion = '0.1.0'
-    Publisher = 'Rafael Jara'
+    Publisher = 'CodePeek Contributors'
     InstallLocation = $installDir
     DisplayIcon = (Join-Path $installDir 'icon.ico')
     UninstallString = ('"{0}" --uninstall' -f $installedExe)

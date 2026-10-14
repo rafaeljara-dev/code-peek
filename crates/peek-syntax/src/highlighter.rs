@@ -79,13 +79,16 @@ impl SyntaxHighlighter {
         // Multiline syntax beginning outside this viewport may have approximate colors.
 
         // Highlight visible lines
-        for i in start_line..end_line {
+        for i in start_line.saturating_sub(64)..end_line {
             let line_content = buffer.line_trimmed(i).unwrap_or_default();
             let mut line_with_nl = line_content.clone();
             line_with_nl.push('\n');
 
             let mut spans = Vec::new();
             if let Ok(ranges) = highlighter.highlight_line(&line_with_nl, &self.syntax_set) {
+                if i < start_line {
+                    continue;
+                }
                 for (style, text) in ranges {
                     let clean_text = text.trim_end_matches(&['\r', '\n'][..]);
                     if !clean_text.is_empty() {
