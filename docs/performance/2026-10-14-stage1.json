@@ -1,0 +1,999 @@
+{
+  "date": "2026-10-14",
+  "before_source_commit": "53534ac",
+  "after_source_commit": "e45200dc5f4937495b54022319db18fe7f881780",
+  "probe_source_commit": "28abcad",
+  "after_binary_bytes": 17673216,
+  "after_binary_sha256": "21631dd1cf6f7d0b234a8cd82bbe01a20af18a69d49e4805eb006b917a498b06",
+  "hardware": {
+    "cpu": "AMD Ryzen 5 7530U",
+    "physical_cores": 6,
+    "logical_processors": 12,
+    "physical_ram_bytes": 33621536768,
+    "os": "Windows 11 Home 10.0.26200"
+  },
+  "configuration": {
+    "open_projects": 10,
+    "code_font": 23.0,
+    "ui_font": 17.0,
+    "settings_bytes_unchanged": true
+  },
+  "runtime_method": "Sondeo Win32 de 5 ms; ocultar mientras inicializa y durante la muestra, estabilización de 3 s y muestra de CPU de 3 s. Cinco ejecuciones por condición, sin compilaciones. La ventana observada no es el primer fotograma ni un proyecto listo; la afinidad de dos procesadores no simula hardware antiguo.",
+  "runtime": {
+    "normal_before": {
+      "sha256": "d4bc435da06b39bde75540570c61f7cea7df492a0e0820ea558bcb91a5b82c7b",
+      "summary": {
+        "WindowObservedMs": {
+          "median": 58.07,
+          "min": 57.49,
+          "max": 87.82
+        },
+        "WorkingSetMiB": {
+          "median": 89.3,
+          "min": 89.21,
+          "max": 89.38
+        },
+        "PrivateMiB": {
+          "median": 100.8,
+          "min": 100.76,
+          "max": 100.88
+        },
+        "PeakWorkingSetMiB": {
+          "median": 102.8,
+          "min": 102.73,
+          "max": 102.86
+        },
+        "IdleCpuMs": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 15.625
+        },
+        "IdleCpuOneLogicalPercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.51
+        },
+        "IdleCpuMachinePercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.042
+        },
+        "StartupAndSettleCpuMs": {
+          "median": 375.0,
+          "min": 343.75,
+          "max": 421.875
+        },
+        "Threads": {
+          "median": 17,
+          "min": 17,
+          "max": 17
+        }
+      },
+      "runs": [
+        {
+          "Run": 1,
+          "AffinityMask": 0,
+          "WindowObservedMs": 87.82,
+          "WorkingSetMiB": 89.36,
+          "PrivateMiB": 100.88,
+          "PeakWorkingSetMiB": 102.85,
+          "IdleCpuMs": 15.625,
+          "StartupAndSettleCpuMs": 359.375,
+          "SampleWallMs": 3065.62,
+          "IdleCpuOneLogicalPercent": 0.51,
+          "IdleCpuMachinePercent": 0.042,
+          "Threads": 17,
+          "Handles": 378
+        },
+        {
+          "Run": 2,
+          "AffinityMask": 0,
+          "WindowObservedMs": 58.02,
+          "WorkingSetMiB": 89.3,
+          "PrivateMiB": 100.8,
+          "PeakWorkingSetMiB": 102.8,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 375.0,
+          "SampleWallMs": 3094.23,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 378
+        },
+        {
+          "Run": 3,
+          "AffinityMask": 0,
+          "WindowObservedMs": 58.07,
+          "WorkingSetMiB": 89.21,
+          "PrivateMiB": 100.77,
+          "PeakWorkingSetMiB": 102.73,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 375.0,
+          "SampleWallMs": 3067.62,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 378
+        },
+        {
+          "Run": 4,
+          "AffinityMask": 0,
+          "WindowObservedMs": 62.3,
+          "WorkingSetMiB": 89.38,
+          "PrivateMiB": 100.86,
+          "PeakWorkingSetMiB": 102.86,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 343.75,
+          "SampleWallMs": 3006.81,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 378
+        },
+        {
+          "Run": 5,
+          "AffinityMask": 0,
+          "WindowObservedMs": 57.49,
+          "WorkingSetMiB": 89.29,
+          "PrivateMiB": 100.76,
+          "PeakWorkingSetMiB": 102.8,
+          "IdleCpuMs": 15.625,
+          "StartupAndSettleCpuMs": 421.875,
+          "SampleWallMs": 3069.77,
+          "IdleCpuOneLogicalPercent": 0.509,
+          "IdleCpuMachinePercent": 0.042,
+          "Threads": 17,
+          "Handles": 378
+        }
+      ]
+    },
+    "normal_after": {
+      "sha256": "21631dd1cf6f7d0b234a8cd82bbe01a20af18a69d49e4805eb006b917a498b06",
+      "summary": {
+        "WindowObservedMs": {
+          "median": 74.06,
+          "min": 59.35,
+          "max": 377.28
+        },
+        "WorkingSetMiB": {
+          "median": 89.88,
+          "min": 89.46,
+          "max": 96.51
+        },
+        "PrivateMiB": {
+          "median": 101.3,
+          "min": 100.93,
+          "max": 102.79
+        },
+        "PeakWorkingSetMiB": {
+          "median": 103.29,
+          "min": 102.99,
+          "max": 109.26
+        },
+        "IdleCpuMs": {
+          "median": 15.625,
+          "min": 0.0,
+          "max": 31.25
+        },
+        "IdleCpuOneLogicalPercent": {
+          "median": 0.504,
+          "min": 0.0,
+          "max": 1.015
+        },
+        "IdleCpuMachinePercent": {
+          "median": 0.042,
+          "min": 0.0,
+          "max": 0.085
+        },
+        "StartupAndSettleCpuMs": {
+          "median": 453.125,
+          "min": 375.0,
+          "max": 546.875
+        },
+        "Threads": {
+          "median": 18,
+          "min": 18,
+          "max": 18
+        }
+      },
+      "runs": [
+        {
+          "Run": 1,
+          "AffinityMask": 0,
+          "WindowObservedMs": 377.28,
+          "WorkingSetMiB": 89.46,
+          "PrivateMiB": 100.93,
+          "PeakWorkingSetMiB": 102.99,
+          "IdleCpuMs": 31.25,
+          "StartupAndSettleCpuMs": 375.0,
+          "SampleWallMs": 3079.47,
+          "IdleCpuOneLogicalPercent": 1.015,
+          "IdleCpuMachinePercent": 0.085,
+          "Threads": 18,
+          "Handles": 378
+        },
+        {
+          "Run": 2,
+          "AffinityMask": 0,
+          "WindowObservedMs": 59.35,
+          "WorkingSetMiB": 89.77,
+          "PrivateMiB": 101.3,
+          "PeakWorkingSetMiB": 103.29,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 406.25,
+          "SampleWallMs": 3061.36,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 378
+        },
+        {
+          "Run": 3,
+          "AffinityMask": 0,
+          "WindowObservedMs": 62.48,
+          "WorkingSetMiB": 91.73,
+          "PrivateMiB": 102.55,
+          "PeakWorkingSetMiB": 104.26,
+          "IdleCpuMs": 15.625,
+          "StartupAndSettleCpuMs": 546.875,
+          "SampleWallMs": 3098.73,
+          "IdleCpuOneLogicalPercent": 0.504,
+          "IdleCpuMachinePercent": 0.042,
+          "Threads": 18,
+          "Handles": 380
+        },
+        {
+          "Run": 4,
+          "AffinityMask": 0,
+          "WindowObservedMs": 74.06,
+          "WorkingSetMiB": 89.88,
+          "PrivateMiB": 101.28,
+          "PeakWorkingSetMiB": 103.27,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 484.375,
+          "SampleWallMs": 3083.58,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 378
+        },
+        {
+          "Run": 5,
+          "AffinityMask": 0,
+          "WindowObservedMs": 75.87,
+          "WorkingSetMiB": 96.51,
+          "PrivateMiB": 102.79,
+          "PeakWorkingSetMiB": 109.26,
+          "IdleCpuMs": 31.25,
+          "StartupAndSettleCpuMs": 453.125,
+          "SampleWallMs": 3096.01,
+          "IdleCpuOneLogicalPercent": 1.009,
+          "IdleCpuMachinePercent": 0.084,
+          "Threads": 18,
+          "Handles": 380
+        }
+      ]
+    },
+    "two_logical_before": {
+      "sha256": "d4bc435da06b39bde75540570c61f7cea7df492a0e0820ea558bcb91a5b82c7b",
+      "summary": {
+        "WindowObservedMs": {
+          "median": 74.45,
+          "min": 58.31,
+          "max": 80.92
+        },
+        "WorkingSetMiB": {
+          "median": 89.27,
+          "min": 89.1,
+          "max": 108.54
+        },
+        "PrivateMiB": {
+          "median": 100.76,
+          "min": 100.64,
+          "max": 100.84
+        },
+        "PeakWorkingSetMiB": {
+          "median": 102.74,
+          "min": 102.62,
+          "max": 122.05
+        },
+        "IdleCpuMs": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 46.875
+        },
+        "IdleCpuOneLogicalPercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 1.521
+        },
+        "IdleCpuMachinePercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.127
+        },
+        "StartupAndSettleCpuMs": {
+          "median": 453.125,
+          "min": 421.875,
+          "max": 500.0
+        },
+        "Threads": {
+          "median": 17,
+          "min": 17,
+          "max": 17
+        }
+      },
+      "runs": [
+        {
+          "Run": 1,
+          "AffinityMask": 3,
+          "WindowObservedMs": 80.92,
+          "WorkingSetMiB": 108.54,
+          "PrivateMiB": 100.76,
+          "PeakWorkingSetMiB": 122.05,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 421.875,
+          "SampleWallMs": 3075.68,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 378
+        },
+        {
+          "Run": 2,
+          "AffinityMask": 3,
+          "WindowObservedMs": 79.26,
+          "WorkingSetMiB": 89.15,
+          "PrivateMiB": 100.76,
+          "PeakWorkingSetMiB": 102.65,
+          "IdleCpuMs": 15.625,
+          "StartupAndSettleCpuMs": 500.0,
+          "SampleWallMs": 3079.97,
+          "IdleCpuOneLogicalPercent": 0.507,
+          "IdleCpuMachinePercent": 0.042,
+          "Threads": 17,
+          "Handles": 378
+        },
+        {
+          "Run": 3,
+          "AffinityMask": 3,
+          "WindowObservedMs": 58.31,
+          "WorkingSetMiB": 89.27,
+          "PrivateMiB": 100.77,
+          "PeakWorkingSetMiB": 102.74,
+          "IdleCpuMs": 46.875,
+          "StartupAndSettleCpuMs": 453.125,
+          "SampleWallMs": 3081.79,
+          "IdleCpuOneLogicalPercent": 1.521,
+          "IdleCpuMachinePercent": 0.127,
+          "Threads": 17,
+          "Handles": 378
+        },
+        {
+          "Run": 4,
+          "AffinityMask": 3,
+          "WindowObservedMs": 74.45,
+          "WorkingSetMiB": 89.1,
+          "PrivateMiB": 100.64,
+          "PeakWorkingSetMiB": 102.62,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 468.75,
+          "SampleWallMs": 3087.59,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 378
+        },
+        {
+          "Run": 5,
+          "AffinityMask": 3,
+          "WindowObservedMs": 73.07,
+          "WorkingSetMiB": 89.34,
+          "PrivateMiB": 100.84,
+          "PeakWorkingSetMiB": 102.81,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 453.125,
+          "SampleWallMs": 3090.14,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 378
+        }
+      ]
+    },
+    "two_logical_after": {
+      "sha256": "21631dd1cf6f7d0b234a8cd82bbe01a20af18a69d49e4805eb006b917a498b06",
+      "summary": {
+        "WindowObservedMs": {
+          "median": 74.26,
+          "min": 61.46,
+          "max": 101.72
+        },
+        "WorkingSetMiB": {
+          "median": 89.6,
+          "min": 89.35,
+          "max": 91.51
+        },
+        "PrivateMiB": {
+          "median": 101.07,
+          "min": 100.74,
+          "max": 102.33
+        },
+        "PeakWorkingSetMiB": {
+          "median": 103.21,
+          "min": 102.97,
+          "max": 103.84
+        },
+        "IdleCpuMs": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 15.625
+        },
+        "IdleCpuOneLogicalPercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.51
+        },
+        "IdleCpuMachinePercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.042
+        },
+        "StartupAndSettleCpuMs": {
+          "median": 515.625,
+          "min": 468.75,
+          "max": 578.125
+        },
+        "Threads": {
+          "median": 18,
+          "min": 18,
+          "max": 18
+        }
+      },
+      "runs": [
+        {
+          "Run": 1,
+          "AffinityMask": 3,
+          "WindowObservedMs": 101.72,
+          "WorkingSetMiB": 89.6,
+          "PrivateMiB": 101.07,
+          "PeakWorkingSetMiB": 103.21,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 515.625,
+          "SampleWallMs": 3065.81,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 378
+        },
+        {
+          "Run": 2,
+          "AffinityMask": 3,
+          "WindowObservedMs": 74.26,
+          "WorkingSetMiB": 89.35,
+          "PrivateMiB": 100.74,
+          "PeakWorkingSetMiB": 102.97,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 468.75,
+          "SampleWallMs": 3064.77,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 378
+        },
+        {
+          "Run": 3,
+          "AffinityMask": 3,
+          "WindowObservedMs": 89.46,
+          "WorkingSetMiB": 91.51,
+          "PrivateMiB": 102.33,
+          "PeakWorkingSetMiB": 103.84,
+          "IdleCpuMs": 15.625,
+          "StartupAndSettleCpuMs": 578.125,
+          "SampleWallMs": 3078.34,
+          "IdleCpuOneLogicalPercent": 0.508,
+          "IdleCpuMachinePercent": 0.042,
+          "Threads": 18,
+          "Handles": 380
+        },
+        {
+          "Run": 4,
+          "AffinityMask": 3,
+          "WindowObservedMs": 72.34,
+          "WorkingSetMiB": 89.38,
+          "PrivateMiB": 100.75,
+          "PeakWorkingSetMiB": 102.99,
+          "IdleCpuMs": 15.625,
+          "StartupAndSettleCpuMs": 515.625,
+          "SampleWallMs": 3066.64,
+          "IdleCpuOneLogicalPercent": 0.51,
+          "IdleCpuMachinePercent": 0.042,
+          "Threads": 18,
+          "Handles": 378
+        },
+        {
+          "Run": 5,
+          "AffinityMask": 3,
+          "WindowObservedMs": 61.46,
+          "WorkingSetMiB": 91.46,
+          "PrivateMiB": 102.21,
+          "PeakWorkingSetMiB": 103.76,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 531.25,
+          "SampleWallMs": 3005.77,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 380
+        }
+      ]
+    }
+  },
+  "probes": {
+    "method": "Procesos aislados release; picos incluyen preparar fixtures. No son latencias completas de la UI. La comparación de wrapping completo y visible usa el mismo algoritmo actualizado, no un benchmark histórico del wrapping anterior. Las APIs de píxeles, wrapping y caché son las mismas que en el release final.",
+    "before": [
+      {
+        "Case": "viewport",
+        "PeakWorkingSetMiB": 31.93,
+        "ObservedPrivatePeakMiB": 24.49,
+        "Results": [
+          {
+            "fixture_lines": 500001,
+            "fixture_bytes": 15000000
+          },
+          {
+            "case": "source_viewport_40_deep",
+            "samples": 50,
+            "median_ms": 8.9274,
+            "min_ms": 7.8093,
+            "max_ms": 30.6033,
+            "result_count": 40
+          },
+          {
+            "case": "both_viewports_40_deep",
+            "samples": 50,
+            "median_ms": 8.626,
+            "min_ms": 7.6896,
+            "max_ms": 11.0358,
+            "result_count": 80
+          },
+          {
+            "case": "rope_clone",
+            "samples": 1000,
+            "median_ms": 0.0001,
+            "min_ms": 0.0,
+            "max_ms": 0.0005,
+            "result_count": 15000000
+          }
+        ]
+      },
+      {
+        "Case": "image-copy",
+        "PeakWorkingSetMiB": 132.35,
+        "ObservedPrivatePeakMiB": 128.87,
+        "Results": [
+          {
+            "case": "image_convert_4096_rgba",
+            "samples": 7,
+            "median_ms": 12.032,
+            "min_ms": 10.9623,
+            "max_ms": 12.7762,
+            "result_count": 4096
+          }
+        ]
+      },
+      {
+        "Case": "thumbnail",
+        "PeakWorkingSetMiB": 69.36,
+        "ObservedPrivatePeakMiB": 65.67,
+        "Results": [
+          {
+            "compressed_image_bytes": 335481,
+            "decoded_rgba_bytes": 67108864
+          },
+          {
+            "case": "thumbnail_4096_to_36",
+            "samples": 5,
+            "median_ms": 42.4527,
+            "min_ms": 41.7657,
+            "max_ms": 49.8298,
+            "result_count": 36
+          }
+        ]
+      }
+    ],
+    "after": [
+      {
+        "Case": "viewport",
+        "PeakWorkingSetMiB": 29.92,
+        "ObservedPrivatePeakMiB": 24.77,
+        "Results": [
+          {
+            "fixture_lines": 500001,
+            "fixture_bytes": 15000000
+          },
+          {
+            "case": "source_viewport_40_deep",
+            "samples": 50,
+            "median_ms": 9.6496,
+            "min_ms": 7.8123,
+            "max_ms": 31.8286,
+            "result_count": 40
+          },
+          {
+            "case": "both_viewports_40_deep",
+            "samples": 50,
+            "median_ms": 8.5742,
+            "min_ms": 7.6938,
+            "max_ms": 11.5746,
+            "result_count": 80
+          },
+          {
+            "case": "rope_clone",
+            "samples": 1000,
+            "median_ms": 0.0001,
+            "min_ms": 0.0,
+            "max_ms": 0.0005,
+            "result_count": 15000000
+          },
+          {
+            "case": "cached_source_viewport_40_deep",
+            "samples": 1000,
+            "median_ms": 0.0001,
+            "min_ms": 0.0,
+            "max_ms": 0.0009,
+            "result_count": 40
+          }
+        ]
+      },
+      {
+        "Case": "image-copy",
+        "PeakWorkingSetMiB": 129.21,
+        "ObservedPrivatePeakMiB": 128.89,
+        "Results": [
+          {
+            "case": "image_convert_4096_rgba",
+            "samples": 7,
+            "median_ms": 0.0001,
+            "min_ms": 0.0,
+            "max_ms": 0.0534,
+            "result_count": 4096
+          }
+        ]
+      },
+      {
+        "Case": "thumbnail",
+        "PeakWorkingSetMiB": 69.36,
+        "ObservedPrivatePeakMiB": 65.66,
+        "Results": [
+          {
+            "compressed_image_bytes": 335481,
+            "decoded_rgba_bytes": 67108864
+          },
+          {
+            "case": "thumbnail_4096_to_36",
+            "samples": 5,
+            "median_ms": 41.8873,
+            "min_ms": 40.808,
+            "max_ms": 50.9381,
+            "result_count": 36
+          }
+        ]
+      },
+      {
+        "Case": "minified-visible",
+        "PeakWorkingSetMiB": 36.48,
+        "ObservedPrivatePeakMiB": 32.71,
+        "Results": [
+          {
+            "case": "wrap_4mib_visible40",
+            "samples": 7,
+            "median_ms": 0.2485,
+            "min_ms": 0.2237,
+            "max_ms": 0.5738,
+            "result_count": 40
+          },
+          {
+            "case": "wrap_16mib_visible40",
+            "samples": 7,
+            "median_ms": 2.0294,
+            "min_ms": 1.3879,
+            "max_ms": 2.6898,
+            "result_count": 40
+          }
+        ]
+      },
+      {
+        "Case": "minified-full",
+        "PeakWorkingSetMiB": 87.2,
+        "ObservedPrivatePeakMiB": 88.28,
+        "Results": [
+          {
+            "case": "wrap_4mib_all_rows",
+            "samples": 7,
+            "median_ms": 143.3858,
+            "min_ms": 135.3934,
+            "max_ms": 151.4379,
+            "result_count": 41944
+          },
+          {
+            "case": "wrap_16mib_all_rows",
+            "samples": 7,
+            "median_ms": 605.12,
+            "min_ms": 537.7804,
+            "max_ms": 632.9095,
+            "result_count": 167773
+          }
+        ]
+      }
+    ]
+  },
+  "diagnostics": {
+    "initial_candidate_source_commit": "28abcad",
+    "initial_before_two_logical_reverse": {
+      "sha256": "d4bc435da06b39bde75540570c61f7cea7df492a0e0820ea558bcb91a5b82c7b",
+      "summary": {
+        "WindowObservedMs": {
+          "median": 70.17,
+          "min": 65.1,
+          "max": 83.21
+        },
+        "WorkingSetMiB": {
+          "median": 98.54,
+          "min": 98.49,
+          "max": 98.7
+        },
+        "PrivateMiB": {
+          "median": 102.37,
+          "min": 102.12,
+          "max": 102.61
+        },
+        "PeakWorkingSetMiB": {
+          "median": 106.7,
+          "min": 106.58,
+          "max": 106.79
+        },
+        "IdleCpuMs": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 15.625
+        },
+        "IdleCpuOneLogicalPercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.51
+        },
+        "IdleCpuMachinePercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.042
+        },
+        "StartupAndSettleCpuMs": {
+          "median": 593.75,
+          "min": 484.375,
+          "max": 718.75
+        },
+        "Threads": {
+          "median": 17,
+          "min": 17,
+          "max": 17
+        }
+      },
+      "runs": [
+        {
+          "Run": 1,
+          "AffinityMask": 3,
+          "WindowObservedMs": 83.21,
+          "WorkingSetMiB": 98.54,
+          "PrivateMiB": 102.61,
+          "PeakWorkingSetMiB": 106.7,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 484.375,
+          "SampleWallMs": 3068.93,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 379
+        },
+        {
+          "Run": 2,
+          "AffinityMask": 3,
+          "WindowObservedMs": 74.74,
+          "WorkingSetMiB": 98.52,
+          "PrivateMiB": 102.12,
+          "PeakWorkingSetMiB": 106.58,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 593.75,
+          "SampleWallMs": 3065.96,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 379
+        },
+        {
+          "Run": 3,
+          "AffinityMask": 3,
+          "WindowObservedMs": 65.1,
+          "WorkingSetMiB": 98.57,
+          "PrivateMiB": 102.2,
+          "PeakWorkingSetMiB": 106.76,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 562.5,
+          "SampleWallMs": 3066.46,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 379
+        },
+        {
+          "Run": 4,
+          "AffinityMask": 3,
+          "WindowObservedMs": 68.28,
+          "WorkingSetMiB": 98.7,
+          "PrivateMiB": 102.38,
+          "PeakWorkingSetMiB": 106.79,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 718.75,
+          "SampleWallMs": 3065.3,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 17,
+          "Handles": 379
+        },
+        {
+          "Run": 5,
+          "AffinityMask": 3,
+          "WindowObservedMs": 70.17,
+          "WorkingSetMiB": 98.49,
+          "PrivateMiB": 102.37,
+          "PeakWorkingSetMiB": 106.58,
+          "IdleCpuMs": 15.625,
+          "StartupAndSettleCpuMs": 625.0,
+          "SampleWallMs": 3064.27,
+          "IdleCpuOneLogicalPercent": 0.51,
+          "IdleCpuMachinePercent": 0.042,
+          "Threads": 17,
+          "Handles": 379
+        }
+      ]
+    },
+    "initial_after_two_logical_reverse": {
+      "sha256": "1fe2064bbe62c604242b06bd166a1957dcf3c341d07b4c3c2825225f932738e7",
+      "summary": {
+        "WindowObservedMs": {
+          "median": 124.89,
+          "min": 111.65,
+          "max": 136.95
+        },
+        "WorkingSetMiB": {
+          "median": 98.82,
+          "min": 98.79,
+          "max": 99.29
+        },
+        "PrivateMiB": {
+          "median": 102.73,
+          "min": 102.54,
+          "max": 102.98
+        },
+        "PeakWorkingSetMiB": {
+          "median": 98.82,
+          "min": 98.79,
+          "max": 99.29
+        },
+        "IdleCpuMs": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "IdleCpuOneLogicalPercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "IdleCpuMachinePercent": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "StartupAndSettleCpuMs": {
+          "median": 625.0,
+          "min": 609.375,
+          "max": 781.25
+        },
+        "Threads": {
+          "median": 18,
+          "min": 18,
+          "max": 18
+        }
+      },
+      "runs": [
+        {
+          "Run": 1,
+          "AffinityMask": 3,
+          "WindowObservedMs": 113.33,
+          "WorkingSetMiB": 99.29,
+          "PrivateMiB": 102.98,
+          "PeakWorkingSetMiB": 99.29,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 781.25,
+          "SampleWallMs": 3072.45,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 379
+        },
+        {
+          "Run": 2,
+          "AffinityMask": 3,
+          "WindowObservedMs": 111.65,
+          "WorkingSetMiB": 98.79,
+          "PrivateMiB": 102.73,
+          "PeakWorkingSetMiB": 98.79,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 609.375,
+          "SampleWallMs": 3068.69,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 379
+        },
+        {
+          "Run": 3,
+          "AffinityMask": 3,
+          "WindowObservedMs": 126.09,
+          "WorkingSetMiB": 99.02,
+          "PrivateMiB": 102.84,
+          "PeakWorkingSetMiB": 99.02,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 671.875,
+          "SampleWallMs": 3069.59,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 378
+        },
+        {
+          "Run": 4,
+          "AffinityMask": 3,
+          "WindowObservedMs": 136.95,
+          "WorkingSetMiB": 98.8,
+          "PrivateMiB": 102.67,
+          "PeakWorkingSetMiB": 98.8,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 609.375,
+          "SampleWallMs": 3068.61,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 379
+        },
+        {
+          "Run": 5,
+          "AffinityMask": 3,
+          "WindowObservedMs": 124.89,
+          "WorkingSetMiB": 98.82,
+          "PrivateMiB": 102.54,
+          "PeakWorkingSetMiB": 98.82,
+          "IdleCpuMs": 0.0,
+          "StartupAndSettleCpuMs": 625.0,
+          "SampleWallMs": 3082.15,
+          "IdleCpuOneLogicalPercent": 0.0,
+          "IdleCpuMachinePercent": 0.0,
+          "Threads": 18,
+          "Handles": 379
+        }
+      ]
+    },
+    "aborted_sample": "La aplicación terminó durante el muestreo. La causa no quedó establecida; la serie incompleta no entra en el resumen final.",
+    "mitigation": "Diferir solicitudes de miniaturas hasta publicar modelos nativos, actualizar sólo filas que cambian y mantener ocultas las ventanas de medición durante la inicialización."
+  },
+  "validation": {
+    "all_target_tests_passed": 69,
+    "workspace_tests": 61,
+    "harness_reused_tests": 8,
+    "strict_clippy_passed": true,
+    "release_build_passed": true,
+    "mapped_process_survived_installation": true,
+    "installed_hash_matches_release": true
+  }
+}

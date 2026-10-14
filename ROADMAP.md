@@ -23,10 +23,12 @@ Estado revisado el 14 de octubre de 2026. La prioridad es completar el flujo de 
 
 ## Optimización para equipos modestos
 
-La [auditoría de recursos](docs/PERFORMANCE-AUDIT.md) prioriza trabajo medido y conserva la versión aprobada.
+La [auditoría inicial de recursos](docs/PERFORMANCE-AUDIT.md) prioriza trabajo medido. La [primera etapa de mejoras](docs/PERFORMANCE-STAGE1.md) aplica imágenes compartidas, miniaturas en segundo plano y cachés de viewport.
 
-- [ ] P0: miniaturas/favicons fuera del hilo UI, presupuesto de píxeles y conversión única de imágenes.
-- [ ] P1: publicar el modo activo, reutilizar resaltado y evitar materializar filas ocultas en líneas minificadas.
+- [x] P0: miniaturas/favicons fuera del hilo UI, caché de píxeles de 4 MiB y conversión compartida de imágenes.
+- [x] P1: publicar el modo activo, reutilizar resaltado y generar sólo las filas visibles de líneas minificadas.
+- [ ] P0: representar fotos grandes a resolución reducida en «Ajustar» y cargar la resolución original al pedir «100 %».
+- [ ] P1: reducir el coste de tokenizar y contar/desplazar líneas minificadas completas.
 - [ ] P1: índice compartido, consultas cancelables, búsqueda progresiva y concurrencia limitada.
 - [ ] P2: estado de cambios/guardado por trozos, perfiles de memoria base y primer fotograma, comparación de backends en equipos reales.
 

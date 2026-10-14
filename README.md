@@ -76,6 +76,8 @@ La comparación se mantiene en [docs/BENCHMARKS.md](docs/BENCHMARKS.md), con met
 
 La [auditoría de RAM, CPU y arranque](docs/PERFORMANCE-AUDIT.md) registra mediciones del release y una lista priorizada para laptops con menos recursos. La configuración probada mantiene aproximadamente 95 MiB residentes y 102 MiB privados; las metas originales de memoria y primer fotograma siguen pendientes de validar. El informe detalla qué se midió y qué mejoras todavía son propuestas.
 
+La [primera etapa de optimización](docs/PERFORMANCE-STAGE1.md) elimina copias repetidas de imágenes, carga miniaturas/favicons en segundo plano con caché acotada, reutiliza el resaltado y calcula sólo el modo y las filas visibles. Incluye una comparación reproducible con el ejecutable anterior.
+
 ## Instalación desde el código fuente
 
 En Windows, `scripts/install.ps1` compila e instala por usuario, crea accesos directos en Inicio y escritorio y registra la aplicación. Después basta buscar **CodePeek** en Inicio. No requiere una terminal para usarla.

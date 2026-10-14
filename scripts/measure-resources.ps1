@@ -24,6 +24,7 @@ public static class CodePeekAuditWindows {
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr window, out uint pid);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowText(IntPtr window, StringBuilder text, int length);
     [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr window, int command);
+    [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr window);
     [DllImport("user32.dll")] private static extern bool PostMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
     public static IntPtr FindWindowForProcess(int processId) {
         IntPtr found = IntPtr.Zero;
@@ -39,7 +40,7 @@ public static class CodePeekAuditWindows {
         }, IntPtr.Zero);
         return found;
     }
-    public static void Hide(IntPtr window) { ShowWindow(window, 0); }
+    public static void Hide(IntPtr window) { if (IsWindowVisible(window)) ShowWindow(window, 0); }
     public static void Close(IntPtr window) { PostMessage(window, 0x0010, IntPtr.Zero, IntPtr.Zero); }
 }
 '@
@@ -67,12 +68,18 @@ for ($run = 1; $run -le $Runs; $run++) {
         if ($window -eq [IntPtr]::Zero) { throw 'No se encontró la ventana de CodePeek en 30 segundos.' }
         $windowObservedMs = $watch.Elapsed.TotalMilliseconds
         [CodePeekAuditWindows]::Hide($window)
-        Start-Sleep -Seconds $SettleSeconds
+        $settleWatch = [System.Diagnostics.Stopwatch]::StartNew()
+        while ($settleWatch.Elapsed.TotalSeconds -lt $SettleSeconds) {
+            if ($auditProcess.HasExited) { throw "La aplicación terminó durante la estabilización (ejecución $run, código $($auditProcess.ExitCode))." }
+            [CodePeekAuditWindows]::Hide($window)
+            Start-Sleep -Milliseconds 50
+        }
         $auditProcess.Refresh()
         $cpuStart = $auditProcess.TotalProcessorTime.TotalMilliseconds
         $sampleWatch = [System.Diagnostics.Stopwatch]::StartNew()
         while ($sampleWatch.Elapsed.TotalSeconds -lt $SampleSeconds) {
-            if ($auditProcess.HasExited) { throw 'La aplicación terminó durante el muestreo.' }
+            if ($auditProcess.HasExited) { throw "La aplicación terminó durante el muestreo (ejecución $run, código $($auditProcess.ExitCode))." }
+            [CodePeekAuditWindows]::Hide($window)
             Start-Sleep -Milliseconds 100
         }
         $auditProcess.Refresh()

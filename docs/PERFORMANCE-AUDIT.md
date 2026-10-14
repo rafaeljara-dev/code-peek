@@ -1,5 +1,7 @@
 # Auditoría de RAM, CPU y arranque — 14 de octubre de 2026
 
+Este informe conserva el baseline de `53534ac`. Las mejoras aplicadas posteriormente y su comparación están en [PERFORMANCE-STAGE1.md](PERFORMANCE-STAGE1.md).
+
 ## Resultado
 
 Las oportunidades con mayor impacto están en imágenes, búsqueda y trabajo repetido al publicar el viewport. La CPU en reposo es baja en las muestras recogidas. La memoria base medida sí supera la meta de 25–35 MB: el proceso mantiene aproximadamente **95 MiB residentes y 102 MiB privados** con el proyecto inicial abierto y sin documento seleccionado.
