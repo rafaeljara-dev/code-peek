@@ -135,7 +135,7 @@ pub struct Controller {
     current_image: Option<image_loader::RawRgbaImage>,
     image_info: String,
     image_dirty: bool,
-    thumbnail_loader: Option<thumbnails::Loader>,
+    thumbnail_loader: Option<Arc<thumbnails::Loader>>,
     thumbnail_refresh: bool,
     tree_viewport: (usize, usize),
     thumbnail_generation: u64,
@@ -281,7 +281,7 @@ impl Controller {
             current_image: None,
             image_info: String::new(),
             image_dirty: false,
-            thumbnail_loader: Some(thumbnail_loader),
+            thumbnail_loader: Some(Arc::new(thumbnail_loader)),
             thumbnail_refresh: true,
             tree_viewport: (0, 64),
             thumbnail_generation: 0,
@@ -1403,6 +1403,7 @@ impl Controller {
     fn publish(&mut self) {
         let navigation_dirty = std::mem::take(&mut self.navigation_dirty);
         let thumbnail_refresh = std::mem::replace(&mut self.thumbnail_refresh, true);
+        let mut thumbnail_job = None;
         if navigation_dirty && thumbnail_refresh {
             let request = thumbnails::Request {
                 files: self
@@ -1428,7 +1429,7 @@ impl Controller {
                 self.project_logos
                     .retain(|path, _| request.projects.contains(path));
                 if let Some(loader) = &self.thumbnail_loader {
-                    loader.request(self.thumbnail_generation, request.clone());
+                    thumbnail_job = Some((loader.clone(), self.thumbnail_generation, request));
                 }
             }
         }
@@ -1723,6 +1724,10 @@ impl Controller {
                 })
                 .collect::<Vec<_>>();
             w.set_code_lines(ModelRc::new(VecModel::from(items)));
+            // Let the native window and its initial models publish before background I/O.
+            if let Some((loader, generation, request)) = thumbnail_job {
+                loader.request(generation, request);
+            }
         });
     }
 }
