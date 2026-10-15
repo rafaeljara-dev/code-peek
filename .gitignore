@@ -17,6 +17,13 @@ Desktop.ini
 # Local configuration & environment
 .env
 .env.local
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+credentials.json
+credentials.*.json
 *.local
 
 # Local native UI audit snapshots

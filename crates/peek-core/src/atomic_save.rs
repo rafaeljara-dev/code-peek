@@ -1,11 +1,26 @@
 use crate::buffer::TextBuffer;
 use anyhow::{bail, Context, Result};
+#[cfg(any(not(windows), test))]
 use std::fs;
+#[cfg(not(windows))]
 use std::io::Write;
 use std::path::Path;
 
-/// A unique temporary file on the same volume; preserves target permissions.
+#[cfg(windows)]
+#[path = "atomic_save_windows.rs"]
+mod platform;
+
+/// Save on the same volume. Windows binds replacement to an exclusive handle.
 pub fn save_atomic(target_path: &Path, content: &str) -> Result<()> {
+    #[cfg(windows)]
+    return platform::save(target_path, content);
+
+    #[cfg(not(windows))]
+    save_portable(target_path, content)
+}
+
+#[cfg(not(windows))]
+fn save_portable(target_path: &Path, content: &str) -> Result<()> {
     let parent = target_path
         .parent()
         .filter(|p| !p.as_os_str().is_empty())

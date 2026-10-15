@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::io::{BufRead, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
@@ -31,6 +33,149 @@ impl RawRgbaImage {
 
 const MAX_DECODE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_DIMENSION: u32 = 16_384;
+const MAX_INPUT_BYTES: u64 = 128 * 1024 * 1024;
+const MAX_SVG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_EMBEDDED_BYTES: u64 = 32 * 1024 * 1024;
+
+fn open_raster(path: &Path) -> Result<image::ImageReader<std::io::BufReader<std::fs::File>>> {
+    let file = std::fs::File::open(path)?;
+    let metadata = file.metadata()?;
+    if !metadata.is_file() || metadata.len() > MAX_INPUT_BYTES {
+        bail!("La imagen no es un archivo regular o supera 128 MiB de entrada");
+    }
+    let mut reader = std::io::BufReader::new(file);
+    if reader.fill_buf()?.starts_with(&[0, 0, 1, 0]) {
+        validate_ico(&mut reader, metadata.len())?;
+    }
+    let mut reader = image::ImageReader::new(reader);
+    if let Ok(format) = image::ImageFormat::from_path(path) {
+        reader.set_format(format);
+    }
+    Ok(reader.with_guessed_format()?)
+}
+
+/// Validate directory entries before any decoder can trust their advertised lengths.
+fn validate_ico(reader: &mut (impl Read + Seek), length: u64) -> Result<()> {
+    let mut header = [0u8; 6];
+    reader.read_exact(&mut header)?;
+    let count = u16::from_le_bytes([header[4], header[5]]) as u64;
+    let directory_end = 6 + count * 16;
+    if count == 0 || count > 256 || directory_end > length {
+        bail!("Directorio ICO vacío, truncado o demasiado grande");
+    }
+    for _ in 0..count {
+        let mut entry = [0u8; 16];
+        reader.read_exact(&mut entry)?;
+        let bytes = u64::from(u32::from_le_bytes(entry[8..12].try_into()?));
+        let offset = u64::from(u32::from_le_bytes(entry[12..16].try_into()?));
+        if bytes == 0
+            || bytes > MAX_INPUT_BYTES
+            || offset < directory_end
+            || offset + bytes > length
+        {
+            bail!("La entrada ICO apunta fuera del archivo o supera el presupuesto");
+        }
+    }
+    reader.seek(SeekFrom::Start(0))?;
+    Ok(())
+}
+
+fn read_bounded(reader: impl Read, limit: u64) -> Result<Vec<u8>> {
+    let mut bytes = Vec::new();
+    reader.take(limit + 1).read_to_end(&mut bytes)?;
+    if bytes.len() as u64 > limit {
+        bail!("El SVG supera el límite de lectura o descompresión");
+    }
+    Ok(bytes)
+}
+
+fn read_svg(path: &Path, limit: u64) -> Result<Vec<u8>> {
+    let file = std::fs::File::open(path)?;
+    let metadata = file.metadata()?;
+    if !metadata.is_file() || metadata.len() > limit {
+        bail!("El SVG no es un archivo regular o supera el presupuesto de entrada");
+    }
+    let data = read_bounded(file, limit)?;
+    if data.starts_with(&[0x1f, 0x8b]) {
+        read_bounded(flate2::read::MultiGzDecoder::new(data.as_slice()), limit)
+    } else {
+        Ok(data)
+    }
+}
+
+fn safe_svg_tree(path: &Path) -> Result<usvg::Tree> {
+    let data = read_svg(path, MAX_SVG_BYTES)?;
+    let text = std::str::from_utf8(&data).context("El SVG no es UTF-8 válido")?;
+    let doc = roxmltree::Document::parse_with_options(
+        text,
+        roxmltree::ParsingOptions {
+            allow_dtd: false,
+            nodes_limit: 50_000,
+            ..Default::default()
+        },
+    )?;
+    let mut references = 0;
+    for node in doc.descendants().filter(|node| node.is_element()) {
+        if node.ancestors().take(66).count() > 64 || node.attributes().len() > 128 {
+            bail!("El SVG supera el límite de anidamiento o atributos");
+        }
+        if node.has_tag_name("use") {
+            references += 1;
+            if references > 512 {
+                bail!("El SVG contiene demasiadas referencias");
+            }
+            let href = node
+                .attribute("href")
+                .or_else(|| node.attribute(("http://www.w3.org/1999/xlink", "href")));
+            if let Some(id) = href.and_then(|href| href.strip_prefix('#')) {
+                if doc
+                    .descendants()
+                    .find(|n| n.attribute("id") == Some(id))
+                    .is_some_and(|n| n.descendants().any(|child| child.has_tag_name("use")))
+                {
+                    bail!("El SVG contiene referencias use anidadas");
+                }
+            }
+        }
+    }
+    let budget = AtomicU64::new(MAX_EMBEDDED_BYTES);
+    let default_data = usvg::ImageHrefResolver::default_data_resolver();
+    let options = usvg::Options {
+        image_href_resolver: usvg::ImageHrefResolver {
+            // A document never grants filesystem/UNC/network authority to an image href.
+            resolve_string: Box::new(|_, _| None),
+            resolve_data: Box::new(move |mime, data, options| {
+                if !matches!(
+                    mime,
+                    "image/png" | "image/jpeg" | "image/jpg" | "image/gif" | "image/webp"
+                ) {
+                    return None; // No nested SVG or recursively compressed data documents.
+                }
+                let mut reader = image::ImageReader::new(std::io::Cursor::new(data.as_slice()))
+                    .with_guessed_format()
+                    .ok()?;
+                let mut limits = image::Limits::default();
+                limits.max_alloc = Some(MAX_EMBEDDED_BYTES);
+                limits.max_image_width = Some(MAX_DIMENSION);
+                limits.max_image_height = Some(MAX_DIMENSION);
+                reader.limits(limits);
+                let decoder = reader.into_decoder().ok()?;
+                let (w, h) = decoder.dimensions();
+                validate_dimensions(w, h, decoder.total_bytes()).ok()?;
+                let cost = decoder.total_bytes().max(u64::from(w) * u64::from(h) * 4);
+                budget
+                    .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |remaining| {
+                        remaining.checked_sub(cost)
+                    })
+                    .ok()?;
+                drop(decoder);
+                default_data(mime, data, options)
+            }),
+        },
+        ..Default::default()
+    };
+    Ok(usvg::Tree::from_xmltree(&doc, &options)?)
+}
 
 fn validate_dimensions(width: u32, height: u32, bytes: u64) -> Result<()> {
     if width == 0
@@ -148,10 +293,7 @@ pub fn format_file_size(bytes: u64) -> String {
 
 /// Loads an SVG image rendered sharply with high quality into raw RGBA pixels.
 pub fn load_svg_raw(path: &Path) -> Result<(RawRgbaImage, u32, u32)> {
-    let data =
-        std::fs::read(path).with_context(|| format!("Error al leer SVG: {}", path.display()))?;
-    let opt = usvg::Options::default();
-    let tree = usvg::Tree::from_data(&data, &opt)
+    let tree = safe_svg_tree(path)
         .context("No se pudo interpretar el archivo SVG como gráfico vectorial")?;
 
     let size = tree.size();
@@ -182,9 +324,7 @@ pub fn load_svg_raw(path: &Path) -> Result<(RawRgbaImage, u32, u32)> {
 
 /// Loads a small thumbnail of an SVG as raw RGBA pixels.
 pub fn load_svg_thumb_raw(path: &Path, max_dim: u32) -> Result<RawRgbaImage> {
-    let data = std::fs::read(path)?;
-    let opt = usvg::Options::default();
-    let tree = usvg::Tree::from_data(&data, &opt)?;
+    let tree = safe_svg_tree(path)?;
     let size = tree.size();
     let aspect = size.width() / size.height();
     let (w, h) = if aspect >= 1.0 {
@@ -203,28 +343,8 @@ pub fn load_svg_thumb_raw(path: &Path, max_dim: u32) -> Result<RawRgbaImage> {
 
 /// Loads raster images (PNG, JPEG, WebP, GIF, BMP, ICO, TIFF, QOI, TGA, etc.) into raw RGBA pixels.
 pub fn load_raster_image_raw(path: &Path) -> Result<(RawRgbaImage, u32, u32, &'static str)> {
-    if path
-        .extension()
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("ico"))
-    {
-        if let Ok(file) = std::fs::File::open(path) {
-            if let Ok(directory) = ico::IconDir::read(file) {
-                if let Some(entry) = directory.entries().iter().max_by_key(|e| e.width()) {
-                    if let Ok(icon) = entry.decode() {
-                        let w = icon.width();
-                        let h = icon.height();
-                        let raw = RawRgbaImage::new(icon.rgba_data().to_vec(), w, h);
-                        return Ok((raw, w, h, "ICO"));
-                    }
-                }
-            }
-        }
-    }
-
-    let reader = image::ImageReader::open(path)
-        .with_context(|| format!("No se pudo abrir el archivo: {}", path.display()))?
-        .with_guessed_format()
-        .with_context(|| format!("Formato de imagen no reconocido: {}", path.display()))?;
+    let reader = open_raster(path)
+        .with_context(|| format!("No se pudo abrir el archivo: {}", path.display()))?;
 
     let format = reader.format();
     let format_name = match format {
@@ -255,34 +375,7 @@ pub fn load_raster_image_raw(path: &Path) -> Result<(RawRgbaImage, u32, u32, &'s
 
 /// Loads a small thumbnail of a raster image as raw RGBA pixels.
 pub fn load_raster_thumb_raw(path: &Path, max_dim: u32) -> Result<RawRgbaImage> {
-    if path
-        .extension()
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("ico"))
-    {
-        if let Ok(file) = std::fs::File::open(path) {
-            if let Ok(directory) = ico::IconDir::read(file) {
-                if let Some(entry) = directory
-                    .entries()
-                    .iter()
-                    .min_by_key(|e| (e.width() as i32 - max_dim as i32).abs())
-                {
-                    if let Ok(icon) = entry.decode() {
-                        let w = icon.width();
-                        let h = icon.height();
-                        let rgba = image::RgbaImage::from_raw(w, h, icon.rgba_data().to_vec())
-                            .context("Píxeles ICO no válidos")?;
-                        let thumb = image::DynamicImage::ImageRgba8(rgba)
-                            .thumbnail(max_dim, max_dim)
-                            .into_rgba8();
-                        let (width, height) = thumb.dimensions();
-                        return Ok(RawRgbaImage::new(thumb.into_raw(), width, height));
-                    }
-                }
-            }
-        }
-    }
-
-    let reader = image::ImageReader::open(path)?.with_guessed_format()?;
+    let reader = open_raster(path)?;
     let decoded = decode_raster(reader)?;
     let thumb = decoded.thumbnail(max_dim, max_dim);
     let (width, height) = (thumb.width(), thumb.height());
@@ -453,6 +546,60 @@ pub(crate) fn project_logo_raw(root: &Path, cache: &ThumbnailCache) -> Option<Ra
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn ico_claimed_payload_is_rejected_before_decoder_allocation() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("invalid.ico");
+        let mut data = vec![0u8; 22];
+        data[2] = 1;
+        data[4] = 1;
+        data[6] = 16;
+        data[7] = 16;
+        data[14..18].copy_from_slice(&u32::MAX.to_le_bytes());
+        data[18..22].copy_from_slice(&22u32.to_le_bytes());
+        std::fs::write(&path, data).unwrap();
+        assert!(load_raster_image_raw(&path).is_err());
+        assert!(load_raster_thumb_raw(&path, 36).is_err());
+    }
+
+    #[test]
+    fn svg_external_images_are_omitted_in_full_view_and_thumbnail() {
+        let dir = tempfile::tempdir().unwrap();
+        let image = dir.path().join("private.png");
+        image::RgbaImage::from_pixel(2, 2, image::Rgba([255, 0, 0, 255]))
+            .save(&image)
+            .unwrap();
+        let svg = dir.path().join("external.svg");
+        std::fs::write(&svg, format!(r#"<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2"><image href="{}" width="2" height="2"/></svg>"#, image.display())).unwrap();
+        let (full, _, _) = load_svg_raw(&svg).unwrap();
+        let thumb = load_svg_thumb_raw(&svg, 36).unwrap();
+        assert!(full.data.as_bytes().iter().all(|byte| *byte == 0));
+        assert!(thumb.data.as_bytes().iter().all(|byte| *byte == 0));
+    }
+
+    #[test]
+    fn svg_dtd_depth_and_compressed_input_are_bounded() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("invalid.svg");
+        std::fs::write(&path, r#"<!DOCTYPE svg [<!ENTITY text "denied">]><svg xmlns="http://www.w3.org/2000/svg"><text>&text;</text></svg>"#).unwrap();
+        assert!(safe_svg_tree(&path).is_err());
+        std::fs::write(
+            &path,
+            format!(
+                "<svg xmlns=\"http://www.w3.org/2000/svg\">{}{}</svg>",
+                "<g>".repeat(66),
+                "</g>".repeat(66)
+            ),
+        )
+        .unwrap();
+        assert!(safe_svg_tree(&path).is_err());
+        use std::io::Write;
+        let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        encoder.write_all(&[b' '; 512]).unwrap();
+        std::fs::write(&path, encoder.finish().unwrap()).unwrap();
+        assert!(read_svg(&path, 128).is_err());
+    }
 
     #[test]
     fn pixels_are_shared_across_worker_and_ui_without_copying() {

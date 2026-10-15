@@ -6,7 +6,7 @@ Inspector de código nativo en Rust para abrir proyectos, revisar archivos gener
 
 ## Descargar para Windows
 
-[**Descargar el instalador más reciente — CodePeek-Setup.exe**](https://github.com/rafaeljara-dev/code-peek/releases/latest/download/CodePeek-Setup.exe)
+[Consulta las versiones publicadas](https://github.com/rafaeljara-dev/code-peek/releases). Mientras no exista una release, usa la instalación desde código fuente descrita abajo. El flujo de publicación está preparado para generar `CodePeek-Setup.exe` y su checksum SHA-256 al publicar una etiqueta `v*`.
 
 Abre el archivo descargado. Instala CodePeek para tu usuario, crea accesos directos en Inicio y escritorio, registra «Abrir con CodePeek» y abre la aplicación. Windows puede mostrar SmartScreen mientras el proyecto aún no tenga firma de código; revisa que el archivo provenga de este repositorio público.
 
@@ -115,4 +115,6 @@ cargo check --workspace
 cargo test --workspace
 ```
 
-Las contribuciones son bienvenidas. Lee [CONTRIBUTING.md](CONTRIBUTING.md) para preparar Rust y las herramientas de Windows, ejecutar las verificaciones y abrir un pull request. El proyecto se distribuye bajo la [licencia MIT](LICENSE); Devicon y Codicons conservan sus licencias dentro de `crates/peek-ui/assets/`.
+Las contribuciones son bienvenidas. Lee [CONTRIBUTING.md](CONTRIBUTING.md) para preparar las herramientas, ejecutar las verificaciones y abrir un pull request. El código propio se distribuye bajo [MIT](LICENSE). Slint se usa bajo [Royalty-free 2.0](licenses/SLINT-LICENSE.md), con atribución accesible en «Acerca de». Las dependencias y fuentes conservan sus [licencias y avisos](THIRD-PARTY-NOTICES.md), que acompañan a la instalación. Conserva estos requisitos al copiar, modificar o redistribuir la aplicación.
+
+La [política de seguridad](SECURITY.md) explica el modelo de confianza, la privacidad y cómo reportar problemas. El [registro de endurecimiento](docs/SECURITY-HARDENING.md) detalla los cambios y lo que aún requiere validación, firma o empaquetado por plataforma.

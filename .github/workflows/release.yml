@@ -1,26 +1,90 @@
 name: Windows release
-
 on:
   push:
-    tags: ["v*"]
+    tags: ['v*']
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  release:
-    runs-on: windows-latest
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo test --workspace -- --test-threads=1
-      - run: cargo build --release --bin peek
-      - name: Prepare installer
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249
+        with:
+          toolchain: '1.94.1'
+      - run: cargo install cargo-audit --locked --version 0.22.2
+      - run: cargo audit --deny unsound
+      - name: Scan release history
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o "$RUNNER_TEMP/gitleaks.tar.gz"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git . --log-opts="--all" --redact --no-banner --timeout 120
+
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249
+        with:
+          toolchain: '1.94.1'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@49a0bdc70d2e1b713ca9e2869b211fcce03d3c1c # v2
+        with:
+          key: release-windows
+      - run: cargo fmt --all -- --check
+      - run: cargo test --locked --workspace --all-targets -- --test-threads=1
+      - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - run: cargo build --locked --release --bin peek
+      - run: python scripts/generate-notices.py --allow-network --check
+      - name: Prepare installer, notices and checksum
         shell: pwsh
-        run: Copy-Item target/release/peek.exe CodePeek-Setup.exe
-      - name: Publish release
-        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path release | Out-Null
+          Copy-Item -LiteralPath target/release/peek.exe -Destination release/CodePeek-Setup.exe
+          Copy-Item -LiteralPath LICENSE,THIRD-PARTY-NOTICES.md -Destination release
+          Copy-Item -LiteralPath licenses/SLINT-LICENSE.md -Destination release/SLINT-LICENSE
+          Copy-Item -LiteralPath crates/peek-ui/assets/DEVICON-LICENSE,crates/peek-ui/assets/CODICONS-LICENSE -Destination release
+          $hash = (Get-FileHash -LiteralPath release/CodePeek-Setup.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  CodePeek-Setup.exe" | Set-Content -LiteralPath release/SHA256SUMS.txt -Encoding ascii
+          @{commit=$env:GITHUB_SHA; ref=$env:GITHUB_REF; run=$env:GITHUB_RUN_ID; sha256=$hash; toolchain='1.94.1'; signed=$false} | ConvertTo-Json | Set-Content -LiteralPath release/BUILD-INFO.json -Encoding utf8
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: upload
+        with:
+          name: windows-release-${{ github.sha }}
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    needs: [build, security]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
+          merge-multiple: true
+          path: release
+      - name: Verify digest and publish the exact artifact
+        working-directory: release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME CodePeek-Setup.exe --generate-notes --verify-tag
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          sha256sum --check SHA256SUMS.txt
+          gh release create "$RELEASE_TAG" CodePeek-Setup.exe LICENSE THIRD-PARTY-NOTICES.md SLINT-LICENSE DEVICON-LICENSE CODICONS-LICENSE SHA256SUMS.txt BUILD-INFO.json --generate-notes --verify-tag

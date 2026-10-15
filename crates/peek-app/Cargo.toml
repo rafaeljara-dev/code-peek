@@ -18,3 +18,4 @@ clap.workspace = true
 anyhow.workspace = true
 dirs.workspace = true
 tokio.workspace = true
+tempfile = "3"

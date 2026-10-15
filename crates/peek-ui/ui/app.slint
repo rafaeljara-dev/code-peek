@@ -1,4 +1,4 @@
-import { ListView, ScrollView, LineEdit, TextEdit, Palette } from "std-widgets.slint";
+import { ListView, ScrollView, LineEdit, TextEdit, Palette, AboutSlint } from "std-widgets.slint";
 import "../assets/codicon-subset.ttf";
 import "../assets/devicon-subset.ttf";
 export global Theme {
@@ -133,6 +133,7 @@ export component MainWindow inherits Window {
     changed show-confirm => { if !root.show-confirm { root.focus-content(); } }
     in-out property <bool> show-edit;
     in-out property <bool> show-settings;
+    in-out property <bool> show-about;
     in-out property <bool> markdown-file;
     in-out property <bool> is-image: false;
     in-out property <image> image-source;
@@ -200,7 +201,7 @@ export component MainWindow inherits Window {
     in-out property <length> tree-width: 245px;
     in-out property <length> horizontal-offset: 0px;
     in-out property <length> content-width: 0px;
-    private property <bool> modal: palette-mode > 0 || show-path || show-confirm || show-settings;
+    private property <bool> modal: palette-mode > 0 || show-path || show-confirm || show-settings || show-about;
 
     callback open-project(string);
     callback open-file(string);
@@ -273,6 +274,7 @@ export component MainWindow inherits Window {
                 if root.show-confirm { root.resolve-pending(0); }
                 if root.show-edit { root.cancel-edit(); }
                 root.palette-mode = 0; root.show-path = false; root.show-edit = false; root.show-settings = false;
+                root.show-about = false;
                 root.project-menu-path = "";
                 root.show-find = false; root.show-replace = false; root.show-goto = false;
                 root.edit-text = "";
@@ -329,6 +331,7 @@ export component MainWindow inherits Window {
                     Rectangle { horizontal-stretch: 1; }
                     Action { text: ""; icon: "\u{ea6d}"; accessible-text: "Buscar archivos o texto"; primary: true; clicked => { root.open-palette(1); } }
                     Action { text: "Configuración"; clicked => { root.show-settings = true; } }
+                    Action { text: "Acerca de"; clicked => { root.show-about = true; } }
                     Action { text: ""; icon: "\u{ea77}"; accessible-text: "Recargar (F5)"; enabled: !root.busy && !root.show-edit; clicked => { root.reload(); } }
                 }
             }
@@ -727,10 +730,10 @@ export component MainWindow inherits Window {
 
         if root.modal: Rectangle {
             background: Theme.scrim;
-            TouchArea { clicked => { if root.palette-mode > 0 { root.palette-mode = 0; } if root.show-settings { root.show-settings = false; } root.focus-content(); } }
+            TouchArea { clicked => { if root.palette-mode > 0 { root.palette-mode = 0; } if root.show-settings { root.show-settings = false; } root.show-about = false; root.focus-content(); } }
             Rectangle {
                 width: min(680px, parent.width - 60px);
-                height: min(parent.height - 48px, root.show-settings ? 660px : (root.palette-mode > 0 ? 460px : root.show-confirm ? 280px : 310px) + (root.error-message != "" && root.show-confirm ? 70px : 0px));
+                height: min(parent.height - 48px, root.show-settings ? 660px : root.show-about ? 410px : (root.palette-mode > 0 ? 460px : root.show-confirm ? 280px : 310px) + (root.error-message != "" && root.show-confirm ? 70px : 0px));
                 x: (parent.width - self.width) / 2; y: min(72px, (parent.height - self.height) / 2);
                 background: Theme.dialog; border-radius: 10px; border-width: 1px; border-color: Theme.dialog-border;
                 TouchArea {}
@@ -777,6 +780,16 @@ export component MainWindow inherits Window {
                         Action { text: "Abrir proyecto"; primary: true; clicked => { root.open-project(root.path-input); root.show-path = false; root.focus-content(); } }
                     }
                 }
+                if root.show-about: ScrollView { VerticalLayout {
+                    padding: 22px; spacing: 12px;
+                    HorizontalLayout {
+                        Text { text: "Acerca de CodePeek"; font-size: Typography.size + 5px; color: Theme.title; font-weight: 600; horizontal-stretch: 1; }
+                        Action { text: "×"; accessible-text: "Cerrar Acerca de"; clicked => { root.show-about = false; root.focus-content(); } }
+                    }
+                    Text { text: "Inspector y editor de código nativo · Código propio bajo MIT"; color: Theme.dialog-description; wrap: word-wrap; }
+                    Rectangle { height: 132px; background: Palette.background; border-radius: 6px; AboutSlint { } }
+                    Text { text: "Los avisos de dependencias y fuentes acompañan a la aplicación en THIRD-PARTY-NOTICES.md."; color: Theme.dialog-description; wrap: word-wrap; }
+                } }
                 if root.show-settings: ScrollView { VerticalLayout {
                     padding: 22px; spacing: 18px;
                     HorizontalLayout {
