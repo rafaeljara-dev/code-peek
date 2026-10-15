@@ -1,3 +1,4 @@
+use super::dotenv::DotenvExtension;
 use super::markdown::MarkdownExtension;
 use super::nextjs::NextJsExtension;
 use super::rust::RustExtension;
@@ -26,6 +27,7 @@ impl ExtensionRegistry {
         };
 
         // Register default first-class extensions
+        registry.register(Arc::new(DotenvExtension));
         registry.register(Arc::new(MarkdownExtension));
         registry.register(Arc::new(RustExtension));
         registry.register(Arc::new(NextJsExtension));
@@ -92,10 +94,7 @@ impl ExtensionRegistry {
 
         // 1. Check special filenames (e.g. next.config.js, package.json)
         for e in &self.extensions {
-            if e.special_filenames()
-                .iter()
-                .any(|&f| f.eq_ignore_ascii_case(file_name))
-            {
+            if e.matches_filename(file_name) {
                 return Some(e.clone());
             }
         }
@@ -133,6 +132,9 @@ impl ExtensionRegistry {
         // Check if we have a dedicated extension
         if let Some(p) = path {
             if let Some(ext) = self.find_extension(p) {
+                if ext.id() == "dotenv" {
+                    return self.highlight_source(buffer, path, start_line, count);
+                }
                 let mut lines = Vec::with_capacity(end_line - start_line);
                 let mut ctx = LineContext::default();
 

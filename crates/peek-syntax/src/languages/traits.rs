@@ -70,6 +70,7 @@ impl HighlightedLine {
 
 #[derive(Debug, Default, Clone)]
 pub struct LineContext {
+    pub dotenv_quote: Option<char>,
     pub in_code_block: bool,
     pub code_block_lang: Option<String>,
 }
@@ -87,6 +88,12 @@ pub trait LanguageExtension: Send + Sync {
     /// Special exact filenames, e.g. ["next.config.js", "package.json"].
     fn special_filenames(&self) -> &'static [&'static str] {
         &[]
+    }
+
+    fn matches_filename(&self, filename: &str) -> bool {
+        self.special_filenames()
+            .iter()
+            .any(|name| name.eq_ignore_ascii_case(filename))
     }
 
     /// Whether this extension represents Markdown format.
