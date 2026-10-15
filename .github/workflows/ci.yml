@@ -48,6 +48,12 @@ jobs:
       - name: Check Windows integration helpers
         if: runner.os == 'Windows'
         run: powershell -NoProfile -File scripts/test-windows-integration.ps1
+      - name: Build Windows installer entry point
+        if: runner.os == 'Windows'
+        run: cargo build --locked --bin peek
+      - name: Check installation and self-uninstall on the disposable runner
+        if: runner.os == 'Windows'
+        run: ./scripts/test-windows-install.ps1 -Executable ./target/debug/peek.exe
 
   advisories:
     runs-on: ubuntu-latest

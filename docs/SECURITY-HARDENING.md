@@ -27,6 +27,8 @@ cargo build --locked --release --bin peek
 
 Las pruebas usan archivos ficticios: permisos y exclusividad del temporal, sustitución fallida, rutas canónicas/largas, ICO truncado, SVG externo omitido, DTD/profundidad/expansión comprimida, y retirada del ejecutable bloqueado. Las pruebas de UI usan el backend de Slint sin abrir ventanas. La instalación local se verifica comparando hashes y destinos de accesos directos; no se desinstala una instalación real como prueba.
 
+La CI Windows comprueba además un ciclo de instalación, desinstalación desde la propia imagen cargada, reinstalación y limpieza. `scripts/test-windows-install.ps1` exige un runner desechable y rechaza una instalación preexistente. El proceso auxiliar reinicializa `PSModulePath` para que Windows PowerShell utilice sus módulos estándar aunque se lance desde PowerShell 7.
+
 ## Dependencias sin mantenimiento
 
 La consulta a RustSec del 14 de octubre de 2026 con cargo-audit 0.22.2 no reportó vulnerabilidades conocidas. Sí devolvió seis avisos de mantenimiento en cinco identificadores: `bincode` 1.3.3 y 2.0.1 ([RUSTSEC-2025-0141](https://rustsec.org/advisories/RUSTSEC-2025-0141)), `paste` 1.0.15 ([RUSTSEC-2024-0436](https://rustsec.org/advisories/RUSTSEC-2024-0436)), `rustybuzz` 0.20.1 ([RUSTSEC-2026-0206](https://rustsec.org/advisories/RUSTSEC-2026-0206)), `ttf-parser` 0.25.1 ([RUSTSEC-2026-0192](https://rustsec.org/advisories/RUSTSEC-2026-0192)) y `yaml-rust` 0.4.5 ([RUSTSEC-2024-0320](https://rustsec.org/advisories/RUSTSEC-2024-0320)).

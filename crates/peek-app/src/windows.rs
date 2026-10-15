@@ -50,6 +50,9 @@ mod native {
         let mut command = Command::new(powershell);
         command
             .args(["-NoProfile", "-NonInteractive", "-Command", INTEGRATION])
+            // PowerShell 7 exports module paths incompatible with Windows PowerShell.
+            // Let the system host initialize its own standard module search path.
+            .env_remove("PSModulePath")
             .env("CODEPEEK_INSTALL_MODE", mode)
             .env("CODEPEEK_INSTALL_SOURCE", std::env::current_exe()?)
             .env("CODEPEEK_INSTALL_ASSETS", payload.path())
