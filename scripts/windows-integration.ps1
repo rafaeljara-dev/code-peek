@@ -7,12 +7,17 @@ if ($mode -notin @('install', 'uninstall', 'context')) { throw 'Modo de integrac
 $installDir = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Programs\CodePeek'
 $installedExe = Join-Path $installDir 'peek.exe'
 $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\CodePeek'
-$contextRoots = @('HKCU:\Software\Classes\Directory\shell\CodePeek', 'HKCU:\Software\Classes\Directory\Background\shell\CodePeek', 'HKCU:\Software\Classes\*\shell\CodePeek')
-$resources = @('icon.ico', 'icon.png', 'LICENSE', 'THIRD-PARTY-NOTICES.md', 'DEVICON-LICENSE', 'CODICONS-LICENSE', 'SLINT-LICENSE')
+$icon = Join-Path $installDir 'icon.ico'
+# Folders receive the selected path as %V; files receive it as %1.
+$contextRoots = [ordered]@{
+    'HKCU:\Software\Classes\Directory\shell\CodePeek' = '%V'
+    'HKCU:\Software\Classes\Directory\Background\shell\CodePeek' = '%V'
+    'HKCU:\Software\Classes\*\shell\CodePeek' = '%1'
+}
+# peek.exe writes its owned resources to the payload in every mode: one source of truth.
+$resources = @((Get-ChildItem -LiteralPath $env:CODEPEEK_INSTALL_ASSETS -File).Name)
 
 function Assert-InstallDirectory {
-    $expected = [IO.Path]::GetFullPath((Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Programs\CodePeek'))
-    if ([IO.Path]::GetFullPath($installDir) -ne $expected) { throw 'Destino de instalación inesperado.' }
     $component = $installDir
     while ($component) {
         if (Test-Path -LiteralPath $component) {
@@ -56,7 +61,7 @@ if ($mode -eq 'uninstall') {
         if (Test-Path -LiteralPath $shortcut) { Remove-Item -LiteralPath $shortcut }
     }
     Set-UserPath $false
-    foreach ($key in @($uninstallKey) + $contextRoots) {
+    foreach ($key in @($uninstallKey) + @($contextRoots.Keys)) {
         if (Test-Path -LiteralPath $key) { Remove-Item -LiteralPath $key -Recurse }
     }
     Assert-InstallDirectory
@@ -96,14 +101,14 @@ if ($mode -eq 'install') {
         $shortcut = $shell.CreateShortcut($shortcutPath)
         $shortcut.TargetPath = $installedExe
         $shortcut.WorkingDirectory = $installDir
-        $shortcut.IconLocation = (Join-Path $installDir 'icon.ico') + ',0'
+        $shortcut.IconLocation = $icon + ',0'
         $shortcut.Description = 'CodePeek — Inspector de código nativo'
         $shortcut.Save()
         if ($shell.CreateShortcut($shortcutPath).TargetPath -ne $installedExe) { throw 'No se pudo verificar el acceso directo.' }
     }
     Set-UserPath $true
     New-Item -Path $uninstallKey -Force | Out-Null
-    $values = @{DisplayName='CodePeek'; DisplayVersion='0.1.0'; Publisher='CodePeek Contributors'; InstallLocation=$installDir; DisplayIcon=(Join-Path $installDir 'icon.ico'); UninstallString=('"{0}" --uninstall' -f $installedExe)}
+    $values = @{DisplayName='CodePeek'; DisplayVersion=$env:CODEPEEK_INSTALL_VERSION; Publisher='CodePeek Contributors'; InstallLocation=$installDir; DisplayIcon=$icon; UninstallString=('"{0}" --uninstall' -f $installedExe)}
     foreach ($value in $values.GetEnumerator()) { New-ItemProperty -LiteralPath $uninstallKey -Name $value.Key -Value $value.Value -PropertyType String -Force | Out-Null }
     if ((Get-FileHash -LiteralPath $source).Hash -ne (Get-FileHash -LiteralPath $installedExe).Hash) { throw 'El ejecutable instalado no coincide con el origen.' }
     $source = $installedExe
@@ -112,14 +117,13 @@ if ($mode -eq 'install') {
     }
 }
 
-for ($index = 0; $index -lt $contextRoots.Count; $index++) {
-    $key = $contextRoots[$index]
+foreach ($root in $contextRoots.GetEnumerator()) {
+    $key = $root.Key
     New-Item -Path $key -Force | Out-Null
     Set-Item -LiteralPath $key -Value 'Abrir con CodePeek'
-    New-ItemProperty -LiteralPath $key -Name Icon -Value (Join-Path $installDir 'icon.ico') -PropertyType String -Force | Out-Null
+    New-ItemProperty -LiteralPath $key -Name Icon -Value $icon -PropertyType String -Force | Out-Null
     $commandKey = Join-Path $key 'command'
     New-Item -Path $commandKey -Force | Out-Null
-    $placeholder = if ($index -eq 2) { '%1' } else { '%V' }
-    Set-Item -LiteralPath $commandKey -Value ('"{0}" -- "{1}"' -f $source, $placeholder)
+    Set-Item -LiteralPath $commandKey -Value ('"{0}" -- "{1}"' -f $source, $root.Value)
 }
 Write-Output "CodePeek instalado y verificado: $source"

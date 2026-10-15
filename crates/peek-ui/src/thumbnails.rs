@@ -5,7 +5,6 @@ use std::sync::{Arc, Condvar, Mutex};
 
 use crate::image_loader::{self, RawRgbaImage, ThumbnailCache};
 
-#[derive(Clone, Default, PartialEq, Eq)]
 pub(crate) struct Request {
     pub files: Vec<PathBuf>,
     pub projects: Vec<PathBuf>,
@@ -15,7 +14,7 @@ pub(crate) type Images = HashMap<PathBuf, RawRgbaImage>;
 
 #[derive(Default)]
 struct Mailbox {
-    pending: Option<(u64, Request)>,
+    pending: Option<Request>,
     generation: u64,
     stopped: bool,
 }
@@ -29,7 +28,7 @@ impl Loader {
         let mailbox = Arc::new((Mutex::new(Mailbox::default()), Condvar::new()));
         let worker = mailbox.clone();
         std::thread::spawn(move || {
-            let cache = ThumbnailCache::new();
+            let mut cache = ThumbnailCache::new();
             loop {
                 let (generation, request) = {
                     let (lock, wake) = &*worker;
@@ -40,7 +39,7 @@ impl Loader {
                     if state.stopped {
                         return;
                     }
-                    state.pending.take().unwrap()
+                    (state.generation, state.pending.take().unwrap())
                 };
                 let valid = || {
                     let state = worker.0.lock().unwrap();
@@ -52,7 +51,7 @@ impl Loader {
                     if !valid() {
                         break;
                     }
-                    if let Some(image) = image_loader::project_logo_raw(&path, &cache) {
+                    if let Some(image) = image_loader::project_logo_raw(&path, &mut cache) {
                         projects.insert(path, image);
                     }
                 }
@@ -84,7 +83,7 @@ impl Loader {
         let (lock, wake) = &*self.mailbox;
         let mut state = lock.lock().unwrap();
         state.generation = generation;
-        state.pending = Some((generation, request));
+        state.pending = Some(request);
         wake.notify_one();
     }
 }
@@ -126,8 +125,8 @@ mod tests {
             if generation != 100 || !files.contains_key(&path) {
                 continue;
             }
-            assert!(files[&path].width <= 36);
-            assert!(projects[dir.path()].width <= 64);
+            assert!(files[&path].width() <= 36);
+            assert!(projects[dir.path()].width() <= 64);
             break;
         }
     }

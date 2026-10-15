@@ -1,15 +1,10 @@
 //! Isolated probes of production operations and reusable caches.
 //! Run with `cargo run --release -p peek-ui --example performance_audit -- <case>`.
-#[allow(dead_code)]
-#[path = "../src/editor.rs"]
-mod editor;
-#[allow(dead_code)]
-#[path = "../src/wrapping.rs"]
-mod wrapping;
 
 use anyhow::{bail, Result};
 use peek_core::TextBuffer;
 use peek_syntax::ExtensionRegistry;
+use peek_ui::{editor, wrapping};
 use std::hint::black_box;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -172,7 +167,7 @@ fn main() -> Result<()> {
             measure("thumbnail_4096_to_36", 5, || {
                 peek_ui::image_loader::load_raster_thumb_raw(fixture.path(), 36)
                     .unwrap()
-                    .width as usize
+                    .width() as usize
             });
         }
         "load-save" => {

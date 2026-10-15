@@ -41,6 +41,9 @@ memmap2 = "0.9"
 crossbeam-channel = "0.5"
 rayon = "1.10"
 
+# Testing
+tempfile = "3"
+
 # CLI & Utilities
 clap = { version = "4.5", features = ["derive"] }
 anyhow = "1.0"

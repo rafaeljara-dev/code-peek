@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender};
 use std::sync::{
@@ -443,31 +443,10 @@ impl Controller {
                     }
                     let file_changes = image_changes(&self.thumbnails, &files);
                     let logo_changes = image_changes(&self.project_logos, &projects);
-                    let file_updates = self
-                        .tree_nodes
-                        .iter()
-                        .enumerate()
-                        .filter_map(|(index, node)| {
-                            file_changes.get(&node.path).map(|image| {
-                                (
-                                    index,
-                                    node.path.to_string_lossy().into_owned(),
-                                    image.clone(),
-                                )
-                            })
-                        })
-                        .collect::<Vec<_>>();
-                    let logo_updates = self
-                        .settings
-                        .open_projects
-                        .iter()
-                        .enumerate()
-                        .filter_map(|(index, path)| {
-                            logo_changes.get(path).map(|image| {
-                                (index, path.to_string_lossy().into_owned(), image.clone())
-                            })
-                        })
-                        .collect::<Vec<_>>();
+                    let file_updates =
+                        row_updates(self.tree_nodes.iter().map(|n| &n.path), &file_changes);
+                    let logo_updates =
+                        row_updates(self.settings.open_projects.iter(), &logo_changes);
                     self.thumbnails = files;
                     self.project_logos = projects;
                     if !file_updates.is_empty() || !logo_updates.is_empty() {
@@ -1463,15 +1442,13 @@ impl Controller {
                     .cloned()
                     .collect(),
             };
-            {
-                self.thumbnail_generation += 1;
-                self.thumbnails
-                    .retain(|path, _| request.files.contains(path));
-                self.project_logos
-                    .retain(|path, _| request.projects.contains(path));
-                if let Some(loader) = &self.thumbnail_loader {
-                    thumbnail_job = Some((loader.clone(), self.thumbnail_generation, request));
-                }
+            self.thumbnail_generation += 1;
+            let files: HashSet<&PathBuf> = request.files.iter().collect();
+            let projects: HashSet<&PathBuf> = request.projects.iter().collect();
+            self.thumbnails.retain(|path, _| files.contains(path));
+            self.project_logos.retain(|path, _| projects.contains(path));
+            if let Some(loader) = &self.thumbnail_loader {
+                thumbnail_job = Some((loader.clone(), self.thumbnail_generation, request));
             }
         }
         let project = self.workspace.root_dir.clone().unwrap_or_default();
@@ -1657,14 +1634,15 @@ impl Controller {
         let visible_ratio =
             rows.iter().filter(|row| !row.continuation).count().max(1) as f32 / total.max(1) as f32;
         let is_image = self.is_image;
-        let image_source = if std::mem::take(&mut self.image_dirty) {
-            Some(self.current_image.clone())
-        } else {
-            None
-        };
+        let image_source =
+            std::mem::take(&mut self.image_dirty).then(|| self.current_image.clone());
         let image_info = self.image_info.clone();
-        let thumbs = self.thumbnails.clone();
-        let logos = self.project_logos.clone();
+        // Images only feed rebuilt navigation models; other publishes skip the map copies.
+        let (thumbs, logos) = if navigation_dirty {
+            (self.thumbnails.clone(), self.project_logos.clone())
+        } else {
+            Default::default()
+        };
         let _ = self.window.upgrade_in_event_loop(move |w| {
             w.set_caret_line(caret.0 as i32 + 1);
             w.set_caret_column(caret.1.saturating_sub(left) as i32);
@@ -1709,9 +1687,9 @@ impl Controller {
             w.set_selected_path(selected_path.into());
             w.set_is_image(is_image);
             if let Some(source) = image_source {
-                w.set_image_source(
-                    source.map_or_else(slint::Image::default, |raw| raw.to_slint_image()),
-                );
+                w.set_image_source(image_loader::RawRgbaImage::to_slint_or_default(
+                    source.as_ref(),
+                ));
             }
             if is_image {
                 w.set_image_info(image_info.into());
@@ -1796,27 +1774,55 @@ fn image_changes(
     changes
 }
 
+/// Pair each changed path with the row index and path text it occupies in a navigation model.
+fn row_updates<'a>(
+    paths: impl Iterator<Item = &'a PathBuf>,
+    changes: &HashMap<PathBuf, Option<image_loader::RawRgbaImage>>,
+) -> Vec<ImageUpdate> {
+    paths
+        .enumerate()
+        .filter_map(|(index, path)| {
+            changes
+                .get(path)
+                .map(|image| (index, path.to_string_lossy().into_owned(), image.clone()))
+        })
+        .collect()
+}
+
 /// Update only existing matching rows; preserve the model, scroll and document properties.
 fn apply_image_updates(window: &MainWindow, files: Vec<ImageUpdate>, logos: Vec<ImageUpdate>) {
-    let model = window.get_tree_items();
-    for (index, path, image) in files {
-        if let Some(mut row) = model
-            .row_data(index)
-            .filter(|row| row.path.as_str() == path)
-        {
+    patch_rows(
+        window.get_tree_items(),
+        files,
+        |row| &row.path,
+        |row, image| {
             row.has_thumb = image.is_some();
-            row.thumb = image.map_or_else(slint::Image::default, |raw| raw.to_slint_image());
-            model.set_row_data(index, row);
-        }
-    }
-    let model = window.get_recent_projects();
-    for (index, path, image) in logos {
+            row.thumb = image_loader::RawRgbaImage::to_slint_or_default(image.as_ref());
+        },
+    );
+    patch_rows(
+        window.get_recent_projects(),
+        logos,
+        |row| &row.path,
+        |row, image| {
+            row.has_logo = image.is_some();
+            row.logo = image_loader::RawRgbaImage::to_slint_or_default(image.as_ref());
+        },
+    );
+}
+
+fn patch_rows<T: Clone + 'static>(
+    model: ModelRc<T>,
+    updates: Vec<ImageUpdate>,
+    path: impl Fn(&T) -> &SharedString,
+    set: impl Fn(&mut T, Option<image_loader::RawRgbaImage>),
+) {
+    for (index, expected, image) in updates {
         if let Some(mut row) = model
             .row_data(index)
-            .filter(|row| row.path.as_str() == path)
+            .filter(|row| path(row).as_str() == expected)
         {
-            row.has_logo = image.is_some();
-            row.logo = image.map_or_else(slint::Image::default, |raw| raw.to_slint_image());
+            set(&mut row, image);
             model.set_row_data(index, row);
         }
     }
@@ -2323,10 +2329,11 @@ mod tests {
             &favicon,
         )
         .unwrap();
-        assert!(
-            image_loader::project_logo_raw(dir.path(), &image_loader::ThumbnailCache::new())
-                .is_some()
-        );
+        assert!(image_loader::project_logo_raw(
+            dir.path(),
+            &mut image_loader::ThumbnailCache::new()
+        )
+        .is_some());
 
         let source = dir.path().join("source.txt");
         fs::write(&source, "original\n").unwrap();

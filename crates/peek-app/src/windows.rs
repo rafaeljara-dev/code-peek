@@ -8,6 +8,8 @@ mod native {
     use std::path::PathBuf;
     use std::process::Command;
 
+    /// Keeps PowerShell and the relaunched viewer from flashing a console window.
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
     const INTEGRATION: &str = include_str!("../../../scripts/windows-integration.ps1");
     const RESOURCES: &[(&str, &[u8])] = &[
         ("icon.ico", include_bytes!("../../../assets/icon.ico")),
@@ -31,7 +33,7 @@ mod native {
         ),
     ];
 
-    pub(super) fn install_dir() -> Result<PathBuf> {
+    fn install_dir() -> Result<PathBuf> {
         Ok(dirs::data_local_dir()
             .context("No se pudo localizar la carpeta de datos del usuario")?
             .join("Programs")
@@ -56,7 +58,8 @@ mod native {
             .env("CODEPEEK_INSTALL_MODE", mode)
             .env("CODEPEEK_INSTALL_SOURCE", std::env::current_exe()?)
             .env("CODEPEEK_INSTALL_ASSETS", payload.path())
-            .creation_flags(0x0800_0000);
+            .env("CODEPEEK_INSTALL_VERSION", env!("CARGO_PKG_VERSION"))
+            .creation_flags(CREATE_NO_WINDOW);
         let output = command
             .output()
             .context("No se pudo ejecutar la integración de Windows")?;
@@ -69,7 +72,17 @@ mod native {
         println!("{}", String::from_utf8_lossy(&output.stdout).trim());
         Ok(())
     }
+
+    pub fn launch_installed() -> Result<()> {
+        Command::new(install_dir()?.join("peek.exe"))
+            .creation_flags(CREATE_NO_WINDOW)
+            .spawn()?;
+        Ok(())
+    }
 }
+
+#[cfg(windows)]
+pub use native::launch_installed;
 
 pub fn install() -> Result<()> {
     #[cfg(windows)]
@@ -92,13 +105,4 @@ pub fn register_context_menu() -> Result<()> {
     return native::integration("context");
     #[cfg(not(windows))]
     anyhow::bail!("El menú contextual integrado solo está disponible en Windows");
-}
-
-#[cfg(windows)]
-pub fn launch_installed() -> Result<()> {
-    use std::os::windows::process::CommandExt;
-    std::process::Command::new(native::install_dir()?.join("peek.exe"))
-        .creation_flags(0x0800_0000)
-        .spawn()?;
-    Ok(())
 }

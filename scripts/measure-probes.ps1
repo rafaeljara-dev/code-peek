@@ -6,6 +6,16 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $resolvedExecutable = (Resolve-Path -LiteralPath $Executable).Path
+# Rewritten after every case so a later failure keeps earlier results.
+# Only the file name is recorded: an absolute path would publish the local user folder.
+function Save-Report {
+    [pscustomobject]@{
+        Date = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'
+        Executable = Split-Path -Leaf $resolvedExecutable
+        Method = 'Microbenchmarks release del código existente. Memoria por proceso, incluido preparar fixtures; pico privado observado con sondeo de 10 ms. No mide latencia completa de la UI ni memoria GPU.'
+        Results = $records.ToArray()
+    } | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $OutputPath -Encoding utf8
+}
 $records = [System.Collections.Generic.List[object]]::new()
 foreach ($case in $Cases) {
     $info = [System.Diagnostics.ProcessStartInfo]::new()
@@ -42,17 +52,7 @@ foreach ($case in $Cases) {
         Results = $results
     })
     $probeProcess.Dispose()
-    [pscustomobject]@{
-        Date = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'
-        Executable = $resolvedExecutable
-        Method = 'Microbenchmarks release del código existente. Memoria por proceso, incluido preparar fixtures; pico privado observado con sondeo de 10 ms. No mide latencia completa de la UI ni memoria GPU.'
-        Results = $records.ToArray()
-    } | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $OutputPath -Encoding utf8
+    Save-Report
     Write-Host "Caso ${case}: working set máximo $([math]::Round($peakWorkingSet / 1MB, 2)) MiB."
 }
-[pscustomobject]@{
-    Date = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'
-    Executable = $resolvedExecutable
-    Method = 'Microbenchmarks release del código existente. Memoria por proceso, incluido preparar fixtures; pico privado observado con sondeo de 10 ms. No mide latencia completa de la UI ni memoria GPU.'
-    Results = $records.ToArray()
-} | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $OutputPath -Encoding utf8
+Save-Report

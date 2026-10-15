@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::io::{BufRead, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
 use anyhow::{bail, Context, Result};
@@ -12,22 +11,31 @@ use image::ImageDecoder;
 #[derive(Clone)]
 pub struct RawRgbaImage {
     pub data: slint::SharedPixelBuffer<slint::Rgba8Pixel>,
-    pub width: u32,
-    pub height: u32,
 }
 
 impl RawRgbaImage {
     pub fn new(data: Vec<u8>, width: u32, height: u32) -> Self {
         Self {
             data: slint::SharedPixelBuffer::clone_from_slice(&data, width, height),
-            width,
-            height,
         }
+    }
+
+    pub fn width(&self) -> u32 {
+        self.data.width()
+    }
+
+    pub fn height(&self) -> u32 {
+        self.data.height()
     }
 
     /// Converts raw RGBA pixels into a Slint Image on the UI thread.
     pub fn to_slint_image(&self) -> slint::Image {
         slint::Image::from_rgba8(self.data.clone())
+    }
+
+    /// An absent image becomes Slint's empty image.
+    pub fn to_slint_or_default(image: Option<&Self>) -> slint::Image {
+        image.map_or_else(slint::Image::default, Self::to_slint_image)
     }
 }
 
@@ -114,6 +122,13 @@ fn safe_svg_tree(path: &Path) -> Result<usvg::Tree> {
             ..Default::default()
         },
     )?;
+    // First element per id, matching a document-order search, built once for every `<use>`.
+    let mut ids = HashMap::new();
+    for node in doc.descendants() {
+        if let Some(id) = node.attribute("id") {
+            ids.entry(id).or_insert(node);
+        }
+    }
     let mut references = 0;
     for node in doc.descendants().filter(|node| node.is_element()) {
         if node.ancestors().take(66).count() > 64 || node.attributes().len() > 128 {
@@ -128,9 +143,8 @@ fn safe_svg_tree(path: &Path) -> Result<usvg::Tree> {
                 .attribute("href")
                 .or_else(|| node.attribute(("http://www.w3.org/1999/xlink", "href")));
             if let Some(id) = href.and_then(|href| href.strip_prefix('#')) {
-                if doc
-                    .descendants()
-                    .find(|n| n.attribute("id") == Some(id))
+                if ids
+                    .get(id)
                     .is_some_and(|n| n.descendants().any(|child| child.has_tag_name("use")))
                 {
                     bail!("El SVG contiene referencias use anidadas");
@@ -151,17 +165,11 @@ fn safe_svg_tree(path: &Path) -> Result<usvg::Tree> {
                 ) {
                     return None; // No nested SVG or recursively compressed data documents.
                 }
-                let mut reader = image::ImageReader::new(std::io::Cursor::new(data.as_slice()))
+                let reader = image::ImageReader::new(std::io::Cursor::new(data.as_slice()))
                     .with_guessed_format()
                     .ok()?;
-                let mut limits = image::Limits::default();
-                limits.max_alloc = Some(MAX_EMBEDDED_BYTES);
-                limits.max_image_width = Some(MAX_DIMENSION);
-                limits.max_image_height = Some(MAX_DIMENSION);
-                reader.limits(limits);
-                let decoder = reader.into_decoder().ok()?;
+                let decoder = bounded_decoder(reader, MAX_EMBEDDED_BYTES).ok()?;
                 let (w, h) = decoder.dimensions();
-                validate_dimensions(w, h, decoder.total_bytes()).ok()?;
                 let cost = decoder.total_bytes().max(u64::from(w) * u64::from(h) * 4);
                 budget
                     .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |remaining| {
@@ -190,19 +198,26 @@ fn validate_dimensions(width: u32, height: u32, bytes: u64) -> Result<()> {
     Ok(())
 }
 
-fn decode_raster(
-    reader: image::ImageReader<std::io::BufReader<std::fs::File>>,
-) -> Result<image::DynamicImage> {
+/// Check area and decoder output before any caller allocates the complete buffer.
+fn bounded_decoder<'a, R: 'a + BufRead + Seek>(
+    mut reader: image::ImageReader<R>,
+    max_alloc: u64,
+) -> Result<impl ImageDecoder + 'a> {
     let mut limits = image::Limits::default();
     limits.max_image_width = Some(MAX_DIMENSION);
     limits.max_image_height = Some(MAX_DIMENSION);
-    limits.max_alloc = Some(MAX_DECODE_BYTES);
-    let mut reader = reader;
+    limits.max_alloc = Some(max_alloc);
     reader.limits(limits);
     let decoder = reader.into_decoder()?;
     let (width, height) = decoder.dimensions();
-    // Check area and decoder output before DynamicImage allocates the complete buffer.
     validate_dimensions(width, height, decoder.total_bytes())?;
+    Ok(decoder)
+}
+
+fn decode_raster(
+    reader: image::ImageReader<std::io::BufReader<std::fs::File>>,
+) -> Result<image::DynamicImage> {
+    let decoder = bounded_decoder(reader, MAX_DECODE_BYTES)?;
     Ok(image::DynamicImage::from_decoder(decoder)?)
 }
 
@@ -443,12 +458,23 @@ struct ThumbnailStore {
     clock: u64,
 }
 
-type ThumbnailMap = Arc<Mutex<ThumbnailStore>>;
+impl ThumbnailStore {
+    fn touch(&mut self) -> u64 {
+        self.clock += 1;
+        self.clock
+    }
 
-/// Thread-safe in-memory cache for file tree thumbnails (Send + Sync).
-#[derive(Clone, Default)]
+    fn remove(&mut self, key: &(PathBuf, u32)) {
+        if let Some(old) = self.entries.remove(key) {
+            self.bytes -= thumbnail_bytes(&old.image);
+        }
+    }
+}
+
+/// In-memory cache for file tree thumbnails, owned by the thumbnail worker.
+#[derive(Default)]
 pub struct ThumbnailCache {
-    cache: ThumbnailMap,
+    store: ThumbnailStore,
 }
 
 impl ThumbnailCache {
@@ -456,12 +482,12 @@ impl ThumbnailCache {
         Self::default()
     }
 
-    pub fn get_or_create(&self, path: &Path) -> Option<RawRgbaImage> {
+    pub fn get_or_create(&mut self, path: &Path) -> Option<RawRgbaImage> {
         self.get_or_create_sized(path, 36)
     }
 
     /// Disk access and decoding: call only from a worker, never from the event loop.
-    pub fn get_or_create_sized(&self, path: &Path, dimension: u32) -> Option<RawRgbaImage> {
+    pub fn get_or_create_sized(&mut self, path: &Path, dimension: u32) -> Option<RawRgbaImage> {
         let metadata = std::fs::metadata(path).ok()?;
         // Ignore files larger than 40 MB for thumbnailing to keep UI fast
         if metadata.len() > 40 * 1024 * 1024 {
@@ -473,46 +499,38 @@ impl ThumbnailCache {
         );
         let key = (path.to_path_buf(), dimension.clamp(1, 64));
 
-        if let Ok(mut lock) = self.cache.lock() {
-            lock.clock += 1;
-            let used = lock.clock;
-            if let Some(entry) = lock.entries.get_mut(&key) {
-                if entry.stamp == stamp {
-                    entry.used = used;
-                    return entry.image.clone();
-                }
+        let store = &mut self.store;
+        let used = store.touch();
+        if let Some(entry) = store.entries.get_mut(&key) {
+            if entry.stamp == stamp {
+                entry.used = used;
+                return entry.image.clone();
             }
         }
 
         let thumb = load_image_thumbnail_raw(path, key.1);
 
-        if let Ok(mut lock) = self.cache.lock() {
-            if let Some(old) = lock.entries.remove(&key) {
-                lock.bytes -= thumbnail_bytes(&old.image);
-            }
-            lock.bytes += thumbnail_bytes(&thumb);
-            lock.clock += 1;
-            let used = lock.clock;
-            lock.entries.insert(
-                key,
-                CachedThumbnail {
-                    stamp,
-                    image: thumb.clone(),
-                    used,
-                },
-            );
-            while lock.bytes > 4 * 1024 * 1024 || lock.entries.len() > 600 {
-                let oldest = lock
-                    .entries
-                    .iter()
-                    .min_by_key(|(_, e)| e.used)
-                    .map(|(key, _)| key.clone());
-                if let Some(oldest) = oldest {
-                    if let Some(old) = lock.entries.remove(&oldest) {
-                        lock.bytes -= thumbnail_bytes(&old.image);
-                    }
-                }
-            }
+        store.remove(&key);
+        store.bytes += thumbnail_bytes(&thumb);
+        let used = store.touch();
+        store.entries.insert(
+            key,
+            CachedThumbnail {
+                stamp,
+                image: thumb.clone(),
+                used,
+            },
+        );
+        while store.bytes > 4 * 1024 * 1024 || store.entries.len() > 600 {
+            let Some(oldest) = store
+                .entries
+                .iter()
+                .min_by_key(|(_, e)| e.used)
+                .map(|(key, _)| key.clone())
+            else {
+                break;
+            };
+            store.remove(&oldest);
         }
 
         thumb
@@ -523,7 +541,7 @@ fn thumbnail_bytes(image: &Option<RawRgbaImage>) -> usize {
     image.as_ref().map_or(0, |i| i.data.as_bytes().len())
 }
 
-pub(crate) fn project_logo_raw(root: &Path, cache: &ThumbnailCache) -> Option<RawRgbaImage> {
+pub(crate) fn project_logo_raw(root: &Path, cache: &mut ThumbnailCache) -> Option<RawRgbaImage> {
     const CANDIDATES: &[&str] = &[
         "favicon.ico",
         "icon.png",
@@ -623,7 +641,7 @@ mod tests {
         std::fs::write(&vector, r#"<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1000000"><rect width="1" height="1000000"/></svg>"#).unwrap();
         let (raw, _, height) = load_svg_raw(&vector).unwrap();
         assert_eq!(height, 1_000_000);
-        assert!(raw.width <= 4096 && raw.height <= 4096);
+        assert!(raw.width() <= 4096 && raw.height() <= 4096);
     }
 
     #[test]
@@ -633,22 +651,19 @@ mod tests {
         image::RgbaImage::from_pixel(64, 64, image::Rgba([1, 2, 3, 255]))
             .save(&path)
             .unwrap();
-        let cache = ThumbnailCache::new();
+        let mut cache = ThumbnailCache::new();
         let first = cache.get_or_create_sized(&path, 64).unwrap();
         let hit = cache.get_or_create_sized(&path, 64).unwrap();
         assert_eq!(first.data.as_bytes().as_ptr(), hit.data.as_bytes().as_ptr());
-        assert_eq!(cache.get_or_create(&path).unwrap().width, 36);
+        assert_eq!(cache.get_or_create(&path).unwrap().width(), 36);
         for index in 0..270 {
             let other = dir.path().join(format!("{index}.png"));
             std::fs::copy(&path, &other).unwrap();
             cache.get_or_create_sized(&other, 64).unwrap();
             cache.get_or_create_sized(&path, 64).unwrap();
         }
-        {
-            let store = cache.cache.lock().unwrap();
-            assert!(store.bytes <= 4 * 1024 * 1024);
-            assert!(store.entries.len() <= 600);
-        }
+        assert!(cache.store.bytes <= 4 * 1024 * 1024);
+        assert!(cache.store.entries.len() <= 600);
         assert_eq!(
             first.data.as_bytes().as_ptr(),
             cache
@@ -662,7 +677,7 @@ mod tests {
             .save(&path)
             .unwrap();
         let changed = cache.get_or_create_sized(&path, 64).unwrap();
-        assert_eq!((changed.width, changed.height), (64, 32));
+        assert_eq!((changed.width(), changed.height()), (64, 32));
         assert_eq!(&changed.data.as_bytes()[..4], &[9, 8, 7, 255]);
     }
 
@@ -714,17 +729,17 @@ mod tests {
         assert!(details.summary.contains("PNG"));
         assert!(details.summary.contains("64 × 32 px"));
 
-        let cache = ThumbnailCache::new();
+        let mut cache = ThumbnailCache::new();
         let thumb1 = cache.get_or_create(&file_path);
         assert!(thumb1.is_some());
         let thumb_img = thumb1.unwrap();
-        assert!(thumb_img.width <= 36);
-        assert!(thumb_img.height <= 36);
+        assert!(thumb_img.width() <= 36);
+        assert!(thumb_img.height() <= 36);
 
         // Cached hit returns identical dimensions
         let thumb2 = cache.get_or_create(&file_path).unwrap();
-        assert_eq!(thumb_img.width, thumb2.width);
-        assert_eq!(thumb_img.height, thumb2.height);
+        assert_eq!(thumb_img.width(), thumb2.width());
+        assert_eq!(thumb_img.height(), thumb2.height());
     }
 
     #[test]
@@ -745,7 +760,7 @@ mod tests {
         let thumb = load_image_thumbnail_raw(&file_path, 32);
         assert!(thumb.is_some());
         let t = thumb.unwrap();
-        assert!(t.width <= 32);
-        assert!(t.height <= 32);
+        assert!(t.width() <= 32);
+        assert!(t.height() <= 32);
     }
 }

@@ -44,15 +44,10 @@ pub fn wrap_visible(
     }
     let columns = columns.max(4);
     let fallback;
-    let mut remaining = source;
-    let source_preserved = highlights.iter().all(|span| {
-        if let Some(tail) = remaining.strip_prefix(span.text.as_str()) {
-            remaining = tail;
-            true
-        } else {
-            false
-        }
-    }) && remaining.is_empty();
+    let source_preserved = highlights
+        .iter()
+        .try_fold(source, |rest, span| rest.strip_prefix(span.text.as_str()))
+        .is_some_and(str::is_empty);
     let highlights = if formatted || source_preserved {
         highlights
     } else {
@@ -65,12 +60,9 @@ pub fn wrap_visible(
     let mut column = 0;
     for span in highlights {
         for grapheme in span.text.graphemes(true) {
-            let tab = grapheme == "\t";
-            let parts = if tab { 4 - column % 4 } else { 1 };
-            for _ in 0..parts {
-                let part = if tab { " " } else { grapheme };
-                let width = UnicodeWidthStr::width(part);
-                if column + width > columns && column > 0 {
+            let (part, repeat) = display_parts(grapheme, column);
+            for _ in 0..repeat {
+                if place(part, &mut column, columns) {
                     if fragment >= skip {
                         rows.push(std::mem::take(&mut row));
                         if rows.len() >= count {
@@ -80,7 +72,6 @@ pub fn wrap_visible(
                         row.clear();
                     }
                     fragment += 1;
-                    column = 0;
                 }
                 // Retain the last skipped row to preserve clamping beyond end-of-line.
                 if let Some(last) = row.last_mut().filter(|s| {
@@ -95,7 +86,6 @@ pub fn wrap_visible(
                         italic: span.italic,
                     });
                 }
-                column += width;
             }
         }
     }
@@ -103,22 +93,33 @@ pub fn wrap_visible(
     (skip.min(fragment), rows)
 }
 
+/// A tab expands to spaces up to the next 4-column stop; any other grapheme is one part.
+fn display_parts(grapheme: &str, column: usize) -> (&str, usize) {
+    if grapheme == "\t" {
+        (" ", 4 - column % 4)
+    } else {
+        (grapheme, 1)
+    }
+}
+
+/// Advance past one display part and report whether it starts a new visual row.
+fn place(part: &str, column: &mut usize, columns: usize) -> bool {
+    let width = UnicodeWidthStr::width(part);
+    let wraps = *column + width > columns && *column > 0;
+    *column = if wraps { width } else { *column + width };
+    wraps
+}
+
 pub fn row_count(buffer: &TextBuffer, line: usize, columns: usize) -> usize {
     let source = buffer.line_trimmed(line).unwrap_or_default();
+    let columns = columns.max(4);
     let (mut count, mut column) = (1, 0);
     for grapheme in source.graphemes(true) {
-        let tab = grapheme == "\t";
-        for _ in 0..if tab { 4 - column % 4 } else { 1 } {
-            let width = if tab {
-                1
-            } else {
-                UnicodeWidthStr::width(grapheme)
-            };
-            if column + width > columns.max(4) && column > 0 {
+        let (part, repeat) = display_parts(grapheme, column);
+        for _ in 0..repeat {
+            if place(part, &mut column, columns) {
                 count += 1;
-                column = 0;
             }
-            column += width;
         }
     }
     count

@@ -1,10 +1,13 @@
 mod controller;
-mod editor;
+// Public only for the performance probes in `examples/`; not a stable API.
+#[doc(hidden)]
+pub mod editor;
 pub mod image_loader;
 mod theme;
 mod thumbnails;
 pub mod viewport;
-mod wrapping;
+#[doc(hidden)]
+pub mod wrapping;
 
 use controller::{Command, Controller};
 use slint::{CloseRequestResponse, ComponentHandle};

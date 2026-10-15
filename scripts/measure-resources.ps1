@@ -112,7 +112,8 @@ for ($run = 1; $run -le $Runs; $run++) {
 
 $report = [pscustomobject]@{
     Date = (Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK')
-    Executable = $resolvedExecutable
+    # File name only: the hash identifies the binary without publishing the local user folder.
+    Executable = Split-Path -Leaf $resolvedExecutable
     Sha256 = (Get-FileHash -LiteralPath $resolvedExecutable -Algorithm SHA256).Hash
     LogicalProcessors = $logicalProcessors
     Method = 'Ventana nativa observada con sondeo de 5 ms; memoria y CPU con ventana oculta tras inicializar. No mide primer fotograma, arranque frío, GPU ni batería.'
