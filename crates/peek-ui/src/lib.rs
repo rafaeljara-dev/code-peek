@@ -104,6 +104,8 @@ pub fn run_app(initial_path: Option<PathBuf>) -> Result<(), slint::PlatformError
     );
     connect!(on_zoom, |delta| Command::Zoom(delta));
     connect!(on_zoom_ui, |delta| Command::ZoomUi(delta));
+    connect!(on_zoom_chrome, |delta| Command::ZoomChrome(delta));
+    connect!(on_zoom_icons, |delta| Command::ZoomIcons(delta));
     connect!(on_toggle_theme, || Command::ToggleTheme);
     connect!(on_set_panels, |projects, explorer| Command::Panels(
         projects, explorer
@@ -545,7 +547,7 @@ mod tests {
             Some(&("example.txt".into(), "insert".into(), "ñ".into()))
         );
         assert!(!window.get_show_edit());
-        for label in ["Buscar archivos o texto", "Recargar (F5)"] {
+        for label in ["Abrir carpeta", "Recargar (F5)", "Configuración"] {
             let button = i_slint_backend_testing::ElementQuery::from_root(&window)
                 .match_descendants()
                 .match_predicate(move |element| {

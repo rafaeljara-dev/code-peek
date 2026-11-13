@@ -47,7 +47,11 @@ export global Theme {
     out property <color> dialog-error: light ? #8b2500 : #ffcfb5;
 }
 
-export global Typography { in-out property <length> size: 15px; }
+export global Typography {
+    in-out property <length> size: 15px;
+    in-out property <length> chrome: 15px;
+    in-out property <length> icon: 17px;
+}
 
 export struct FileItem { path: string, name: string, is-dir: bool, depth: int, is-expanded: bool, icon: string, icon-family: string, icon-color: color, has-thumb: bool, thumb: image }
 export struct SearchItem { path: string, display-path: string, line-number: int }
@@ -104,12 +108,12 @@ component Action inherits Rectangle {
     in property <string> icon: "";
     horizontal-stretch: 0;
     vertical-stretch: 0;
-    preferred-width: root.text == "" ? Typography.size + 19px : label.preferred-width + 24px + (root.icon == "" ? 0px : 24px);
+    preferred-width: root.text == "" ? (root.icon == "" ? Typography.size : Typography.icon) + 19px : label.preferred-width + 24px + (root.icon == "" ? 0px : Typography.icon + 7px);
     max-width: root.text-left ? 10000px : self.preferred-width;
     callback clicked();
     callback middle-clicked();
-    min-width: root.text == "" ? self.preferred-width : root.text-left ? 40px : label.preferred-width + 20px + (root.icon == "" ? 0px : 24px);
-    height: Typography.size + 17px;
+    min-width: root.text == "" ? self.preferred-width : root.text-left ? 40px : label.preferred-width + 20px + (root.icon == "" ? 0px : Typography.icon + 7px);
+    height: max(Typography.size + 17px, root.icon == "" ? 0px : Typography.icon + 15px);
     border-radius: 5px;
     background: !enabled ? Theme.disabled-surface : touch.has-hover || keys.has-focus ? Theme.button-hover : primary ? Theme.button-selected : Theme.button-surface;
     border-width: 1px;
@@ -127,8 +131,8 @@ component Action inherits Rectangle {
             reject
         }
     }
-    if root.icon != "": Text { text: root.icon; font-family: "codicon"; font-size: Typography.size + 2px; x: 8px; width: 20px; color: root.enabled ? Theme.button-text : Theme.disabled-text; vertical-alignment: center; }
-    label := Text { text: root.text; color: root.enabled ? Theme.button-text : Theme.disabled-text; font-size: Typography.size - 1px; horizontal-alignment: root.text-left ? left : center; overflow: elide; x: root.icon == "" ? 8px : 32px; width: parent.width - self.x - 8px; vertical-alignment: center; }
+    if root.icon != "": Text { text: root.icon; font-family: "codicon"; font-size: Typography.icon; x: root.text == "" ? (parent.width - self.width) / 2 : 8px; width: Typography.icon + 3px; horizontal-alignment: center; color: root.enabled ? Theme.button-text : Theme.disabled-text; vertical-alignment: center; }
+    label := Text { text: root.text; color: root.enabled ? Theme.button-text : Theme.disabled-text; font-size: Typography.size - 1px; horizontal-alignment: root.text-left ? left : center; overflow: elide; x: root.icon == "" ? 8px : Typography.icon + 15px; width: parent.width - self.x - 8px; vertical-alignment: center; }
     touch := TouchArea { enabled: root.enabled; clicked => { keys.focus(); root.clicked(); } pointer-event(e) => { if e.button == PointerEventButton.middle && e.kind == PointerEventKind.up { root.middle-clicked(); } } }
 }
 
@@ -245,6 +249,10 @@ export component MainWindow inherits Window {
     in-out property <string> code-font-family: "Consolas";
     in-out property <length> ui-font-size: 15px;
     changed ui-font-size => { Typography.size = self.ui-font-size; }
+    in-out property <length> chrome-font-size: 15px;
+    changed chrome-font-size => { Typography.chrome = self.chrome-font-size; }
+    in-out property <length> icon-size: 17px;
+    changed icon-size => { Typography.icon = self.icon-size; }
     out property <length> tree-font-size: root.ui-font-size;
     in-out property <[FileItem]> library-items;
     in-out property <[FileItem]> tree-items;
@@ -340,6 +348,8 @@ export component MainWindow inherits Window {
     callback viewport-changed(int);
     callback zoom(int);
     callback zoom-ui(int);
+    callback zoom-chrome(int);
+    callback zoom-icons(int);
     callback wrap-columns-changed(int);
     callback close-file(string);
     callback move-tab(int, int);
@@ -490,19 +500,46 @@ export component MainWindow inherits Window {
         VerticalLayout {
             padding: 0px; spacing: 0px;
             Rectangle {
-                height: Typography.size + 42px; background: Theme.header;
+                height: max(Typography.chrome + 26px, Typography.icon + 23px); background: Theme.header;
                 HorizontalLayout {
-                    padding: 12px; spacing: 10px;
-                    Action { text: "Proyectos"; accessible-text: root.show-library ? "Ocultar la lista de proyectos (Ctrl+Shift+B)" : "Mostrar la lista de proyectos (Ctrl+Shift+B)"; primary: root.show-library; clicked => { root.show-library = !root.show-library; root.set-panels(root.show-library, root.show-tree); } }
-                    Action { text: "Explorador"; accessible-text: root.show-tree ? "Ocultar el explorador (Ctrl+B)" : "Mostrar el explorador (Ctrl+B)"; primary: root.show-tree; clicked => { root.show-tree = !root.show-tree; root.set-panels(root.show-library, root.show-tree); } }
-                    Text { text: "CodePeek"; font-size: Typography.size + 4px; font-weight: 700; color: Theme.heading; vertical-alignment: center; }
-                    Action { text: "Cambiar proyecto"; clicked => { root.open-palette(2); } }
-                    Action { text: "Abrir carpeta"; clicked => { root.path-input = root.project-path; root.show-path = true; } }
+                    padding-left: 8px; padding-right: 8px; padding-top: 4px; padding-bottom: 4px; spacing: 6px;
+                    Action { text: ""; icon: "\u{ea83}"; accessible-text: root.show-library ? "Ocultar la lista de proyectos (Ctrl+Shift+B)" : "Mostrar la lista de proyectos (Ctrl+Shift+B)"; primary: root.show-library; clicked => { root.show-library = !root.show-library; root.set-panels(root.show-library, root.show-tree); } }
+                    Action { text: ""; icon: "\u{ebf3}"; accessible-text: root.show-tree ? "Ocultar el explorador (Ctrl+B)" : "Mostrar el explorador (Ctrl+B)"; primary: root.show-tree; clicked => { root.show-tree = !root.show-tree; root.set-panels(root.show-library, root.show-tree); } }
+                    Rectangle { width: 1px; background: Theme.border; }
+                    project-switch := Rectangle {
+                        width: switch-label.preferred-width + 20px;
+                        border-radius: 5px;
+                        background: switch-touch.has-hover ? Theme.button-hover : transparent;
+                        accessible-role: button; accessible-label: "Cambiar proyecto";
+                        accessible-action-default => { root.open-palette(2); }
+                        Tooltip { Hint { text: "Cambiar proyecto"; } }
+                        switch-label := HorizontalLayout {
+                            x: 10px; spacing: 6px;
+                            Text { text: "CodePeek"; font-size: Typography.chrome + 1px; font-weight: 700; color: Theme.heading; vertical-alignment: center; }
+                            if root.project-name != "": Text { text: "/ " + root.project-name; font-size: Typography.chrome; color: Theme.muted; vertical-alignment: center; }
+                            Text { text: "\u{eab4}"; font-family: "codicon"; font-size: Typography.chrome; color: Theme.muted; vertical-alignment: center; }
+                        }
+                        switch-touch := TouchArea { clicked => { root.open-palette(2); } }
+                    }
                     Rectangle { horizontal-stretch: 1; }
-                    Action { text: ""; icon: "\u{ea6d}"; accessible-text: "Buscar archivos o texto"; primary: true; clicked => { root.open-palette(1); } }
-                    Action { text: "Configuración"; clicked => { root.show-settings = true; } }
-                    Action { text: "Acerca de"; clicked => { root.show-about = true; } }
+                    Rectangle {
+                        min-width: 160px; preferred-width: 380px; max-width: 420px; horizontal-stretch: 0.5;
+                        border-radius: 5px; border-width: 1px; border-color: Theme.border;
+                        background: search-touch.has-hover ? Theme.button-hover : Theme.canvas;
+                        accessible-role: button; accessible-label: "Buscar archivos o texto";
+                        accessible-action-default => { root.open-palette(1); }
+                        HorizontalLayout {
+                            padding-left: 10px; padding-right: 10px; spacing: 8px;
+                            Text { text: "\u{ea6d}"; font-family: "codicon"; font-size: Typography.icon - 2px; color: Theme.muted; vertical-alignment: center; }
+                            Text { text: "Buscar archivos"; font-size: Typography.chrome; color: Theme.muted; vertical-alignment: center; horizontal-stretch: 1; overflow: elide; }
+                            Text { text: "Ctrl P"; color: Theme.muted; font-family: root.code-font-family; font-size: Typography.chrome - 2px; vertical-alignment: center; }
+                        }
+                        search-touch := TouchArea { clicked => { root.open-palette(1); } }
+                    }
+                    Rectangle { horizontal-stretch: 1; }
+                    Action { text: ""; icon: "\u{eaf7}"; accessible-text: "Abrir carpeta"; clicked => { root.path-input = root.project-path; root.show-path = true; } }
                     Action { text: ""; icon: "\u{ea77}"; accessible-text: "Recargar (F5)"; enabled: !root.busy && !root.show-edit; clicked => { root.reload(); } }
+                    Action { text: ""; icon: "\u{eaf8}"; accessible-text: "Configuración"; clicked => { root.show-settings = true; } }
                 }
             }
             if root.error-message != "": Rectangle {
@@ -629,37 +666,8 @@ export component MainWindow inherits Window {
                 }
                 VerticalLayout {
                     spacing: 0px;
-                    Rectangle {
-                        height: Typography.size + 32px; background: Theme.toolbar;
-                        HorizontalLayout {
-                            padding: 7px; spacing: 8px;
-                            Text { text: root.current-file-path == "" ? "Inspeccionar código" : root.current-file-path + (root.is-dirty ? "  ●" : ""); color: Theme.file-text; overflow: elide; vertical-alignment: center; horizontal-stretch: 1; }
-                            if root.selected-path != "" && root.is-image: Action {
-                                text: root.image-actual-size ? "Ajustar a ventana" : "Tamaño real (100%)";
-                                clicked => { root.image-actual-size = !root.image-actual-size; }
-                            }
-                            if root.selected-path != "" && root.is-pdf: Action { text: "‹"; accessible-text: "Página anterior"; enabled: root.pdf-page > 0; clicked => { root.pdf-step-page(-1); } }
-                            if root.selected-path != "" && root.is-pdf: Text { text: "Pág. " + (root.pdf-page + 1) + " / " + max(1, root.pdf-total-pages); color: Theme.file-text; vertical-alignment: center; }
-                            if root.selected-path != "" && root.is-pdf: Action { text: "›"; accessible-text: "Página siguiente"; enabled: root.pdf-page + 1 < root.pdf-total-pages; clicked => { root.pdf-step-page(1); } }
-                            if root.selected-path != "" && root.is-pdf && root.pdf-total-pages > 1: Action { text: "Miniaturas"; accessible-text: root.show-pdf-thumbs ? "Ocultar miniaturas de página" : "Mostrar miniaturas de página"; primary: root.show-pdf-thumbs; clicked => { root.show-pdf-thumbs = !root.show-pdf-thumbs; } }
-                            if root.selected-path != "" && root.is-pdf: Action { text: "Ajustar"; accessible-text: "Ajustar al ancho (Ctrl+0)"; primary: root.pdf-fit-width; clicked => { root.pdf-zoom(0); } }
-                            if root.selected-path != "" && (root.is-pdf || root.doc-mode()): Action { text: "−"; accessible-text: "Alejar (Ctrl+-)"; clicked => { root.zoom-active(-1); } }
-                            if root.selected-path != "" && (root.is-pdf || root.doc-mode()): Text { text: (root.is-pdf ? root.pdf-zoom-percent : round(root.doc-zoom * 100)) + "%"; color: Theme.muted; vertical-alignment: center; }
-                            if root.selected-path != "" && (root.is-pdf || root.doc-mode()): Action { text: "+"; accessible-text: "Acercar (Ctrl++)"; clicked => { root.zoom-active(1); } }
-                            if root.selected-path != "" && root.is-pdf: Action { text: "Copiar página"; clicked => { root.copy-pdf-text(); } }
-                            if root.selected-path != "" && root.project-path == "" && root.standalone-parent-path != "": Action { text: "Abrir carpeta"; clicked => { root.open-project(root.standalone-parent-path); } }
-                            if root.selected-path != "" && !root.is-image && !root.is-pdf && root.markdown-file && root.preview && root.doc-headings.length > 0: Action { text: "Índice"; primary: root.show-toc; clicked => { root.show-toc = !root.show-toc; } }
-                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: root.is-sheet ? "Tabla" : root.markdown-file ? "Vista previa" : "Lectura"; primary: root.preview; clicked => { root.preview = true; } }
-                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: "Editor"; primary: !root.preview; clicked => { root.preview = false; } }
-                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: ""; icon: "\u{eae2}"; accessible-text: "Deshacer (Ctrl+Z)"; enabled: root.can-undo; clicked => { root.undo(); } }
-                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: ""; icon: "\u{ebb0}"; accessible-text: "Rehacer (Ctrl+Shift+Z)"; enabled: root.can-redo; clicked => { root.redo(); } }
-                            if root.selected-path != "" && !root.is-image: Action { text: ""; icon: "\u{ea6d}"; accessible-text: "Buscar en el archivo (Ctrl+F)"; clicked => { root.show-find = true; root.show-replace = !(root.doc-readonly || root.is-pdf || (root.preview && (root.markdown-file || root.is-sheet))); } }
-                            if root.is-dirty && !root.is-image && !root.doc-readonly: Action { text: ""; icon: "\u{ea77}"; accessible-text: "Revertir cambios"; enabled: !root.busy; clicked => { root.revert(); } }
-                            if root.is-dirty && !root.is-image && !root.doc-readonly: Action { text: ""; icon: "\u{eb4b}"; accessible-text: "Guardar cambios (Ctrl+S)"; primary: true; enabled: !root.busy; clicked => { root.save(); } }
-                        }
-                    }
                     if root.recent-files.length > 0: Rectangle {
-                        height: Typography.size + 20px; background: Theme.sidebar;
+                        height: Typography.chrome + 20px; background: Theme.sidebar;
                         property <int> active: root.active-tab;
                         changed active => {
                             if self.active >= 0 {
@@ -707,7 +715,7 @@ export component MainWindow inherits Window {
                                             }
                                         }
                                     }
-                                    Text { x: 12px; y: 0px; height: parent.height; width: parent.width - 52px; text: item.display-path + (root.selected-path == item.path && root.is-dirty ? " ●" : ""); color: Theme.file-text; overflow: elide; vertical-alignment: center; }
+                                    Text { x: 12px; y: 0px; height: parent.height; width: parent.width - 52px; text: item.display-path + (root.selected-path == item.path && root.is-dirty ? " ●" : ""); font-size: Typography.chrome; color: Theme.file-text; overflow: elide; vertical-alignment: center; }
                                     Action { width: self.preferred-width; x: parent.width - self.width - 4px; y: (parent.height - self.height) / 2; text: "×"; accessible-text: "Cerrar " + item.display-path; clicked => { root.close-file(item.path); } middle-clicked => { root.close-file(item.path); } }
                                 }
                             }
@@ -722,6 +730,42 @@ export component MainWindow inherits Window {
                                 border-width: 1px; border-color: Theme.focus; border-radius: 4px;
                                 Text { x: 12px; width: parent.width - 24px; height: parent.height; vertical-alignment: center; overflow: elide; color: Theme.file-text; text: root.recent-files[root.drag-tab].display-path; }
                             }
+                        }
+                    }
+                    Rectangle {
+                        height: Typography.size + 32px; background: Theme.toolbar;
+                        HorizontalLayout {
+                            padding: 7px; spacing: 8px;
+                            if !(root.is-sheet && root.preview && root.selected-path != ""): Text { text: root.current-file-path == "" ? "Inspeccionar código" : root.current-file-path + (root.is-dirty ? "  ●" : ""); color: Theme.muted; font-size: Typography.chrome - 1px; overflow: elide; vertical-alignment: center; horizontal-stretch: 1; }
+                            if root.is-sheet && root.preview && root.selected-path != "": HorizontalLayout {
+                                spacing: 12px; horizontal-stretch: 1;
+                                Text { width: 56px; text: root.sheet-cell-ref; font-size: Typography.chrome; color: Theme.muted; font-family: root.code-font-family; vertical-alignment: center; accessible-label: "Celda seleccionada"; }
+                                Text { text: root.sheet-cell-text; font-size: Typography.chrome; color: Theme.file-text; overflow: elide; vertical-alignment: center; horizontal-stretch: 1; accessible-label: "Contenido de la celda"; }
+                            }
+                            if root.selected-path != "" && root.is-sheet && root.preview && root.sheet-has-prev-cols: Action { text: "‹ Cols"; clicked => { root.step-sheet-cols(false); } }
+                            if root.selected-path != "" && root.is-sheet && root.preview && root.sheet-has-next-cols: Action { text: "Cols ›"; clicked => { root.step-sheet-cols(true); } }
+                            if root.selected-path != "" && root.is-sheet && root.preview && root.sheet-has-prev-rows: Action { text: "‹ Filas"; clicked => { root.step-sheet-rows(false); } }
+                            if root.selected-path != "" && root.is-sheet && root.preview && root.sheet-has-next-rows: Action { text: "Filas ›"; clicked => { root.step-sheet-rows(true); } }
+                            if root.selected-path != "" && root.is-sheet && root.preview: Action { text: "Copiar fila"; clicked => { root.copy-sheet-row(); } }
+                            if root.selected-path != "" && root.is-image: Action {
+                                text: root.image-actual-size ? "Ajustar a ventana" : "Tamaño real (100%)";
+                                clicked => { root.image-actual-size = !root.image-actual-size; }
+                            }
+                            if root.selected-path != "" && root.is-pdf: Action { text: "‹"; accessible-text: "Página anterior"; enabled: root.pdf-page > 0; clicked => { root.pdf-step-page(-1); } }
+                            if root.selected-path != "" && root.is-pdf: Text { text: "Pág. " + (root.pdf-page + 1) + " / " + max(1, root.pdf-total-pages); color: Theme.file-text; vertical-alignment: center; }
+                            if root.selected-path != "" && root.is-pdf: Action { text: "›"; accessible-text: "Página siguiente"; enabled: root.pdf-page + 1 < root.pdf-total-pages; clicked => { root.pdf-step-page(1); } }
+                            if root.selected-path != "" && root.is-pdf && root.pdf-total-pages > 1: Action { text: "Miniaturas"; accessible-text: root.show-pdf-thumbs ? "Ocultar miniaturas de página" : "Mostrar miniaturas de página"; primary: root.show-pdf-thumbs; clicked => { root.show-pdf-thumbs = !root.show-pdf-thumbs; } }
+                            if root.selected-path != "" && root.is-pdf: Action { text: "Ajustar"; accessible-text: "Ajustar al ancho (Ctrl+0)"; primary: root.pdf-fit-width; clicked => { root.pdf-zoom(0); } }
+                            if root.selected-path != "" && root.is-pdf: Action { text: "Copiar página"; clicked => { root.copy-pdf-text(); } }
+                            if root.selected-path != "" && root.project-path == "" && root.standalone-parent-path != "": Action { text: "Abrir carpeta"; clicked => { root.open-project(root.standalone-parent-path); } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && root.markdown-file && root.preview && root.doc-headings.length > 0: Action { text: "Índice"; primary: root.show-toc; clicked => { root.show-toc = !root.show-toc; } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: root.is-sheet ? "Tabla" : root.markdown-file ? "Vista previa" : "Lectura"; primary: root.preview; clicked => { root.preview = true; } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: "Editor"; primary: !root.preview; clicked => { root.preview = false; } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: ""; icon: "\u{eae2}"; accessible-text: "Deshacer (Ctrl+Z)"; enabled: root.can-undo; clicked => { root.undo(); } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: ""; icon: "\u{ebb0}"; accessible-text: "Rehacer (Ctrl+Shift+Z)"; enabled: root.can-redo; clicked => { root.redo(); } }
+                            if root.selected-path != "" && !root.is-image: Action { text: ""; icon: "\u{ea6d}"; accessible-text: "Buscar en el archivo (Ctrl+F)"; clicked => { root.show-find = true; root.show-replace = !(root.doc-readonly || root.is-pdf || (root.preview && (root.markdown-file || root.is-sheet))); } }
+                            if root.is-dirty && !root.is-image && !root.doc-readonly: Action { text: ""; icon: "\u{ea77}"; accessible-text: "Revertir cambios"; enabled: !root.busy; clicked => { root.revert(); } }
+                            if root.is-dirty && !root.is-image && !root.doc-readonly: Action { text: ""; icon: "\u{eb4b}"; accessible-text: "Guardar cambios (Ctrl+S)"; primary: true; enabled: !root.busy; clicked => { root.save(); } }
                         }
                     }
                     if root.show-find && root.selected-path != "" && !root.is-image: Rectangle {
@@ -1180,33 +1224,6 @@ export component MainWindow inherits Window {
                         }
                         if root.selected-path != "" && root.is-sheet && root.preview: VerticalLayout {
                             spacing: 0px;
-                            Rectangle {
-                                height: Typography.size + 26px; background: Theme.sidebar;
-                                border-width: 1px; border-color: Theme.border;
-                                HorizontalLayout {
-                                    padding-left: 8px; padding-right: 8px; spacing: 6px; alignment: start;
-                                    for tab[idx] in root.sheet-tabs: Action {
-                                        text: tab;
-                                        primary: idx == root.active-sheet;
-                                        clicked => { root.select-sheet(idx); root.focus-content(); }
-                                    }
-                                    Rectangle { horizontal-stretch: 1; }
-                                    if root.sheet-has-prev-cols: Action { text: "‹ Cols"; clicked => { root.step-sheet-cols(false); } }
-                                    if root.sheet-has-next-cols: Action { text: "Cols ›"; clicked => { root.step-sheet-cols(true); } }
-                                    if root.sheet-has-prev-rows: Action { text: "‹ Filas"; clicked => { root.step-sheet-rows(false); } }
-                                    if root.sheet-has-next-rows: Action { text: "Filas ›"; clicked => { root.step-sheet-rows(true); } }
-                                    Action { text: "Copiar fila"; clicked => { root.copy-sheet-row(); } }
-                                }
-                            }
-                            Rectangle {
-                                height: Typography.size + 18px; background: Theme.canvas;
-                                border-width: 1px; border-color: Theme.border;
-                                HorizontalLayout {
-                                    padding-left: 10px; padding-right: 10px; spacing: 12px;
-                                    Text { width: 72px; text: root.sheet-cell-ref; color: Theme.muted; font-family: root.code-font-family; vertical-alignment: center; accessible-label: "Celda seleccionada"; }
-                                    Text { text: root.sheet-cell-text; color: Theme.file-text; overflow: elide; vertical-alignment: center; horizontal-stretch: 1; accessible-label: "Contenido de la celda"; }
-                                }
-                            }
                             if root.sheet-truncated: Rectangle {
                                 height: Typography.size + 14px; background: Theme.find-surface;
                                 Text { x: 10px; text: "Hoja demasiado grande: solo se cargó la primera parte."; color: Theme.muted; font-size: Typography.size - 2px; vertical-alignment: center; }
@@ -1417,14 +1434,33 @@ export component MainWindow inherits Window {
                 }
             }
             Rectangle {
-                height: Typography.size + 20px; background: Theme.header;
+                height: Typography.chrome + 20px; background: Theme.header;
                 HorizontalLayout {
-                    padding-left: 10px; padding-right: 10px; spacing: 10px;
-                    Text { text: root.show-edit ? "Editando en el archivo · Enter aplica · Esc cancela" : root.busy ? "Cargando…" : root.status-info + (root.indexing ? " · Indexando archivos…" : ""); color: Theme.muted; vertical-alignment: center; overflow: elide; horizontal-stretch: 1; }
-                    if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.is-sheet: Text { text: root.language-name + " · Ln " + root.caret-line + ", Col " + root.cursor-column; color: Theme.muted; vertical-alignment: center; }
-                    if root.selected-path != "" && root.is-sheet: Text { text: root.sheet-total-rows + " filas · " + root.sheet-total-cols + " cols"; color: Theme.muted; vertical-alignment: center; }
-                    if root.selected-path != "" && root.is-pdf: Text { text: "PDF · Pág. " + (root.pdf-page + 1) + " / " + max(1, root.pdf-total-pages); color: Theme.muted; vertical-alignment: center; }
-                    Text { text: root.selected-path == "" || root.is-image || root.is-pdf || root.doc-readonly ? "" : root.is-dirty ? "● Sin guardar" : "Guardado"; color: Theme.muted; vertical-alignment: center; }
+                    padding-left: root.is-sheet && root.preview && root.selected-path != "" ? 0px : 10px; padding-right: 10px; spacing: 10px;
+                    if root.selected-path != "" && root.is-sheet && root.preview: HorizontalLayout {
+                        spacing: 0px;
+                        for sheet-name[idx] in root.sheet-tabs: Rectangle {
+                            width: sheet-tab-label.preferred-width + 28px;
+                            background: idx == root.active-sheet ? Theme.canvas : sheet-tab-touch.has-hover ? Theme.button-hover : transparent;
+                            accessible-role: tab; accessible-label: sheet-name; accessible-item-selected: idx == root.active-sheet;
+                            accessible-action-default => { root.select-sheet(idx); root.focus-content(); }
+                            Rectangle { y: parent.height - 2px; height: 2px; background: idx == root.active-sheet ? Theme.focus : transparent; }
+                            sheet-tab-label := Text { text: sheet-name; font-size: Typography.chrome; color: idx == root.active-sheet ? Theme.heading : Theme.file-text; vertical-alignment: center; }
+                            sheet-tab-touch := TouchArea { clicked => { root.select-sheet(idx); root.focus-content(); } }
+                        }
+                    }
+                    Text { text: root.show-edit ? "Editando en el archivo · Enter aplica · Esc cancela" : root.busy ? "Cargando…" : root.status-info + (root.indexing ? " · Indexando archivos…" : ""); font-size: Typography.chrome; color: Theme.muted; vertical-alignment: center; overflow: elide; horizontal-stretch: 1; }
+                    if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.is-sheet: Text { text: root.language-name + " · Ln " + root.caret-line + ", Col " + root.cursor-column; font-size: Typography.chrome; color: Theme.muted; vertical-alignment: center; }
+                    if root.selected-path != "" && root.is-sheet: Text { text: root.sheet-total-rows + " filas · " + root.sheet-total-cols + " cols"; font-size: Typography.chrome; color: Theme.muted; vertical-alignment: center; }
+                    if root.selected-path != "" && root.is-pdf: Text { text: "PDF · Pág. " + (root.pdf-page + 1) + " / " + max(1, root.pdf-total-pages); font-size: Typography.chrome; color: Theme.muted; vertical-alignment: center; }
+                    Text { text: root.selected-path == "" || root.is-image || root.is-pdf || root.doc-readonly ? "" : root.is-dirty ? "● Sin guardar" : "Guardado"; font-size: Typography.chrome; color: Theme.muted; vertical-alignment: center; }
+                    if root.selected-path != "" && (root.is-pdf || root.doc-mode()): HorizontalLayout {
+                        spacing: 4px; padding-top: 2px; padding-bottom: 2px;
+                        Rectangle { width: 1px; background: Theme.border; }
+                        Action { text: "−"; accessible-text: "Alejar (Ctrl+-)"; clicked => { root.zoom-active(-1); } }
+                        Text { min-width: 44px; horizontal-alignment: center; text: (root.is-pdf ? root.pdf-zoom-percent : round(root.doc-zoom * 100)) + " %"; font-size: Typography.chrome; color: Theme.file-text; vertical-alignment: center; }
+                        Action { text: "+"; accessible-text: "Acercar (Ctrl++)"; clicked => { root.zoom-active(1); } }
+                    }
                 }
             }
         }
@@ -1495,6 +1531,7 @@ export component MainWindow inherits Window {
                     padding: 22px; spacing: 18px;
                     HorizontalLayout {
                         Text { text: "Configuración"; font-size: Typography.size + 5px; color: Theme.title; font-weight: 600; horizontal-stretch: 1; }
+                        Action { text: "Acerca de"; clicked => { root.show-settings = false; root.show-about = true; } }
                         Action { text: "×"; clicked => { root.show-settings = false; root.focus-content(); } middle-clicked => { root.show-settings = false; root.focus-content(); } }
                     }
                     Text { text: "Apariencia"; color: Theme.title; font-weight: 600; }
@@ -1505,16 +1542,30 @@ export component MainWindow inherits Window {
                     }
                     HorizontalLayout {
                         spacing: 8px;
-                        Text { text: "Interfaz"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
-                        Action { text: "−"; clicked => { root.zoom-ui(-1); } }
-                        Text { text: "\{round(root.ui-font-size / 1px)} px"; color: Theme.dialog-description; vertical-alignment: center; }
-                        Action { text: "+"; clicked => { root.zoom-ui(1); } }
+                        Text { text: "Archivos e interfaz"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: "−"; accessible-text: "Reducir archivos e interfaz"; clicked => { root.zoom-ui(-1); } }
+                        Text { min-width: 48px; horizontal-alignment: center; text: "\{round(root.ui-font-size / 1px)} px"; color: Theme.dialog-description; vertical-alignment: center; }
+                        Action { text: "+"; accessible-text: "Ampliar archivos e interfaz"; clicked => { root.zoom-ui(1); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Text { text: "Cabecera y pie"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: "−"; accessible-text: "Reducir cabecera y pie"; clicked => { root.zoom-chrome(-1); } }
+                        Text { min-width: 48px; horizontal-alignment: center; text: "\{round(root.chrome-font-size / 1px)} px"; color: Theme.dialog-description; vertical-alignment: center; }
+                        Action { text: "+"; accessible-text: "Ampliar cabecera y pie"; clicked => { root.zoom-chrome(1); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Text { text: "Iconos"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: "−"; accessible-text: "Reducir iconos"; clicked => { root.zoom-icons(-1); } }
+                        Text { min-width: 48px; horizontal-alignment: center; text: "\{round(root.icon-size / 1px)} px"; color: Theme.dialog-description; vertical-alignment: center; }
+                        Action { text: "+"; accessible-text: "Ampliar iconos"; clicked => { root.zoom-icons(1); } }
                     }
                     HorizontalLayout {
                         spacing: 8px;
                         Text { text: "Código"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
                         Action { text: "−"; clicked => { root.zoom(-1); } }
-                        Text { text: "\{round(root.code-font-size / 1px)} px"; color: Theme.dialog-description; vertical-alignment: center; }
+                        Text { min-width: 48px; horizontal-alignment: center; text: "\{round(root.code-font-size / 1px)} px"; color: Theme.dialog-description; vertical-alignment: center; }
                         Action { text: "+"; clicked => { root.zoom(1); } }
                     }
                     Text { text: "Paneles"; color: Theme.title; font-weight: 600; }

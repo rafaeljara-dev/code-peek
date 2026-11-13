@@ -18,6 +18,10 @@ pub struct UserSettings {
     pub code_font_size: f32,
     pub tree_font_size: f32,
     pub ui_font_size: f32,
+    /// Text size of the header, tab strip and status bar.
+    pub chrome_font_size: f32,
+    /// Size of the icon glyphs on buttons.
+    pub icon_size: f32,
     /// Zoom of rendered documents (Markdown, Word, spreadsheets); 1.0 = 100 %.
     pub doc_zoom: f32,
     pub library_root: Option<PathBuf>,
@@ -42,6 +46,8 @@ impl Default for UserSettings {
             code_font_size: 14.0,
             tree_font_size: 13.0,
             ui_font_size: 15.0,
+            chrome_font_size: 15.0,
+            icon_size: 17.0,
             doc_zoom: 1.0,
             library_root: None,
             default_project: None,
@@ -71,12 +77,20 @@ impl UserSettings {
                     .context("La configuración no es válida; no se sobrescribirá")?;
                 let migrate = value.get("open_projects").is_none();
                 let migrate_zoom = value.get("ui_font_size").is_none();
+                let migrate_chrome = value.get("chrome_font_size").is_none();
+                let migrate_icons = value.get("icon_size").is_none();
                 let mut loaded: Self = serde_json::from_value(value)?;
                 if migrate {
                     loaded.open_projects = loaded.recent_projects.clone();
                 }
                 if migrate_zoom {
                     loaded.ui_font_size = loaded.tree_font_size.max(15.0);
+                }
+                if migrate_chrome {
+                    loaded.chrome_font_size = loaded.ui_font_size;
+                }
+                if migrate_icons {
+                    loaded.icon_size = loaded.ui_font_size + 2.0;
                 }
                 loaded
             }
@@ -112,6 +126,8 @@ impl UserSettings {
         settings.code_font_size = finite_size(settings.code_font_size, 14.0, 36.0);
         settings.tree_font_size = finite_size(settings.tree_font_size, 13.0, 28.0);
         settings.ui_font_size = finite_size(settings.ui_font_size, 15.0, 22.0).max(12.0);
+        settings.chrome_font_size = finite_size(settings.chrome_font_size, 15.0, 22.0).max(11.0);
+        settings.icon_size = finite_size(settings.icon_size, 17.0, 28.0).max(12.0);
         Ok(settings)
     }
 
@@ -203,6 +219,8 @@ mod tests {
         let mut settings = UserSettings::load_from(&path).unwrap();
         assert_eq!(settings.open_projects.len(), 2);
         assert_eq!(settings.ui_font_size, 17.0);
+        assert_eq!(settings.chrome_font_size, 17.0);
+        assert_eq!(settings.icon_size, 19.0);
         assert!(settings.show_projects);
         assert!(settings.show_explorer);
         settings.visit(Path::new("deep/nested/three"));

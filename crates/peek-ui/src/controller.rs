@@ -55,6 +55,8 @@ pub enum Command {
     Viewport(usize),
     Zoom(i32),
     ZoomUi(i32),
+    ZoomChrome(i32),
+    ZoomIcons(i32),
     ToggleTheme,
     Panels(bool, bool),
     WrapColumns(usize),
@@ -878,6 +880,16 @@ impl Controller {
                 self.settings.ui_font_size =
                     (self.settings.ui_font_size + delta as f32).clamp(12.0, 22.0);
                 self.doc_view.dirty = true;
+                self.persist();
+            }
+            Command::ZoomChrome(delta) => {
+                self.settings.chrome_font_size =
+                    (self.settings.chrome_font_size + delta as f32).clamp(11.0, 22.0);
+                self.persist();
+            }
+            Command::ZoomIcons(delta) => {
+                self.settings.icon_size =
+                    (self.settings.icon_size + delta as f32).clamp(12.0, 28.0);
                 self.persist();
             }
             Command::DocZoom(delta) => {
@@ -2114,6 +2126,8 @@ impl Controller {
             .unwrap_or_default();
         let font = self.settings.code_font_size;
         let ui_font = self.settings.ui_font_size;
+        let chrome_font = self.settings.chrome_font_size;
+        let icon_size = self.settings.icon_size;
         let light_mode = self.settings.light_mode;
         let show_projects = self.settings.show_projects;
         let show_explorer = self.settings.show_explorer;
@@ -2518,6 +2532,8 @@ impl Controller {
             w.set_selected_line(selected);
             w.set_code_font_size(font);
             w.set_ui_font_size(ui_font);
+            w.set_chrome_font_size(chrome_font);
+            w.set_icon_size(icon_size);
             w.set_light_mode(light_mode);
             w.set_show_library(show_projects);
             w.set_show_tree(show_explorer);
