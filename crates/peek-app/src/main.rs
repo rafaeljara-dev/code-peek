@@ -33,7 +33,12 @@ fn main() -> anyhow::Result<()> {
     let args = Cli::parse();
 
     #[cfg(target_os = "windows")]
-    if launched_as_setup() && args.path.is_none() && !args.uninstall && !args.install_context_menu {
+    if launched_as_setup()
+        && args.path.is_none()
+        && !args.uninstall
+        && !args.install_context_menu
+        && !args.uninstall_context_menu
+    {
         windows::install()?;
         windows::launch_installed()?;
         return Ok(());
@@ -52,6 +57,26 @@ fn main() -> anyhow::Result<()> {
     if args.install_context_menu {
         windows::register_context_menu()?;
         return Ok(());
+    }
+
+    if args.uninstall_context_menu {
+        let msg = peek_core::windows_integration::apply_integration(
+            &peek_core::WindowsIntegrationOptions {
+                context_menu: false,
+                open_with_markdown: false,
+                open_with_code: false,
+                open_with_docs: false,
+            },
+        )?;
+        println!("{msg}");
+        return Ok(());
+    }
+
+    // A file opened while CodePeek is running becomes a tab in that window.
+    if let Some(path) = args.path.as_deref().filter(|_| !args.new_window) {
+        if peek_core::single_instance::forward_to_running_instance(path) {
+            return Ok(());
+        }
     }
 
     peek_ui::run_app(args.path)?;

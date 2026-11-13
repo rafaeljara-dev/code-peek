@@ -20,6 +20,13 @@ impl RawRgbaImage {
         }
     }
 
+    /// Copies straight from a renderer's pixel slice, without an intermediate `Vec`.
+    pub fn from_slice(data: &[u8], width: u32, height: u32) -> Self {
+        Self {
+            data: slint::SharedPixelBuffer::clone_from_slice(data, width, height),
+        }
+    }
+
     pub fn width(&self) -> u32 {
         self.data.width()
     }
@@ -219,6 +226,20 @@ fn decode_raster(
 ) -> Result<image::DynamicImage> {
     let decoder = bounded_decoder(reader, MAX_DECODE_BYTES)?;
     Ok(image::DynamicImage::from_decoder(decoder)?)
+}
+
+/// Decodes raster image bytes embedded inside a document container (.docx).
+pub fn decode_raster_bytes(bytes: &[u8]) -> Result<RawRgbaImage> {
+    if bytes.len() as u64 > MAX_EMBEDDED_BYTES {
+        bail!("Imagen incrustada demasiado grande");
+    }
+    let reader = image::ImageReader::new(std::io::Cursor::new(bytes))
+        .with_guessed_format()
+        .context("Formato de imagen incrustada desconocido")?;
+    let decoder = bounded_decoder(reader, MAX_DECODE_BYTES)?;
+    let image = image::DynamicImage::from_decoder(decoder)?.to_rgba8();
+    let (width, height) = image.dimensions();
+    Ok(RawRgbaImage::new(image.into_raw(), width, height))
 }
 
 #[derive(Clone)]

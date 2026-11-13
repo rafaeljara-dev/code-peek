@@ -183,13 +183,13 @@ impl Drop for Temporary {
     }
 }
 
-pub(super) fn save(target: &Path, content: &str) -> Result<()> {
+pub(super) fn save(target: &Path, content: &[u8]) -> Result<()> {
     let target = std::path::absolute(target)?;
     let parent = target.parent().context("El destino no tiene directorio")?;
     let mut descriptor = security_descriptor(&target)?;
     let mut temporary = Temporary::create(parent, &mut descriptor)?;
     let file = temporary.file.as_mut().unwrap();
-    file.write_all(content.as_bytes())?;
+    file.write_all(content)?;
     file.sync_all()?;
     temporary.commit(&target)
 }
@@ -275,7 +275,7 @@ mod tests {
         fs::create_dir_all(&parent).unwrap();
         let target = parent.join("niño.txt");
         fs::write(&target, "before").unwrap();
-        save(&target, "after").unwrap();
+        save(&target, b"after").unwrap();
         assert_eq!(fs::read_to_string(target).unwrap(), "after");
     }
 }

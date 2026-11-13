@@ -77,10 +77,20 @@ pub fn icon_family(path: &Path, is_dir: bool) -> &'static str {
 pub fn icon_color(path: &Path, is_dir: bool) -> (u8, u8, u8) {
     if is_dir {
         (225, 182, 111)
+    } else if let Some((_, color)) = language_icon(path) {
+        color
     } else {
-        language_icon(path)
-            .map(|(_, color)| color)
-            .unwrap_or((157, 183, 207))
+        document_color(path).unwrap_or((157, 183, 207))
+    }
+}
+
+fn document_color(path: &Path) -> Option<(u8, u8, u8)> {
+    let ext = path.extension()?.to_str()?.to_ascii_lowercase();
+    match ext.as_str() {
+        "pdf" => Some((239, 110, 110)),
+        "xlsx" | "xlsm" | "xlsb" | "xls" | "ods" | "csv" | "tsv" => Some((106, 209, 143)),
+        "docx" | "doc" => Some((114, 174, 248)),
+        _ => None,
     }
 }
 

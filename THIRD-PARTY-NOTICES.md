@@ -26,6 +26,8 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | aho-corasick 1.1.5 | Unlicense OR MIT | [COPYING](#license-65314a6c96683f76), [LICENSE-MIT](#license-154c1af2b38e25e5) |
 | aligned 0.4.3 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-8adee6e9dc6ddf88) |
 | aligned-vec 0.6.4 | MIT | [LICENSE](#license-f3d5a6ab65e673b7) |
+| alloc-no-stdlib 2.0.4 | BSD-3-Clause | [LICENSE](#license-6c91ec82929f91ff) |
+| alloc-stdlib 0.2.4 | BSD-3-Clause | Consultar fuente de la dependencia |
 | allocator-api2 0.2.21 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | android-activity 0.6.1 | MIT OR Apache-2.0 | [LICENSE](#license-faca03d76db6e5e2), [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-1847e0e0698142ed) |
 | android-properties 0.2.2 | MIT | [LICENSE](#license-2493da6dbf295abd) |
@@ -53,6 +55,7 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | async-signal 0.2.14 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | async-task 4.7.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | async-trait 0.1.92 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
+| atoi_simd 0.18.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-25bb7f1aff0a32d4), [LICENSE-MIT](#license-1c87e851cc7a99a3) |
 | atomic-waker 1.1.2 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041), [LICENSE-THIRD-PARTY](#license-20746cc8a2fdc9ca) |
 | auto_enums 0.8.10 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | autocfg 1.5.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-99afaa30c1780120) |
@@ -74,14 +77,18 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | block2 0.6.2 | MIT | Consultar fuente de la dependencia |
 | blocking 1.7.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | borsh 1.8.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-628e23a221a679e0), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
+| brotli 8.0.4 | BSD-3-Clause AND MIT | [LICENSE.BSD-3-Clause](#license-6c91ec82929f91ff), [LICENSE.MIT](#license-2a57418d6b10947f) |
+| brotli-decompressor 5.0.3 | BSD-3-Clause/MIT | [LICENSE](#license-6c91ec82929f91ff) |
 | bstr 1.13.1 | MIT OR Apache-2.0 | [COPYING](#license-8649bf6c5eca0205), [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-ffea24dba8d2d373) |
 | built 0.8.1 | MIT | [LICENSE](#license-20005777a5febf3b) |
 | bumpalo 3.20.3 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-5662394bebb1a815) |
 | by_address 1.2.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-44739c31580605e9) |
 | bytemuck 1.25.2 | Zlib OR Apache-2.0 OR MIT | [LICENSE-APACHE](#license-0e3cbff251c122b9), [LICENSE-MIT](#license-dfbd1c2a36dcf9af), [LICENSE-ZLIB](#license-943f36fd309fb5ea) |
 | bytemuck_derive 1.12.1 | Zlib OR Apache-2.0 OR MIT | [LICENSE-APACHE](#license-0e3cbff251c122b9), [LICENSE-MIT](#license-dfbd1c2a36dcf9af), [LICENSE-ZLIB](#license-943f36fd309fb5ea) |
+| byteorder 1.5.0 | Unlicense OR MIT | [COPYING](#license-65314a6c96683f76), [LICENSE-MIT](#license-154c1af2b38e25e5) |
 | byteorder-lite 0.1.0 | Unlicense OR MIT | [LICENSE-MIT](#license-154c1af2b38e25e5) |
 | bytes 1.12.1 | MIT | [LICENSE](#license-51f778ffff2c0705) |
+| calamine 0.38.0 | MIT | [LICENSE-MIT.md](#license-12bfa73c9eacbe1e) |
 | calloop 0.13.0 | MIT | [LICENSE.txt](#license-13c0147abe1c7607) |
 | calloop 0.14.4 | MIT | [LICENSE.txt](#license-13c0147abe1c7607) |
 | calloop-wayland-source 0.3.0 | MIT | [LICENSE.txt](#license-e7ed841a425ba764) |
@@ -99,18 +106,22 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | clap_lex 1.1.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-9b689eac99cd7407), [LICENSE-MIT](#license-4498464c2864825d) |
 | clipboard-win 5.4.1 | BSL-1.0 | Consultar fuente de la dependencia |
 | clru 0.6.3 | MIT | [LICENSE](#license-0cf169dd3aef814c) |
+| codepage 0.1.3 | Apache-2.0 OR MIT | [COPYRIGHT](#license-4e1b1f99bcc332e1), [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-7dc2f64024477c92) |
+| color 0.3.3 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-1847e0e0698142ed) |
 | color_quant 1.1.0 | MIT | [LICENSE](#license-a24abca538cdcc16) |
 | colorchoice 1.0.5 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-4498464c2864825d) |
 | combine 4.6.8 | MIT | [LICENSE](#license-a8d7d8157c7166af) |
 | concurrent-queue 2.5.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | const-field-offset 0.2.1 | MIT OR Apache-2.0 | [LICENSES/Apache-2.0.txt](#license-c274f80372d90c01), [LICENSES/MIT.txt](#license-c3b1b78bc8bd3ea1) |
 | const-field-offset-macro 0.2.1 | MIT OR Apache-2.0 | [LICENSES/Apache-2.0.txt](#license-c274f80372d90c01), [LICENSES/MIT.txt](#license-c3b1b78bc8bd3ea1) |
+| constant_time_eq 0.6.1 | CC0-1.0 OR MIT-0 OR Apache-2.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-CC0](#license-6d489af6292662d9), [LICENSE-MIT0](#license-ee3c852dd133c6ca) |
 | convert_case 0.10.0 | MIT | [LICENSE](#license-aed7b1758e35afa0) |
 | copypasta 0.10.2 | MIT / Apache-2.0 | [LICENSE.apache2](#license-6dc0e068dcf3a5bc), [LICENSE.mit](#license-acee26f043026dc5) |
 | core-foundation 0.9.4 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-3bfacc197ff245b6) |
 | core-foundation-sys 0.8.7 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-3bfacc197ff245b6) |
 | core-graphics 0.23.2 | MIT OR Apache-2.0 | [COPYRIGHT](#license-537db907352420ce), [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-3bfacc197ff245b6) |
 | core-graphics-types 0.1.3 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-3bfacc197ff245b6) |
+| core_detect 1.0.0 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-57895cdbc8febf23) |
 | core_maths 0.1.1 | MIT | [LICENSE](#license-9ebf8c4cc0b735ca) |
 | countme 3.0.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | crc32fast 1.5.2 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-9599127e421e1659) |
@@ -120,9 +131,12 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | crossbeam-epoch 0.9.21 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-5a7d13c6710cdec2) |
 | crossbeam-utils 0.8.23 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-5a7d13c6710cdec2) |
 | crunchy 0.2.4 | MIT | [LICENSE](#license-e35e8f8a37b546c0) |
+| csv 1.4.0 | Unlicense/MIT | [COPYING](#license-65314a6c96683f76), [LICENSE-MIT](#license-154c1af2b38e25e5) |
+| csv-core 0.1.13 | Unlicense/MIT | [COPYING](#license-65314a6c96683f76), [LICENSE-MIT](#license-154c1af2b38e25e5) |
 | ctor 0.10.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-bccaa8b6c09f94e8) |
 | cursor-icon 1.2.0 | MIT OR Apache-2.0 OR Zlib | [LICENSE-APACHE](#license-756c9f923fd90692), [LICENSE-MIT](#license-0e4063eaaed0c454), [LICENSE-ZLIB](#license-3d51f0acff0e10c9) |
 | data-url 0.3.2 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-7a8093fb4a93f23e) |
+| debug_unsafe 0.1.4 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-3ef4a56e24f98311), [LICENSE-MIT](#license-6c6299de5a9662cb) |
 | deranged 0.5.8 | MIT OR Apache-2.0 | [LICENSE-Apache](#license-b4839ecf405b5fa4), [LICENSE-MIT](#license-1b66e3be6894b377) |
 | derive_more 2.1.1 | MIT | [LICENSE](#license-4a4d43f3f90d1d8b) |
 | derive_more-impl 2.1.1 | MIT | [LICENSE](#license-4a4d43f3f90d1d8b) |
@@ -141,6 +155,7 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | drm-sys 0.8.1 | MIT | [LICENSE](#license-30fefc3a7d6a0041) |
 | dtor 0.8.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-bccaa8b6c09f94e8) |
 | either 1.18.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-fdd1c2117bcf8157) |
+| encoding_rs 0.8.44 | (Apache-2.0 OR MIT) AND BSD-3-Clause | [COPYRIGHT](#license-1961703c278284db), [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-7dc2f64024477c92), [LICENSE-WHATWG](#license-b1d6d97b0476a828) |
 | endi 1.1.1 | MIT | [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | enumflags2 0.7.12 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-1f6efa554fb0411e), [LICENSE-MIT](#license-de561d2b653aaad4) |
 | enumflags2_derive 0.7.12 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-4247075817677c99), [LICENSE-MIT](#license-12a9724e2927cff8) |
@@ -154,9 +169,12 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | event-listener-strategy 0.5.4 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | exr 1.74.2 | BSD-3-Clause | [LICENSE.md](#license-50cca25ab13f5322) |
 | fancy-regex 0.16.2 | MIT | [LICENSE](#license-ffaf97e3da9ec6a6) |
+| fast-float2 0.2.4 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-7a61eb3000dac144), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | fastrand 2.5.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | fax 0.2.7 | MIT | [LICENSE](#license-153e780a03976428) |
 | fdeflate 0.3.7 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-77949ead506e84e3) |
+| fearless_simd 0.7.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-0e297345cbd90f05) |
+| fearless_simd 1.2.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-0e297345cbd90f05) |
 | femtovg 0.25.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-a88a993a1c7aaeb5), [LICENSE-MIT](#license-cd4eb10b20da1d85) |
 | field-offset 0.3.6 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-f4bc3f3c5bfd943c) |
 | filetime 0.2.29 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-84e1bbfebd74e419) |
@@ -167,14 +185,13 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | fnv 1.0.7 | Apache-2.0 / MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-c48b7333c00b9776) |
 | foldhash 0.2.0 | Zlib | [LICENSE](#license-b1181a40b2a7b25c) |
 | font-types 0.11.3 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-bfa7ed27d2b079e0), [LICENSE-MIT](#license-163aebd02543da63) |
-| font-types 0.12.5 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-af2a770a058a22db), [LICENSE-MIT](#license-f03893164caafcc4) |
+| font-types 0.12.7 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-af2a770a058a22db), [LICENSE-MIT](#license-f03893164caafcc4) |
 | fontdb 0.23.0 | MIT | [LICENSE](#license-c80c671db14363b2) |
 | fontique 0.10.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-fa9dc7e4b32ac7fc) |
 | foreign-types 0.5.0 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-c9067b1cc20b89f5) |
 | foreign-types-macros 0.2.4 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-c9067b1cc20b89f5) |
 | foreign-types-shared 0.3.1 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-c9067b1cc20b89f5) |
 | form_urlencoded 1.2.2 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-33ed9a8ecf556f16) |
-| fsevent-sys 4.1.0 | MIT | [LICENSE](#license-983a293c55cd84a3) |
 | futures 0.3.34 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-27480f391bd92f66), [LICENSE-MIT](#license-b420d8add23b5cf7) |
 | futures-channel 0.3.34 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-27480f391bd92f66), [LICENSE-MIT](#license-b420d8add23b5cf7) |
 | futures-core 0.3.34 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-27480f391bd92f66), [LICENSE-MIT](#license-b420d8add23b5cf7) |
@@ -194,6 +211,7 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | getrandom 0.4.3 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-e7330bf53074b4a9), [LICENSE-MIT](#license-94b1870d380ccf53) |
 | gif 0.14.2 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-1b6f7ab81ae25979) |
 | gl_generator 0.14.0 | Apache-2.0 | Consultar fuente de la dependencia |
+| glifo 0.4.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-738d4a3e51220f46) |
 | glob 0.3.4 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-14435fbcd271e278) |
 | globset 0.4.20 | Unlicense OR MIT | [COPYING](#license-65314a6c96683f76), [LICENSE-MIT](#license-154c1af2b38e25e5) |
 | glow 0.17.0 | MIT OR Apache-2.0 OR Zlib | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041), [LICENSE-ZLIB](#license-5ae1feeaf0ffa220) |
@@ -203,11 +221,21 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | glutin_glx_sys 0.6.1 | Apache-2.0 | [LICENSE](#license-1fc3bc7f4a1b9e2f) |
 | glutin_wgl_sys 0.6.1 | Apache-2.0 | [LICENSE](#license-1fc3bc7f4a1b9e2f) |
 | grid 1.0.1 | MIT | [LICENSE](#license-c1c40cec33872aab) |
+| guillotiere 0.7.0 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-779c19b32cd2b8da), [LICENSE-MIT](#license-0331c26405bf44d4) |
 | half 2.7.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-1847e0e0698142ed) |
 | harfrust 0.8.4 | MIT | [LICENSE](#license-31b628c2f6d73f79) |
 | hashbrown 0.14.5 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-ae9791f02f2bbe0c) |
 | hashbrown 0.16.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-ae9791f02f2bbe0c) |
 | hashbrown 0.17.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-ae9791f02f2bbe0c) |
+| hayro 0.9.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
+| hayro-ccitt 0.5.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
+| hayro-cmap 0.1.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
+| hayro-font 0.5.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
+| hayro-interpret 0.9.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
+| hayro-jbig2 0.4.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
+| hayro-jpeg2000 0.5.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
+| hayro-postscript 0.2.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
+| hayro-syntax 0.9.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-51b50e6120c344dc) |
 | heck 0.5.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-033a9383ff21d1e4) |
 | hermit-abi 0.3.9 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | hermit-abi 0.5.3 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
@@ -249,8 +277,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | imagesize 0.14.0 | MIT | [LICENSE](#license-46404bc95dfc3527) |
 | imgref 1.12.3 | CC0-1.0 OR Apache-2.0 | [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-CC0](#license-6d489af6292662d9) |
 | indexmap 2.14.2 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-4f2ac128e429d964) |
-| inotify 0.11.5 | ISC | [LICENSE](#license-f68878c9ca61b25d) |
-| inotify-sys 0.1.8 | ISC | [LICENSE](#license-f68878c9ca61b25d) |
 | input 0.10.0 | MIT | [LICENSE](#license-e1926b3d9f1e0a32) |
 | input-sys 1.19.0 | MIT | [LICENSE](#license-e1926b3d9f1e0a32) |
 | integer-sqrt 0.1.5 | Apache-2.0/MIT | Consultar fuente de la dependencia |
@@ -269,8 +295,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | js-sys 0.3.105 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-84e1bbfebd74e419) |
 | keyboard-types 0.7.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-31dbbab009f1b2e5) |
 | khronos_api 3.1.0 | Apache-2.0 | Consultar fuente de la dependencia |
-| kqueue 1.2.1 | MIT | [LICENSE](#license-208693b9bfa93e69) |
-| kqueue-sys 1.1.2 | MIT | [LICENSE](#license-208693b9bfa93e69) |
 | kurbo 0.13.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-0e297345cbd90f05) |
 | lazy_static 1.5.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-9e0027807b0c548a) |
 | lebe 0.5.3 | BSD-3-Clause | [LICENSE-BSD-3-Clause](#license-2ac8da4536fb7a22) |
@@ -301,9 +325,9 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | minimal-lexical 0.2.1 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-7e1b38c60796dd99), [LICENSE-MIT](#license-30fefc3a7d6a0041), [LICENSE.md](#license-7d4bef28325e0a52) |
 | miniz_oxide 0.8.9 | MIT OR Zlib OR Apache-2.0 | [LICENSE](#license-7427abc630365f63), [LICENSE-APACHE.md](#license-4bf96504d6e83ce5), [LICENSE-MIT.md](#license-ac9859ce4e9a80a4), [LICENSE-ZLIB.md](#license-eac3911cc3d41ffb) |
 | miniz_oxide 0.9.1 | MIT OR Zlib OR Apache-2.0 | [LICENSE](#license-7427abc630365f63), [LICENSE-APACHE.md](#license-4bf96504d6e83ce5), [LICENSE-MIT.md](#license-ac9859ce4e9a80a4), [LICENSE-ZLIB.md](#license-eac3911cc3d41ffb) |
-| mio 1.2.3 | MIT | [LICENSE](#license-c804065b0956d00a) |
 | moxcms 0.8.1 | BSD-3-Clause OR Apache-2.0 | [LICENSE-APACHE.md](#license-836a9c1227c64469), [LICENSE.md](#license-2aa92cada6431e75) |
 | muda 0.19.3 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-859a90323b684e46), [LICENSE.spdx](#license-b99f9d43803f2ac9) |
+| multiversion_no_op 1.0.0 | Apache-2.0 OR MIT | [COPYRIGHT](#license-e08d6d9195b9428a), [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-7dc2f64024477c92) |
 | natord 1.0.9 | MIT | [LICENSE.txt](#license-332b974a713ff4e5) |
 | ndk 0.9.0 | MIT OR Apache-2.0 | Consultar fuente de la dependencia |
 | ndk-context 0.1.1 | MIT OR Apache-2.0 | Consultar fuente de la dependencia |
@@ -314,8 +338,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | nom 7.1.3 | MIT | [LICENSE](#license-e9f8a16f9ed6671f) |
 | nom 8.0.0 | MIT | [LICENSE](#license-e9f8a16f9ed6671f) |
 | noop_proc_macro 0.3.0 | MIT | [LICENSE](#license-c458d35c33fe40c1) |
-| notify 8.2.0 | CC0-1.0 | [LICENSE-CC0](#license-3b9a96c5f74727eb) |
-| notify-types 2.1.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-6f5cc4b4fa98d8f0), [LICENSE-MIT](#license-4b2af3889ac2bda6) |
 | nucleo 0.5.0 | MPL-2.0 | [LICENSE](#license-4b89d4518bd135ab) |
 | nucleo-matcher 0.3.1 | MPL-2.0 | [LICENSE](#license-4b89d4518bd135ab) |
 | num-bigint 0.4.8 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-14435fbcd271e278) |
@@ -372,7 +394,13 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | parley_data 0.10.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-ad40d6ebc808a6ce) |
 | paste 1.0.15 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | pastey 0.1.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
+| peniko 0.6.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-0e297345cbd90f05) |
 | percent-encoding 2.3.2 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-7a8093fb4a93f23e) |
+| phf 0.13.1 | MIT | [LICENSE](#license-ec5d7c32366268f1) |
+| phf_generator 0.13.1 | MIT | [LICENSE](#license-ec5d7c32366268f1) |
+| phf_macros 0.13.1 | MIT | [LICENSE](#license-ec5d7c32366268f1) |
+| phf_shared 0.13.1 | MIT | [LICENSE](#license-ec5d7c32366268f1) |
+| pic-scale 0.7.12 | BSD-3-Clause OR Apache-2.0 | [LICENSE-APACHE.md](#license-836a9c1227c64469), [LICENSE.md](#license-2aa92cada6431e75) |
 | pico-args 0.5.0 | MIT | [LICENSE](#license-426cb3e489bcd68b) |
 | pin-project 1.1.13 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | pin-project-internal 1.1.13 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
@@ -420,6 +448,7 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | rayon-core 1.13.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-9e0027807b0c548a) |
 | read-fonts 0.39.2 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-bfa7ed27d2b079e0), [LICENSE-MIT](#license-163aebd02543da63) |
 | read-fonts 0.41.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-af2a770a058a22db), [LICENSE-MIT](#license-f03893164caafcc4) |
+| read-fonts 0.46.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-af2a770a058a22db), [LICENSE-MIT](#license-f03893164caafcc4) |
 | reborrow 0.5.5 | MIT | [LICENSE](#license-f3d5a6ab65e673b7) |
 | redox_syscall 0.4.1 | MIT | [LICENSE](#license-fde59e25bf5342ef) |
 | redox_syscall 0.5.18 | MIT | [LICENSE](#license-fde59e25bf5342ef) |
@@ -442,6 +471,7 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | rustix 1.1.4 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [COPYRIGHT](#license-fde2a68c47d27938), [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-Apache-2.0_WITH_LLVM-exception](#license-2f213ec6b1355dc8), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | rustversion 1.0.23 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | rustybuzz 0.20.1 | MIT | [LICENSE](#license-31b628c2f6d73f79) |
+| ryu 1.0.23 | Apache-2.0 OR BSL-1.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-BOOST](#license-8d8291caf1cee26d) |
 | same-file 1.0.6 | Unlicense/MIT | [COPYING](#license-65314a6c96683f76), [LICENSE-MIT](#license-739620ea44ad8f99) |
 | scoped-tls 1.0.1 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-84e1bbfebd74e419) |
 | scoped-tls-hkt 0.1.5 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-e076ba03e579a970) |
@@ -467,6 +497,7 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | skia-safe 0.99.0 | MIT | Consultar fuente de la dependencia |
 | skrifa 0.42.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-bfa7ed27d2b079e0), [LICENSE-MIT](#license-163aebd02543da63) |
 | skrifa 0.44.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-af2a770a058a22db), [LICENSE-MIT](#license-f03893164caafcc4) |
+| skrifa 0.49.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-af2a770a058a22db), [LICENSE-MIT](#license-f03893164caafcc4) |
 | slab 0.4.12 | MIT | [LICENSE](#license-12c7116c4425c559) |
 | slint 1.17.1 | GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0 | [LICENSES/GPL-3.0-only.txt](#license-2a58a6bf30890c2e), [LICENSES/LicenseRef-Slint-Royalty-free-2.0.md](#license-e94996085ca452f6), [LICENSES/LicenseRef-Slint-Software-3.0.md](#license-3c6feabb9742eb4c) |
 | slint-build 1.17.1 | GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0 | [LICENSES/GPL-3.0-only.txt](#license-2a58a6bf30890c2e), [LICENSES/LicenseRef-Slint-Royalty-free-2.0.md](#license-e94996085ca452f6), [LICENSES/LicenseRef-Slint-Software-3.0.md](#license-3c6feabb9742eb4c) |
@@ -480,7 +511,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | smol_str 0.3.6 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | snafu 0.8.9 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-e97b30029c15946e), [LICENSE-MIT](#license-8064997d0ed36532) |
 | snafu-derive 0.8.9 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-e97b30029c15946e), [LICENSE-MIT](#license-8064997d0ed36532) |
-| socket2 0.6.5 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-84e1bbfebd74e419) |
 | softbuffer 0.4.8 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-1fc3bc7f4a1b9e2f), [LICENSE-MIT](#license-f8babf2965a40be2) |
 | spin_on 0.1.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | stable_deref_trait 1.2.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-5e05b024f653a5ce) |
@@ -515,8 +545,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | tiny-xlib 0.2.5 | MIT OR Apache-2.0 OR Zlib | [LICENSE-APACHE.md](#license-4bf96504d6e83ce5), [LICENSE-MIT.md](#license-63d9c5d6b9700d1c), [LICENSE-ZLIB.md](#license-5338a435c2869d28) |
 | tinystr 0.8.4 | Unicode-3.0 | [LICENSE](#license-cde87abe221f413f) |
 | tinyvec 1.13.3 | Zlib OR Apache-2.0 OR MIT | [LICENSE-APACHE.md](#license-283ea6cc2997a1a7), [LICENSE-MIT.md](#license-bccaa8b6c09f94e8), [LICENSE-ZLIB.md](#license-943f36fd309fb5ea) |
-| tokio 1.53.1 | MIT | [LICENSE](#license-3e1bef82aa0dfee4) |
-| tokio-macros 2.7.2 | MIT | [LICENSE](#license-c0fdcda1a4ffc5fd) |
 | toml 1.1.6+spec-1.1.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-4498464c2864825d) |
 | toml_datetime 1.1.1+spec-1.1.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-4498464c2864825d) |
 | toml_edit 0.25.15+spec-1.1.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-6dc0e068dcf3a5bc), [LICENSE-MIT](#license-4498464c2864825d) |
@@ -527,6 +555,7 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | tracing-core 0.1.36 | MIT | [LICENSE](#license-c1e08ee9a7288bf6) |
 | ttf-parser 0.25.1 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-0b3a181cccee1c28) |
 | typed-index-collections 3.5.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-675bbc9dfe230227) |
+| typed-path 0.13.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
 | udev 0.9.3 | MIT | [LICENSE](#license-34d584cb59706931) |
 | uds_windows 1.2.1 | MIT | [LICENSE](#license-8e1c6bd583a7e67b) |
 | unicase 2.9.0 | MIT OR Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-05f344491a7d18e1) |
@@ -548,6 +577,8 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | utf8parse 0.2.2 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-85ad950cce8752f7), [LICENSE-MIT](#license-db2c904eb5685e69) |
 | uuid 1.26.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-11cd7e6caed4b237) |
 | v_frame 0.3.9 | BSD-2-Clause | [LICENSE](#license-615e13b59408589f) |
+| vello_common 0.3.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-bfb09da988fcf916) |
+| vello_cpu 0.3.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-4bf96504d6e83ce5), [LICENSE-MIT](#license-bfb09da988fcf916) |
 | version_check 0.9.5 | MIT/Apache-2.0 | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-MIT](#license-ed2fda479dacddad) |
 | vtable 0.4.0 | MIT OR Apache-2.0 | [LICENSES/Apache-2.0.txt](#license-c274f80372d90c01), [LICENSES/MIT.txt](#license-c3b1b78bc8bd3ea1) |
 | vtable-macro 0.4.0 | MIT OR Apache-2.0 | [LICENSES/Apache-2.0.txt](#license-c274f80372d90c01), [LICENSES/MIT.txt](#license-c3b1b78bc8bd3ea1) |
@@ -588,35 +619,25 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | windows-sys 0.48.0 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows-sys 0.52.0 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows-sys 0.59.0 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows-sys 0.60.2 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows-sys 0.61.2 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows-targets 0.48.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows-targets 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows-targets 0.53.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows-threading 0.2.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_aarch64_gnullvm 0.48.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_aarch64_gnullvm 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows_aarch64_gnullvm 0.53.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_aarch64_msvc 0.48.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_aarch64_msvc 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows_aarch64_msvc 0.53.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_i686_gnu 0.48.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_i686_gnu 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows_i686_gnu 0.53.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_i686_gnullvm 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows_i686_gnullvm 0.53.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_i686_msvc 0.48.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_i686_msvc 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows_i686_msvc 0.53.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_x86_64_gnu 0.48.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_x86_64_gnu 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows_x86_64_gnu 0.53.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_x86_64_gnullvm 0.48.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_x86_64_gnullvm 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows_x86_64_gnullvm 0.53.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_x86_64_msvc 0.48.5 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | windows_x86_64_msvc 0.52.6 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
-| windows_x86_64_msvc 0.53.1 | MIT OR Apache-2.0 | [license-apache-2.0](#license-783829b43aacb86c), [license-mit](#license-ff82c90f84945c60) |
 | winit 0.30.13 | Apache-2.0 | [LICENSE](#license-6dc0e068dcf3a5bc) |
 | winnow 1.0.4 | MIT | [LICENSE-MIT](#license-8793aa4141de4b16) |
 | wit-bindgen 0.57.1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [LICENSE-APACHE](#license-954f335b8baf5e1a), [LICENSE-Apache-2.0_WITH_LLVM-exception](#license-2f213ec6b1355dc8), [LICENSE-MIT](#license-30fefc3a7d6a0041) |
@@ -648,11 +669,15 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 | zerocopy-derive 0.8.57 | BSD-2-Clause OR Apache-2.0 OR MIT | [LICENSE-APACHE](#license-98ed0ad9db8a7295), [LICENSE-BSD](#license-47248d1ec833e077), [LICENSE-MIT](#license-a03d4daa4f46496a) |
 | zerofrom 0.1.8 | Unicode-3.0 | [LICENSE](#license-cde87abe221f413f) |
 | zerofrom-derive 0.1.7 | Unicode-3.0 | [LICENSE](#license-cde87abe221f413f) |
+| zeroize 1.9.1 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-836ed921bbad486c) |
+| zeroize_derive 1.5.0 | Apache-2.0 OR MIT | [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-1038b7737a0a04bd) |
 | zerotrie 0.2.5 | Unicode-3.0 | [LICENSE](#license-cde87abe221f413f) |
 | zerovec 0.11.8 | Unicode-3.0 | [LICENSE](#license-cde87abe221f413f) |
 | zerovec-derive 0.11.6 | Unicode-3.0 | [LICENSE](#license-cde87abe221f413f) |
+| zip 9.5.1 | MIT | [LICENSE](#license-6ac8711fb340c62c) |
 | zlib-rs 0.6.7 | Zlib | [LICENSE](#license-1a7d409d51427f4f) |
 | zmij 1.0.23 | MIT | [LICENSE-MIT](#license-30fefc3a7d6a0041) |
+| zopfli 0.8.4 | Apache-2.0 | [COPYING](#license-b969ab4be2f63a5d) |
 | zune-core 0.5.3 | MIT OR Apache-2.0 OR Zlib | [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-4ae441972cdd6fe4), [LICENSE-ZLIB](#license-b8cba0284c86612b) |
 | zune-inflate 0.2.54 | MIT OR Apache-2.0 OR Zlib | Consultar fuente de la dependencia |
 | zune-jpeg 0.5.15 | MIT OR Apache-2.0 OR Zlib | [LICENSE-APACHE](#license-283ea6cc2997a1a7), [LICENSE-MIT](#license-4ae441972cdd6fe4), [LICENSE-ZLIB](#license-b8cba0284c86612b) |
@@ -820,6 +845,31 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > Creative Commons is not a party to its public licenses. Notwithstanding, Creative Commons may elect to apply one of its public licenses to material it publishes and in those instances will be considered the “Licensor.” Except for the limited purpose of indicating that material is shared under a Creative Commons public license or as otherwise permitted by the Creative Commons policies published at creativecommons.org/policies, Creative Commons does not authorize the use of the trademark “Creative Commons” or any other trademark or logo of Creative Commons without its prior written consent including, without limitation, in connection with any unauthorized modifications to any of its public licenses or any other arrangements, understandings, or agreements concerning use of licensed material. For the avoidance of doubt, this paragraph does not form part of the public licenses.
 >
 > Creative Commons may be contacted at creativecommons.org.
+
+<a id="license-0331c26405bf44d4"></a>
+
+### license-0331c26405bf44d4
+
+> The MIT License (MIT)
+>
+> Copyright (c) 2019 Nicolas Silva
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of
+> this software and associated documentation files (the "Software"), to deal in
+> the Software without restriction, including without limitation the rights to
+> use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software is furnished to do so,
+> subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+> FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+> COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+> IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+> CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 <a id="license-033a9383ff21d1e4"></a>
 
@@ -1212,6 +1262,36 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 > OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 > OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+<a id="license-1038b7737a0a04bd"></a>
+
+### license-1038b7737a0a04bd
+
+> Copyright (c) 2019-2026 The RustCrypto Project Developers
+>
+> Permission is hereby granted, free of charge, to any
+> person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the
+> Software without restriction, including without
+> limitation the rights to use, copy, modify, merge,
+> publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software
+> is furnished to do so, subject to the following
+> conditions:
+>
+> The above copyright notice and this permission notice
+> shall be included in all copies or substantial portions
+> of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+> ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+> TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+> PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+> SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+> IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> DEALINGS IN THE SOFTWARE.
 
 <a id="license-10e5daea68c3ab7d"></a>
 
@@ -1815,6 +1895,28 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
+<a id="license-1961703c278284db"></a>
+
+### license-1961703c278284db
+
+> encoding_rs is copyright Mozilla Foundation.
+>
+> Licensed under the Apache License, Version 2.0
+> <LICENSE-APACHE or
+> https://www.apache.org/licenses/LICENSE-2.0> or the MIT
+> license <LICENSE-MIT or https://opensource.org/licenses/MIT>,
+> at your option. All files in the project carrying such
+> notice may not be copied, modified, or distributed except
+> according to those terms.
+>
+> This crate includes data derived from the data files supplied
+> with the WHATWG Encoding Standard, which, when incorporated into
+> source code, are licensed under the BSD 3-Clause License
+> <LICENSE-WHATWG>.
+>
+> Test code within encoding_rs is dedicated to the Public Domain when so
+> designated (see the individual files for PD/CC0-dedicated sections).
+
 <a id="license-1a6aa2616e740569"></a>
 
 ### license-1a6aa2616e740569
@@ -2207,6 +2309,36 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > See the License for the specific language governing permissions and
 > limitations under the License.
 
+<a id="license-1c87e851cc7a99a3"></a>
+
+### license-1c87e851cc7a99a3
+
+> Copyright (c) 2022 Dmitry Rodionov
+>
+> Permission is hereby granted, free of charge, to any
+> person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the
+> Software without restriction, including without
+> limitation the rights to use, copy, modify, merge,
+> publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software
+> is furnished to do so, subject to the following
+> conditions:
+>
+> The above copyright notice and this permission notice
+> shall be included in all copies or substantial portions
+> of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+> ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+> TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+> PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+> SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+> IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> DEALINGS IN THE SOFTWARE.
+
 <a id="license-1f6efa554fb0411e"></a>
 
 ### license-1f6efa554fb0411e
@@ -2562,30 +2694,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 
-<a id="license-208693b9bfa93e69"></a>
-
-### license-208693b9bfa93e69
-
-> Copyright (c) 2016 William Orr <will@worrbase.com>
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
-
 <a id="license-20a90ebcd9896955"></a>
 
 ### license-20a90ebcd9896955
@@ -2906,6 +3014,212 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 >    See the License for the specific language governing permissions and
 >    limitations under the License.
+
+<a id="license-25bb7f1aff0a32d4"></a>
+
+### license-25bb7f1aff0a32d4
+
+> Apache License
+>                         Version 2.0, January 2004
+>                      http://www.apache.org/licenses/
+>
+> TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+>
+> 1. Definitions.
+>
+>    "License" shall mean the terms and conditions for use, reproduction,
+>    and distribution as defined by Sections 1 through 9 of this document.
+>
+>    "Licensor" shall mean the copyright owner or entity authorized by
+>    the copyright owner that is granting the License.
+>
+>    "Legal Entity" shall mean the union of the acting entity and all
+>    other entities that control, are controlled by, or are under common
+>    control with that entity. For the purposes of this definition,
+>    "control" means (i) the power, direct or indirect, to cause the
+>    direction or management of such entity, whether by contract or
+>    otherwise, or (ii) ownership of fifty percent (50%) or more of the
+>    outstanding shares, or (iii) beneficial ownership of such entity.
+>
+>    "You" (or "Your") shall mean an individual or Legal Entity
+>    exercising permissions granted by this License.
+>
+>    "Source" form shall mean the preferred form for making modifications,
+>    including but not limited to software source code, documentation
+>    source, and configuration files.
+>
+>    "Object" form shall mean any form resulting from mechanical
+>    transformation or translation of a Source form, including but
+>    not limited to compiled object code, generated documentation,
+>    and conversions to other media types.
+>
+>    "Work" shall mean the work of authorship, whether in Source or
+>    Object form, made available under the License, as indicated by a
+>    copyright notice that is included in or attached to the work
+>    (an example is provided in the Appendix below).
+>
+>    "Derivative Works" shall mean any work, whether in Source or Object
+>    form, that is based on (or derived from) the Work and for which the
+>    editorial revisions, annotations, elaborations, or other modifications
+>    represent, as a whole, an original work of authorship. For the purposes
+>    of this License, Derivative Works shall not include works that remain
+>    separable from, or merely link (or bind by name) to the interfaces of,
+>    the Work and Derivative Works thereof.
+>
+>    "Contribution" shall mean any work of authorship, including
+>    the original version of the Work and any modifications or additions
+>    to that Work or Derivative Works thereof, that is intentionally
+>    submitted to Licensor for inclusion in the Work by the copyright owner
+>    or by an individual or Legal Entity authorized to submit on behalf of
+>    the copyright owner. For the purposes of this definition, "submitted"
+>    means any form of electronic, verbal, or written communication sent
+>    to the Licensor or its representatives, including but not limited to
+>    communication on electronic mailing lists, source code control systems,
+>    and issue tracking systems that are managed by, or on behalf of, the
+>    Licensor for the purpose of discussing and improving the Work, but
+>    excluding communication that is conspicuously marked or otherwise
+>    designated in writing by the copyright owner as "Not a Contribution."
+>
+>    "Contributor" shall mean Licensor and any individual or Legal Entity
+>    on behalf of whom a Contribution has been received by Licensor and
+>    subsequently incorporated within the Work.
+>
+> 2. Grant of Copyright License. Subject to the terms and conditions of
+>    this License, each Contributor hereby grants to You a perpetual,
+>    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+>    copyright license to reproduce, prepare Derivative Works of,
+>    publicly display, publicly perform, sublicense, and distribute the
+>    Work and such Derivative Works in Source or Object form.
+>
+> 3. Grant of Patent License. Subject to the terms and conditions of
+>    this License, each Contributor hereby grants to You a perpetual,
+>    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+>    (except as stated in this section) patent license to make, have made,
+>    use, offer to sell, sell, import, and otherwise transfer the Work,
+>    where such license applies only to those patent claims licensable
+>    by such Contributor that are necessarily infringed by their
+>    Contribution(s) alone or by combination of their Contribution(s)
+>    with the Work to which such Contribution(s) was submitted. If You
+>    institute patent litigation against any entity (including a
+>    cross-claim or counterclaim in a lawsuit) alleging that the Work
+>    or a Contribution incorporated within the Work constitutes direct
+>    or contributory patent infringement, then any patent licenses
+>    granted to You under this License for that Work shall terminate
+>    as of the date such litigation is filed.
+>
+> 4. Redistribution. You may reproduce and distribute copies of the
+>    Work or Derivative Works thereof in any medium, with or without
+>    modifications, and in Source or Object form, provided that You
+>    meet the following conditions:
+>
+>    (a) You must give any other recipients of the Work or
+>        Derivative Works a copy of this License; and
+>
+>    (b) You must cause any modified files to carry prominent notices
+>        stating that You changed the files; and
+>
+>    (c) You must retain, in the Source form of any Derivative Works
+>        that You distribute, all copyright, patent, trademark, and
+>        attribution notices from the Source form of the Work,
+>        excluding those notices that do not pertain to any part of
+>        the Derivative Works; and
+>
+>    (d) If the Work includes a "NOTICE" text file as part of its
+>        distribution, then any Derivative Works that You distribute must
+>        include a readable copy of the attribution notices contained
+>        within such NOTICE file, excluding those notices that do not
+>        pertain to any part of the Derivative Works, in at least one
+>        of the following places: within a NOTICE text file distributed
+>        as part of the Derivative Works; within the Source form or
+>        documentation, if provided along with the Derivative Works; or,
+>        within a display generated by the Derivative Works, if and
+>        wherever such third-party notices normally appear. The contents
+>        of the NOTICE file are for informational purposes only and
+>        do not modify the License. You may add Your own attribution
+>        notices within Derivative Works that You distribute, alongside
+>        or as an addendum to the NOTICE text from the Work, provided
+>        that such additional attribution notices cannot be construed
+>        as modifying the License.
+>
+>    You may add Your own copyright statement to Your modifications and
+>    may provide additional or different license terms and conditions
+>    for use, reproduction, or distribution of Your modifications, or
+>    for any such Derivative Works as a whole, provided Your use,
+>    reproduction, and distribution of the Work otherwise complies with
+>    the conditions stated in this License.
+>
+> 5. Submission of Contributions. Unless You explicitly state otherwise,
+>    any Contribution intentionally submitted for inclusion in the Work
+>    by You to the Licensor shall be under the terms and conditions of
+>    this License, without any additional terms or conditions.
+>    Notwithstanding the above, nothing herein shall supersede or modify
+>    the terms of any separate license agreement you may have executed
+>    with Licensor regarding such Contributions.
+>
+> 6. Trademarks. This License does not grant permission to use the trade
+>    names, trademarks, service marks, or product names of the Licensor,
+>    except as required for reasonable and customary use in describing the
+>    origin of the Work and reproducing the content of the NOTICE file.
+>
+> 7. Disclaimer of Warranty. Unless required by applicable law or
+>    agreed to in writing, Licensor provides the Work (and each
+>    Contributor provides its Contributions) on an "AS IS" BASIS,
+>    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+>    implied, including, without limitation, any warranties or conditions
+>    of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+>    PARTICULAR PURPOSE. You are solely responsible for determining the
+>    appropriateness of using or redistributing the Work and assume any
+>    risks associated with Your exercise of permissions under this License.
+>
+> 8. Limitation of Liability. In no event and under no legal theory,
+>    whether in tort (including negligence), contract, or otherwise,
+>    unless required by applicable law (such as deliberate and grossly
+>    negligent acts) or agreed to in writing, shall any Contributor be
+>    liable to You for damages, including any direct, indirect, special,
+>    incidental, or consequential damages of any character arising as a
+>    result of this License or out of the use or inability to use the
+>    Work (including but not limited to damages for loss of goodwill,
+>    work stoppage, computer failure or malfunction, or any and all
+>    other commercial damages or losses), even if such Contributor
+>    has been advised of the possibility of such damages.
+>
+> 9. Accepting Warranty or Additional Liability. While redistributing
+>    the Work or Derivative Works thereof, You may choose to offer,
+>    and charge a fee for, acceptance of support, warranty, indemnity,
+>    or other liability obligations and/or rights consistent with this
+>    License. However, in accepting such obligations, You may act only
+>    on Your own behalf and on Your sole responsibility, not on behalf
+>    of any other Contributor, and only if You agree to indemnify,
+>    defend, and hold each Contributor harmless for any liability
+>    incurred by, or claims asserted against, such Contributor by reason
+>    of your accepting any such warranty or additional liability.
+>
+> END OF TERMS AND CONDITIONS
+>
+> APPENDIX: How to apply the Apache License to your work.
+>
+>    To apply the Apache License to your work, attach the following
+>    boilerplate notice, with the fields enclosed by brackets "[]"
+>    replaced with your own identifying information. (Don't include
+>    the brackets!)  The text should be enclosed in the appropriate
+>    comment syntax for the file format. We also recommend that a
+>    file or class name and description of purpose be included on the
+>    same "printed page" as the copyright notice for easier
+>    identification within third-party archives.
+>
+> Copyright 2022-NOW Dmitry Rodionov
+>
+> Licensed under the Apache License, Version 2.0 (the "License");
+> you may not use this file except in compliance with the License.
+> You may obtain a copy of the License at
+>
+>     http://www.apache.org/licenses/LICENSE-2.0
+>
+> Unless required by applicable law or agreed to in writing, software
+> distributed under the License is distributed on an "AS IS" BASIS,
+> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+> See the License for the specific language governing permissions and
+> limitations under the License.
 
 <a id="license-26da0e99dd332e76"></a>
 
@@ -3577,6 +3891,30 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 > See the License for the specific language governing permissions and
 > limitations under the License.
+
+<a id="license-2a57418d6b10947f"></a>
+
+### license-2a57418d6b10947f
+
+> Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in
+> all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+> THE SOFTWARE.
 
 <a id="license-2a58a6bf30890c2e"></a>
 
@@ -4772,52 +5110,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
-<a id="license-3b9a96c5f74727eb"></a>
-
-### license-3b9a96c5f74727eb
-
-> Creative Commons CC0 1.0 Universal
->
-> <<beginOptional;name=ccOptionalIntro>> CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED HEREUNDER.  <<endOptional>>
->
-> Statement of Purpose
->
-> The laws of most jurisdictions throughout the world automatically confer exclusive Copyright and Related Rights (defined below) upon the creator and subsequent owner(s) (each and all, an "owner") of an original work of authorship and/or a database (each, a "Work").
->
-> Certain owners wish to permanently relinquish those rights to a Work for the purpose of contributing to a commons of creative, cultural and scientific works ("Commons") that the public can reliably and without fear of later claims of infringement build upon, modify, incorporate in other works, reuse and redistribute as freely as possible in any form whatsoever and for any purposes, including without limitation commercial purposes. These owners may contribute to the Commons to promote the ideal of a free culture and the further production of creative, cultural and scientific works, or to gain reputation or greater distribution for their Work in part through the use and efforts of others.
->
-> For these and/or other purposes and motivations, and without any expectation of additional consideration or compensation, the person associating CC0 with a Work (the "Affirmer"), to the extent that he or she is an owner of Copyright and Related Rights in the Work, voluntarily elects to apply CC0 to the Work and publicly distribute the Work under its terms, with knowledge of his or her Copyright and Related Rights in the Work and the meaning and intended legal effect of CC0 on those rights.
->
-> 1. Copyright and Related Rights. A Work made available under CC0 may be protected by copyright and related or neighboring rights ("Copyright and Related Rights"). Copyright and Related Rights include, but are not limited to, the following:
->
->      i. the right to reproduce, adapt, distribute, perform, display, communicate, and translate a Work;
->
->      ii. moral rights retained by the original author(s) and/or performer(s);
->
->      iii. publicity and privacy rights pertaining to a person's image or likeness depicted in a Work;
->
->      iv. rights protecting against unfair competition in regards to a Work, subject to the limitations in paragraph 4(a), below;
->
->      v. rights protecting the extraction, dissemination, use and reuse of data in a Work;
->
->      vi. database rights (such as those arising under Directive 96/9/EC of the European Parliament and of the Council of 11 March 1996 on the legal protection of databases, and under any national implementation thereof, including any amended or successor version of such directive); and
->
->      vii. other similar, equivalent or corresponding rights throughout the world based on applicable law or treaty, and any national implementations thereof.
->
-> 2. Waiver. To the greatest extent permitted by, but not in contravention of, applicable law, Affirmer hereby overtly, fully, permanently, irrevocably and unconditionally waives, abandons, and surrenders all of Affirmer's Copyright and Related Rights and associated claims and causes of action, whether now known or unknown (including existing as well as future claims and causes of action), in the Work (i) in all territories worldwide, (ii) for the maximum duration provided by applicable law or treaty (including future time extensions), (iii) in any current or future medium and for any number of copies, and (iv) for any purpose whatsoever, including without limitation commercial, advertising or promotional purposes (the "Waiver"). Affirmer makes the Waiver for the benefit of each member of the public at large and to the detriment of Affirmer's heirs and successors, fully intending that such Waiver shall not be subject to revocation, rescission, cancellation, termination, or any other legal or equitable action to disrupt the quiet enjoyment of the Work by the public as contemplated by Affirmer's express Statement of Purpose.
->
-> 3. Public License Fallback. Should any part of the Waiver for any reason be judged legally invalid or ineffective under applicable law, then the Waiver shall be preserved to the maximum extent permitted taking into account Affirmer's express Statement of Purpose. In addition, to the extent the Waiver is so judged Affirmer hereby grants to each affected person a royalty-free, non transferable, non sublicensable, non exclusive, irrevocable and unconditional license to exercise Affirmer's Copyright and Related Rights in the Work (i) in all territories worldwide, (ii) for the maximum duration provided by applicable law or treaty (including future time extensions), (iii) in any current or future medium and for any number of copies, and (iv) for any purpose whatsoever, including without limitation commercial, advertising or promotional purposes (the "License"). The License shall be deemed effective as of the date CC0 was applied by Affirmer to the Work. Should any part of the License for any reason be judged legally invalid or ineffective under applicable law, such partial invalidity or ineffectiveness shall not invalidate the remainder of the License, and in such case Affirmer hereby affirms that he or she will not (i) exercise any of his or her remaining Copyright and Related Rights in the Work or (ii) assert any associated claims and causes of action with respect to the Work, in either case contrary to Affirmer's express Statement of Purpose.
->
-> 4. Limitations and Disclaimers.
->
->      a. No trademark or patent rights held by Affirmer are waived, abandoned, surrendered, licensed or otherwise affected by this document.
->
->      b. Affirmer offers the Work as-is and makes no representations or warranties of any kind concerning the Work, express, implied, statutory or otherwise, including without limitation warranties of title, merchantability, fitness for a particular purpose, non infringement, or the absence of latent or other defects, accuracy, or the present or absence of errors, whether or not discoverable, all to the greatest extent permissible under applicable law.
->
->      c. Affirmer disclaims responsibility for clearing rights of other persons that may apply to the Work or any use thereof, including without limitation any person's Copyright and Related Rights in the Work. Further, Affirmer disclaims responsibility for obtaining any necessary consents, permissions or other rights required for any use of the Work.
->
->      d. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
-
 <a id="license-3bfacc197ff245b6"></a>
 
 ### license-3bfacc197ff245b6
@@ -4986,32 +5278,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >
 > 3. This notice may not be removed or altered from any source distribution.
 
-<a id="license-3e1bef82aa0dfee4"></a>
-
-### license-3e1bef82aa0dfee4
-
-> MIT License
->
-> Copyright (c) Tokio Contributors
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
-
 <a id="license-3e772b5088084b86"></a>
 
 ### license-3e772b5088084b86
@@ -5037,6 +5303,212 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
+
+<a id="license-3ef4a56e24f98311"></a>
+
+### license-3ef4a56e24f98311
+
+> Apache License
+>                         Version 2.0, January 2004
+>                      http://www.apache.org/licenses/
+>
+> TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+>
+> 1. Definitions.
+>
+>    "License" shall mean the terms and conditions for use, reproduction,
+>    and distribution as defined by Sections 1 through 9 of this document.
+>
+>    "Licensor" shall mean the copyright owner or entity authorized by
+>    the copyright owner that is granting the License.
+>
+>    "Legal Entity" shall mean the union of the acting entity and all
+>    other entities that control, are controlled by, or are under common
+>    control with that entity. For the purposes of this definition,
+>    "control" means (i) the power, direct or indirect, to cause the
+>    direction or management of such entity, whether by contract or
+>    otherwise, or (ii) ownership of fifty percent (50%) or more of the
+>    outstanding shares, or (iii) beneficial ownership of such entity.
+>
+>    "You" (or "Your") shall mean an individual or Legal Entity
+>    exercising permissions granted by this License.
+>
+>    "Source" form shall mean the preferred form for making modifications,
+>    including but not limited to software source code, documentation
+>    source, and configuration files.
+>
+>    "Object" form shall mean any form resulting from mechanical
+>    transformation or translation of a Source form, including but
+>    not limited to compiled object code, generated documentation,
+>    and conversions to other media types.
+>
+>    "Work" shall mean the work of authorship, whether in Source or
+>    Object form, made available under the License, as indicated by a
+>    copyright notice that is included in or attached to the work
+>    (an example is provided in the Appendix below).
+>
+>    "Derivative Works" shall mean any work, whether in Source or Object
+>    form, that is based on (or derived from) the Work and for which the
+>    editorial revisions, annotations, elaborations, or other modifications
+>    represent, as a whole, an original work of authorship. For the purposes
+>    of this License, Derivative Works shall not include works that remain
+>    separable from, or merely link (or bind by name) to the interfaces of,
+>    the Work and Derivative Works thereof.
+>
+>    "Contribution" shall mean any work of authorship, including
+>    the original version of the Work and any modifications or additions
+>    to that Work or Derivative Works thereof, that is intentionally
+>    submitted to Licensor for inclusion in the Work by the copyright owner
+>    or by an individual or Legal Entity authorized to submit on behalf of
+>    the copyright owner. For the purposes of this definition, "submitted"
+>    means any form of electronic, verbal, or written communication sent
+>    to the Licensor or its representatives, including but not limited to
+>    communication on electronic mailing lists, source code control systems,
+>    and issue tracking systems that are managed by, or on behalf of, the
+>    Licensor for the purpose of discussing and improving the Work, but
+>    excluding communication that is conspicuously marked or otherwise
+>    designated in writing by the copyright owner as "Not a Contribution."
+>
+>    "Contributor" shall mean Licensor and any individual or Legal Entity
+>    on behalf of whom a Contribution has been received by Licensor and
+>    subsequently incorporated within the Work.
+>
+> 2. Grant of Copyright License. Subject to the terms and conditions of
+>    this License, each Contributor hereby grants to You a perpetual,
+>    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+>    copyright license to reproduce, prepare Derivative Works of,
+>    publicly display, publicly perform, sublicense, and distribute the
+>    Work and such Derivative Works in Source or Object form.
+>
+> 3. Grant of Patent License. Subject to the terms and conditions of
+>    this License, each Contributor hereby grants to You a perpetual,
+>    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+>    (except as stated in this section) patent license to make, have made,
+>    use, offer to sell, sell, import, and otherwise transfer the Work,
+>    where such license applies only to those patent claims licensable
+>    by such Contributor that are necessarily infringed by their
+>    Contribution(s) alone or by combination of their Contribution(s)
+>    with the Work to which such Contribution(s) was submitted. If You
+>    institute patent litigation against any entity (including a
+>    cross-claim or counterclaim in a lawsuit) alleging that the Work
+>    or a Contribution incorporated within the Work constitutes direct
+>    or contributory patent infringement, then any patent licenses
+>    granted to You under this License for that Work shall terminate
+>    as of the date such litigation is filed.
+>
+> 4. Redistribution. You may reproduce and distribute copies of the
+>    Work or Derivative Works thereof in any medium, with or without
+>    modifications, and in Source or Object form, provided that You
+>    meet the following conditions:
+>
+>    (a) You must give any other recipients of the Work or
+>        Derivative Works a copy of this License; and
+>
+>    (b) You must cause any modified files to carry prominent notices
+>        stating that You changed the files; and
+>
+>    (c) You must retain, in the Source form of any Derivative Works
+>        that You distribute, all copyright, patent, trademark, and
+>        attribution notices from the Source form of the Work,
+>        excluding those notices that do not pertain to any part of
+>        the Derivative Works; and
+>
+>    (d) If the Work includes a "NOTICE" text file as part of its
+>        distribution, then any Derivative Works that You distribute must
+>        include a readable copy of the attribution notices contained
+>        within such NOTICE file, excluding those notices that do not
+>        pertain to any part of the Derivative Works, in at least one
+>        of the following places: within a NOTICE text file distributed
+>        as part of the Derivative Works; within the Source form or
+>        documentation, if provided along with the Derivative Works; or,
+>        within a display generated by the Derivative Works, if and
+>        wherever such third-party notices normally appear. The contents
+>        of the NOTICE file are for informational purposes only and
+>        do not modify the License. You may add Your own attribution
+>        notices within Derivative Works that You distribute, alongside
+>        or as an addendum to the NOTICE text from the Work, provided
+>        that such additional attribution notices cannot be construed
+>        as modifying the License.
+>
+>    You may add Your own copyright statement to Your modifications and
+>    may provide additional or different license terms and conditions
+>    for use, reproduction, or distribution of Your modifications, or
+>    for any such Derivative Works as a whole, provided Your use,
+>    reproduction, and distribution of the Work otherwise complies with
+>    the conditions stated in this License.
+>
+> 5. Submission of Contributions. Unless You explicitly state otherwise,
+>    any Contribution intentionally submitted for inclusion in the Work
+>    by You to the Licensor shall be under the terms and conditions of
+>    this License, without any additional terms or conditions.
+>    Notwithstanding the above, nothing herein shall supersede or modify
+>    the terms of any separate license agreement you may have executed
+>    with Licensor regarding such Contributions.
+>
+> 6. Trademarks. This License does not grant permission to use the trade
+>    names, trademarks, service marks, or product names of the Licensor,
+>    except as required for reasonable and customary use in describing the
+>    origin of the Work and reproducing the content of the NOTICE file.
+>
+> 7. Disclaimer of Warranty. Unless required by applicable law or
+>    agreed to in writing, Licensor provides the Work (and each
+>    Contributor provides its Contributions) on an "AS IS" BASIS,
+>    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+>    implied, including, without limitation, any warranties or conditions
+>    of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+>    PARTICULAR PURPOSE. You are solely responsible for determining the
+>    appropriateness of using or redistributing the Work and assume any
+>    risks associated with Your exercise of permissions under this License.
+>
+> 8. Limitation of Liability. In no event and under no legal theory,
+>    whether in tort (including negligence), contract, or otherwise,
+>    unless required by applicable law (such as deliberate and grossly
+>    negligent acts) or agreed to in writing, shall any Contributor be
+>    liable to You for damages, including any direct, indirect, special,
+>    incidental, or consequential damages of any character arising as a
+>    result of this License or out of the use or inability to use the
+>    Work (including but not limited to damages for loss of goodwill,
+>    work stoppage, computer failure or malfunction, or any and all
+>    other commercial damages or losses), even if such Contributor
+>    has been advised of the possibility of such damages.
+>
+> 9. Accepting Warranty or Additional Liability. While redistributing
+>    the Work or Derivative Works thereof, You may choose to offer,
+>    and charge a fee for, acceptance of support, warranty, indemnity,
+>    or other liability obligations and/or rights consistent with this
+>    License. However, in accepting such obligations, You may act only
+>    on Your own behalf and on Your sole responsibility, not on behalf
+>    of any other Contributor, and only if You agree to indemnify,
+>    defend, and hold each Contributor harmless for any liability
+>    incurred by, or claims asserted against, such Contributor by reason
+>    of your accepting any such warranty or additional liability.
+>
+> END OF TERMS AND CONDITIONS
+>
+> APPENDIX: How to apply the Apache License to your work.
+>
+>    To apply the Apache License to your work, attach the following
+>    boilerplate notice, with the fields enclosed by brackets "[]"
+>    replaced with your own identifying information. (Don't include
+>    the brackets!)  The text should be enclosed in the appropriate
+>    comment syntax for the file format. We also recommend that a
+>    file or class name and description of purpose be included on the
+>    same "printed page" as the copyright notice for easier
+>    identification within third-party archives.
+>
+> Copyright 2025-NOW Dmitry Rodionov
+>
+> Licensed under the Apache License, Version 2.0 (the "License");
+> you may not use this file except in compliance with the License.
+> You may obtain a copy of the License at
+>
+>     http://www.apache.org/licenses/LICENSE-2.0
+>
+> Unless required by applicable law or agreed to in writing, software
+> distributed under the License is distributed on an "AS IS" BASIS,
+> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+> See the License for the specific language governing permissions and
+> limitations under the License.
 
 <a id="license-4247075817677c99"></a>
 
@@ -5713,36 +6185,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >    See the License for the specific language governing permissions and
 >    limitations under the License.
 
-<a id="license-4b2af3889ac2bda6"></a>
-
-### license-4b2af3889ac2bda6
-
-> Copyright (c) 2023 Notify Contributors
->
-> Permission is hereby granted, free of charge, to any
-> person obtaining a copy of this software and associated
-> documentation files (the "Software"), to deal in the
-> Software without restriction, including without
-> limitation the rights to use, copy, modify, merge,
-> publish, distribute, sublicense, and/or sell copies of
-> the Software, and to permit persons to whom the Software
-> is furnished to do so, subject to the following
-> conditions:
->
-> The above copyright notice and this permission notice
-> shall be included in all copies or substantial portions
-> of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-> ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-> TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-> PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-> SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-> IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-> DEALINGS IN THE SOFTWARE.
-
 <a id="license-4b89d4518bd135ab"></a>
 
 ### license-4b89d4518bd135ab
@@ -6356,6 +6798,20 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
+<a id="license-4e1b1f99bcc332e1"></a>
+
+### license-4e1b1f99bcc332e1
+
+> codepage is copyright 2018 Mozilla Foundation.
+>
+> Licensed under the Apache License, Version 2.0
+> <LICENSE-APACHE or
+> https://www.apache.org/licenses/LICENSE-2.0> or the MIT
+> license <LICENSE-MIT or https://opensource.org/licenses/MIT>,
+> at your option. All files in the project carrying such
+> notice may not be copied, modified, or distributed except
+> according to those terms.
+
 <a id="license-4f2ac128e429d964"></a>
 
 ### license-4f2ac128e429d964
@@ -6424,6 +6880,18 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >
 > THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+<a id="license-51b50e6120c344dc"></a>
+
+### license-51b50e6120c344dc
+
+> Copyright (c) The Hayro Authors
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 <a id="license-51f778ffff2c0705"></a>
 
 ### license-51f778ffff2c0705
@@ -6485,6 +6953,36 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 ### license-5662394bebb1a815
 
 > Copyright (c) 2019 Nick Fitzgerald
+>
+> Permission is hereby granted, free of charge, to any
+> person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the
+> Software without restriction, including without
+> limitation the rights to use, copy, modify, merge,
+> publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software
+> is furnished to do so, subject to the following
+> conditions:
+>
+> The above copyright notice and this permission notice
+> shall be included in all copies or substantial portions
+> of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+> ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+> TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+> PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+> SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+> IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> DEALINGS IN THE SOFTWARE.
+
+<a id="license-57895cdbc8febf23"></a>
+
+### license-57895cdbc8febf23
+
+> Copyright (c) 2017-2020 The Rust Project Developers
 >
 > Permission is hereby granted, free of charge, to any
 > person obtaining a copy of this software and associated
@@ -7382,6 +7880,79 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
 
+<a id="license-6ac8711fb340c62c"></a>
+
+### license-6ac8711fb340c62c
+
+> The MIT License (MIT)
+>
+> Copyright (c) 2014 Mathijs van de Nes
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE.
+
+<a id="license-6c6299de5a9662cb"></a>
+
+### license-6c6299de5a9662cb
+
+> Copyright (c) 2025 Dmitry Rodionov
+>
+> Permission is hereby granted, free of charge, to any
+> person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the
+> Software without restriction, including without
+> limitation the rights to use, copy, modify, merge,
+> publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software
+> is furnished to do so, subject to the following
+> conditions:
+>
+> The above copyright notice and this permission notice
+> shall be included in all copies or substantial portions
+> of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+> ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+> TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+> PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+> SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+> IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> DEALINGS IN THE SOFTWARE.
+
+<a id="license-6c91ec82929f91ff"></a>
+
+### license-6c91ec82929f91ff
+
+> Copyright (c) 2016 Dropbox, Inc.
+> All rights reserved.
+>
+> Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+>
+> 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+>
+> 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+>
+> 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+>
+> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 <a id="license-6d489af6292662d9"></a>
 
 ### license-6d489af6292662d9
@@ -7765,212 +8336,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 
-<a id="license-6f5cc4b4fa98d8f0"></a>
-
-### license-6f5cc4b4fa98d8f0
-
-> Apache License
->                         Version 2.0, January 2004
->                      http://www.apache.org/licenses/
->
-> TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
->
-> 1. Definitions.
->
->    "License" shall mean the terms and conditions for use, reproduction,
->    and distribution as defined by Sections 1 through 9 of this document.
->
->    "Licensor" shall mean the copyright owner or entity authorized by
->    the copyright owner that is granting the License.
->
->    "Legal Entity" shall mean the union of the acting entity and all
->    other entities that control, are controlled by, or are under common
->    control with that entity. For the purposes of this definition,
->    "control" means (i) the power, direct or indirect, to cause the
->    direction or management of such entity, whether by contract or
->    otherwise, or (ii) ownership of fifty percent (50%) or more of the
->    outstanding shares, or (iii) beneficial ownership of such entity.
->
->    "You" (or "Your") shall mean an individual or Legal Entity
->    exercising permissions granted by this License.
->
->    "Source" form shall mean the preferred form for making modifications,
->    including but not limited to software source code, documentation
->    source, and configuration files.
->
->    "Object" form shall mean any form resulting from mechanical
->    transformation or translation of a Source form, including but
->    not limited to compiled object code, generated documentation,
->    and conversions to other media types.
->
->    "Work" shall mean the work of authorship, whether in Source or
->    Object form, made available under the License, as indicated by a
->    copyright notice that is included in or attached to the work
->    (an example is provided in the Appendix below).
->
->    "Derivative Works" shall mean any work, whether in Source or Object
->    form, that is based on (or derived from) the Work and for which the
->    editorial revisions, annotations, elaborations, or other modifications
->    represent, as a whole, an original work of authorship. For the purposes
->    of this License, Derivative Works shall not include works that remain
->    separable from, or merely link (or bind by name) to the interfaces of,
->    the Work and Derivative Works thereof.
->
->    "Contribution" shall mean any work of authorship, including
->    the original version of the Work and any modifications or additions
->    to that Work or Derivative Works thereof, that is intentionally
->    submitted to Licensor for inclusion in the Work by the copyright owner
->    or by an individual or Legal Entity authorized to submit on behalf of
->    the copyright owner. For the purposes of this definition, "submitted"
->    means any form of electronic, verbal, or written communication sent
->    to the Licensor or its representatives, including but not limited to
->    communication on electronic mailing lists, source code control systems,
->    and issue tracking systems that are managed by, or on behalf of, the
->    Licensor for the purpose of discussing and improving the Work, but
->    excluding communication that is conspicuously marked or otherwise
->    designated in writing by the copyright owner as "Not a Contribution."
->
->    "Contributor" shall mean Licensor and any individual or Legal Entity
->    on behalf of whom a Contribution has been received by Licensor and
->    subsequently incorporated within the Work.
->
-> 2. Grant of Copyright License. Subject to the terms and conditions of
->    this License, each Contributor hereby grants to You a perpetual,
->    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
->    copyright license to reproduce, prepare Derivative Works of,
->    publicly display, publicly perform, sublicense, and distribute the
->    Work and such Derivative Works in Source or Object form.
->
-> 3. Grant of Patent License. Subject to the terms and conditions of
->    this License, each Contributor hereby grants to You a perpetual,
->    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
->    (except as stated in this section) patent license to make, have made,
->    use, offer to sell, sell, import, and otherwise transfer the Work,
->    where such license applies only to those patent claims licensable
->    by such Contributor that are necessarily infringed by their
->    Contribution(s) alone or by combination of their Contribution(s)
->    with the Work to which such Contribution(s) was submitted. If You
->    institute patent litigation against any entity (including a
->    cross-claim or counterclaim in a lawsuit) alleging that the Work
->    or a Contribution incorporated within the Work constitutes direct
->    or contributory patent infringement, then any patent licenses
->    granted to You under this License for that Work shall terminate
->    as of the date such litigation is filed.
->
-> 4. Redistribution. You may reproduce and distribute copies of the
->    Work or Derivative Works thereof in any medium, with or without
->    modifications, and in Source or Object form, provided that You
->    meet the following conditions:
->
->    (a) You must give any other recipients of the Work or
->        Derivative Works a copy of this License; and
->
->    (b) You must cause any modified files to carry prominent notices
->        stating that You changed the files; and
->
->    (c) You must retain, in the Source form of any Derivative Works
->        that You distribute, all copyright, patent, trademark, and
->        attribution notices from the Source form of the Work,
->        excluding those notices that do not pertain to any part of
->        the Derivative Works; and
->
->    (d) If the Work includes a "NOTICE" text file as part of its
->        distribution, then any Derivative Works that You distribute must
->        include a readable copy of the attribution notices contained
->        within such NOTICE file, excluding those notices that do not
->        pertain to any part of the Derivative Works, in at least one
->        of the following places: within a NOTICE text file distributed
->        as part of the Derivative Works; within the Source form or
->        documentation, if provided along with the Derivative Works; or,
->        within a display generated by the Derivative Works, if and
->        wherever such third-party notices normally appear. The contents
->        of the NOTICE file are for informational purposes only and
->        do not modify the License. You may add Your own attribution
->        notices within Derivative Works that You distribute, alongside
->        or as an addendum to the NOTICE text from the Work, provided
->        that such additional attribution notices cannot be construed
->        as modifying the License.
->
->    You may add Your own copyright statement to Your modifications and
->    may provide additional or different license terms and conditions
->    for use, reproduction, or distribution of Your modifications, or
->    for any such Derivative Works as a whole, provided Your use,
->    reproduction, and distribution of the Work otherwise complies with
->    the conditions stated in this License.
->
-> 5. Submission of Contributions. Unless You explicitly state otherwise,
->    any Contribution intentionally submitted for inclusion in the Work
->    by You to the Licensor shall be under the terms and conditions of
->    this License, without any additional terms or conditions.
->    Notwithstanding the above, nothing herein shall supersede or modify
->    the terms of any separate license agreement you may have executed
->    with Licensor regarding such Contributions.
->
-> 6. Trademarks. This License does not grant permission to use the trade
->    names, trademarks, service marks, or product names of the Licensor,
->    except as required for reasonable and customary use in describing the
->    origin of the Work and reproducing the content of the NOTICE file.
->
-> 7. Disclaimer of Warranty. Unless required by applicable law or
->    agreed to in writing, Licensor provides the Work (and each
->    Contributor provides its Contributions) on an "AS IS" BASIS,
->    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
->    implied, including, without limitation, any warranties or conditions
->    of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
->    PARTICULAR PURPOSE. You are solely responsible for determining the
->    appropriateness of using or redistributing the Work and assume any
->    risks associated with Your exercise of permissions under this License.
->
-> 8. Limitation of Liability. In no event and under no legal theory,
->    whether in tort (including negligence), contract, or otherwise,
->    unless required by applicable law (such as deliberate and grossly
->    negligent acts) or agreed to in writing, shall any Contributor be
->    liable to You for damages, including any direct, indirect, special,
->    incidental, or consequential damages of any character arising as a
->    result of this License or out of the use or inability to use the
->    Work (including but not limited to damages for loss of goodwill,
->    work stoppage, computer failure or malfunction, or any and all
->    other commercial damages or losses), even if such Contributor
->    has been advised of the possibility of such damages.
->
-> 9. Accepting Warranty or Additional Liability. While redistributing
->    the Work or Derivative Works thereof, You may choose to offer,
->    and charge a fee for, acceptance of support, warranty, indemnity,
->    or other liability obligations and/or rights consistent with this
->    License. However, in accepting such obligations, You may act only
->    on Your own behalf and on Your sole responsibility, not on behalf
->    of any other Contributor, and only if You agree to indemnify,
->    defend, and hold each Contributor harmless for any liability
->    incurred by, or claims asserted against, such Contributor by reason
->    of your accepting any such warranty or additional liability.
->
-> END OF TERMS AND CONDITIONS
->
-> APPENDIX: How to apply the Apache License to your work.
->
->    To apply the Apache License to your work, attach the following
->    boilerplate notice, with the fields enclosed by brackets "[]"
->    replaced with your own identifying information. (Don't include
->    the brackets!)  The text should be enclosed in the appropriate
->    comment syntax for the file format. We also recommend that a
->    file or class name and description of purpose be included on the
->    same "printed page" as the copyright notice for easier
->    identification within third-party archives.
->
-> Copyright 2023 Notify Contributors
->
-> Licensed under the Apache License, Version 2.0 (the "License");
-> you may not use this file except in compliance with the License.
-> You may obtain a copy of the License at
->
-> 	http://www.apache.org/licenses/LICENSE-2.0
->
-> Unless required by applicable law or agreed to in writing, software
-> distributed under the License is distributed on an "AS IS" BASIS,
-> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-> See the License for the specific language governing permissions and
-> limitations under the License.
-
 <a id="license-7168dc3eedcc37bd"></a>
 
 ### license-7168dc3eedcc37bd
@@ -8025,6 +8390,36 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
+
+<a id="license-738d4a3e51220f46"></a>
+
+### license-738d4a3e51220f46
+
+> Copyright 2025 the Vello Authors
+>
+> Permission is hereby granted, free of charge, to any
+> person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the
+> Software without restriction, including without
+> limitation the rights to use, copy, modify, merge,
+> publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software
+> is furnished to do so, subject to the following
+> conditions:
+>
+> The above copyright notice and this permission notice
+> shall be included in all copies or substantial portions
+> of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+> ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+> TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+> PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+> SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+> IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> DEALINGS IN THE SOFTWARE.
 
 <a id="license-739620ea44ad8f99"></a>
 
@@ -8601,6 +8996,24 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 
+<a id="license-779c19b32cd2b8da"></a>
+
+### license-779c19b32cd2b8da
+
+> Copyright 2019 Nicolas Silva
+>
+> Licensed under the Apache License, Version 2.0 (the "License");
+> you may not use this file except in compliance with the License.
+> You may obtain a copy of the License at
+>
+>     http://www.apache.org/licenses/LICENSE-2.0
+>
+> Unless required by applicable law or agreed to in writing, software
+> distributed under the License is distributed on an "AS IS" BASIS,
+> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+> See the License for the specific language governing permissions and
+> limitations under the License.
+
 <a id="license-77ef4dd0b88b3be7"></a>
 
 ### license-77ef4dd0b88b3be7
@@ -9058,6 +9471,212 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >    identification within third-party archives.
 >
 > Copyright 2020 Andrew Straw
+>
+> Licensed under the Apache License, Version 2.0 (the "License");
+> you may not use this file except in compliance with the License.
+> You may obtain a copy of the License at
+>
+> 	http://www.apache.org/licenses/LICENSE-2.0
+>
+> Unless required by applicable law or agreed to in writing, software
+> distributed under the License is distributed on an "AS IS" BASIS,
+> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+> See the License for the specific language governing permissions and
+> limitations under the License.
+
+<a id="license-7a61eb3000dac144"></a>
+
+### license-7a61eb3000dac144
+
+> Apache License
+>                         Version 2.0, January 2004
+>                      http://www.apache.org/licenses/
+>
+> TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+>
+> 1. Definitions.
+>
+>    "License" shall mean the terms and conditions for use, reproduction,
+>    and distribution as defined by Sections 1 through 9 of this document.
+>
+>    "Licensor" shall mean the copyright owner or entity authorized by
+>    the copyright owner that is granting the License.
+>
+>    "Legal Entity" shall mean the union of the acting entity and all
+>    other entities that control, are controlled by, or are under common
+>    control with that entity. For the purposes of this definition,
+>    "control" means (i) the power, direct or indirect, to cause the
+>    direction or management of such entity, whether by contract or
+>    otherwise, or (ii) ownership of fifty percent (50%) or more of the
+>    outstanding shares, or (iii) beneficial ownership of such entity.
+>
+>    "You" (or "Your") shall mean an individual or Legal Entity
+>    exercising permissions granted by this License.
+>
+>    "Source" form shall mean the preferred form for making modifications,
+>    including but not limited to software source code, documentation
+>    source, and configuration files.
+>
+>    "Object" form shall mean any form resulting from mechanical
+>    transformation or translation of a Source form, including but
+>    not limited to compiled object code, generated documentation,
+>    and conversions to other media types.
+>
+>    "Work" shall mean the work of authorship, whether in Source or
+>    Object form, made available under the License, as indicated by a
+>    copyright notice that is included in or attached to the work
+>    (an example is provided in the Appendix below).
+>
+>    "Derivative Works" shall mean any work, whether in Source or Object
+>    form, that is based on (or derived from) the Work and for which the
+>    editorial revisions, annotations, elaborations, or other modifications
+>    represent, as a whole, an original work of authorship. For the purposes
+>    of this License, Derivative Works shall not include works that remain
+>    separable from, or merely link (or bind by name) to the interfaces of,
+>    the Work and Derivative Works thereof.
+>
+>    "Contribution" shall mean any work of authorship, including
+>    the original version of the Work and any modifications or additions
+>    to that Work or Derivative Works thereof, that is intentionally
+>    submitted to Licensor for inclusion in the Work by the copyright owner
+>    or by an individual or Legal Entity authorized to submit on behalf of
+>    the copyright owner. For the purposes of this definition, "submitted"
+>    means any form of electronic, verbal, or written communication sent
+>    to the Licensor or its representatives, including but not limited to
+>    communication on electronic mailing lists, source code control systems,
+>    and issue tracking systems that are managed by, or on behalf of, the
+>    Licensor for the purpose of discussing and improving the Work, but
+>    excluding communication that is conspicuously marked or otherwise
+>    designated in writing by the copyright owner as "Not a Contribution."
+>
+>    "Contributor" shall mean Licensor and any individual or Legal Entity
+>    on behalf of whom a Contribution has been received by Licensor and
+>    subsequently incorporated within the Work.
+>
+> 2. Grant of Copyright License. Subject to the terms and conditions of
+>    this License, each Contributor hereby grants to You a perpetual,
+>    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+>    copyright license to reproduce, prepare Derivative Works of,
+>    publicly display, publicly perform, sublicense, and distribute the
+>    Work and such Derivative Works in Source or Object form.
+>
+> 3. Grant of Patent License. Subject to the terms and conditions of
+>    this License, each Contributor hereby grants to You a perpetual,
+>    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+>    (except as stated in this section) patent license to make, have made,
+>    use, offer to sell, sell, import, and otherwise transfer the Work,
+>    where such license applies only to those patent claims licensable
+>    by such Contributor that are necessarily infringed by their
+>    Contribution(s) alone or by combination of their Contribution(s)
+>    with the Work to which such Contribution(s) was submitted. If You
+>    institute patent litigation against any entity (including a
+>    cross-claim or counterclaim in a lawsuit) alleging that the Work
+>    or a Contribution incorporated within the Work constitutes direct
+>    or contributory patent infringement, then any patent licenses
+>    granted to You under this License for that Work shall terminate
+>    as of the date such litigation is filed.
+>
+> 4. Redistribution. You may reproduce and distribute copies of the
+>    Work or Derivative Works thereof in any medium, with or without
+>    modifications, and in Source or Object form, provided that You
+>    meet the following conditions:
+>
+>    (a) You must give any other recipients of the Work or
+>        Derivative Works a copy of this License; and
+>
+>    (b) You must cause any modified files to carry prominent notices
+>        stating that You changed the files; and
+>
+>    (c) You must retain, in the Source form of any Derivative Works
+>        that You distribute, all copyright, patent, trademark, and
+>        attribution notices from the Source form of the Work,
+>        excluding those notices that do not pertain to any part of
+>        the Derivative Works; and
+>
+>    (d) If the Work includes a "NOTICE" text file as part of its
+>        distribution, then any Derivative Works that You distribute must
+>        include a readable copy of the attribution notices contained
+>        within such NOTICE file, excluding those notices that do not
+>        pertain to any part of the Derivative Works, in at least one
+>        of the following places: within a NOTICE text file distributed
+>        as part of the Derivative Works; within the Source form or
+>        documentation, if provided along with the Derivative Works; or,
+>        within a display generated by the Derivative Works, if and
+>        wherever such third-party notices normally appear. The contents
+>        of the NOTICE file are for informational purposes only and
+>        do not modify the License. You may add Your own attribution
+>        notices within Derivative Works that You distribute, alongside
+>        or as an addendum to the NOTICE text from the Work, provided
+>        that such additional attribution notices cannot be construed
+>        as modifying the License.
+>
+>    You may add Your own copyright statement to Your modifications and
+>    may provide additional or different license terms and conditions
+>    for use, reproduction, or distribution of Your modifications, or
+>    for any such Derivative Works as a whole, provided Your use,
+>    reproduction, and distribution of the Work otherwise complies with
+>    the conditions stated in this License.
+>
+> 5. Submission of Contributions. Unless You explicitly state otherwise,
+>    any Contribution intentionally submitted for inclusion in the Work
+>    by You to the Licensor shall be under the terms and conditions of
+>    this License, without any additional terms or conditions.
+>    Notwithstanding the above, nothing herein shall supersede or modify
+>    the terms of any separate license agreement you may have executed
+>    with Licensor regarding such Contributions.
+>
+> 6. Trademarks. This License does not grant permission to use the trade
+>    names, trademarks, service marks, or product names of the Licensor,
+>    except as required for reasonable and customary use in describing the
+>    origin of the Work and reproducing the content of the NOTICE file.
+>
+> 7. Disclaimer of Warranty. Unless required by applicable law or
+>    agreed to in writing, Licensor provides the Work (and each
+>    Contributor provides its Contributions) on an "AS IS" BASIS,
+>    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+>    implied, including, without limitation, any warranties or conditions
+>    of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+>    PARTICULAR PURPOSE. You are solely responsible for determining the
+>    appropriateness of using or redistributing the Work and assume any
+>    risks associated with Your exercise of permissions under this License.
+>
+> 8. Limitation of Liability. In no event and under no legal theory,
+>    whether in tort (including negligence), contract, or otherwise,
+>    unless required by applicable law (such as deliberate and grossly
+>    negligent acts) or agreed to in writing, shall any Contributor be
+>    liable to You for damages, including any direct, indirect, special,
+>    incidental, or consequential damages of any character arising as a
+>    result of this License or out of the use or inability to use the
+>    Work (including but not limited to damages for loss of goodwill,
+>    work stoppage, computer failure or malfunction, or any and all
+>    other commercial damages or losses), even if such Contributor
+>    has been advised of the possibility of such damages.
+>
+> 9. Accepting Warranty or Additional Liability. While redistributing
+>    the Work or Derivative Works thereof, You may choose to offer,
+>    and charge a fee for, acceptance of support, warranty, indemnity,
+>    or other liability obligations and/or rights consistent with this
+>    License. However, in accepting such obligations, You may act only
+>    on Your own behalf and on Your sole responsibility, not on behalf
+>    of any other Contributor, and only if You agree to indemnify,
+>    defend, and hold each Contributor harmless for any liability
+>    incurred by, or claims asserted against, such Contributor by reason
+>    of your accepting any such warranty or additional liability.
+>
+> END OF TERMS AND CONDITIONS
+>
+> APPENDIX: How to apply the Apache License to your work.
+>
+>    To apply the Apache License to your work, attach the following
+>    boilerplate notice, with the fields enclosed by brackets "[]"
+>    replaced with your own identifying information. (Don't include
+>    the brackets!)  The text should be enclosed in the appropriate
+>    comment syntax for the file format. We also recommend that a
+>    file or class name and description of purpose be included on the
+>    same "printed page" as the copyright notice for easier
+>    identification within third-party archives.
+>
+> Copyright 2021 Ivan Smirnov
 >
 > Licensed under the Apache License, Version 2.0 (the "License");
 > you may not use this file except in compliance with the License.
@@ -10215,6 +10834,36 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >    See the License for the specific language governing permissions and
 >    limitations under the License.
 
+<a id="license-836ed921bbad486c"></a>
+
+### license-836ed921bbad486c
+
+> Copyright (c) 2018-2026 The RustCrypto Project Developers
+>
+> Permission is hereby granted, free of charge, to any
+> person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the
+> Software without restriction, including without
+> limitation the rights to use, copy, modify, merge,
+> publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software
+> is furnished to do so, subject to the following
+> conditions:
+>
+> The above copyright notice and this permission notice
+> shall be included in all copies or substantial portions
+> of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+> ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+> TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+> PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+> SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+> IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> DEALINGS IN THE SOFTWARE.
+
 <a id="license-84e1bbfebd74e419"></a>
 
 ### license-84e1bbfebd74e419
@@ -11076,32 +11725,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > MIT License
 >
 > Copyright (c) 2018 Sam Rijs, Alex Crichton and contributors
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
-
-<a id="license-983a293c55cd84a3"></a>
-
-### license-983a293c55cd84a3
-
-> The MIT License (MIT)
->
-> Copyright (c) 2015 Pierre Baillet
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -12652,6 +13275,37 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >
 > 3. This notice may not be removed or altered from any source distribution.
 
+<a id="license-b1d6d97b0476a828"></a>
+
+### license-b1d6d97b0476a828
+
+> Copyright © WHATWG (Apple, Google, Mozilla, Microsoft).
+>
+> Redistribution and use in source and binary forms, with or without
+> modification, are permitted provided that the following conditions are met:
+>
+> 1. Redistributions of source code must retain the above copyright notice, this
+>    list of conditions and the following disclaimer.
+>
+> 2. Redistributions in binary form must reproduce the above copyright notice,
+>    this list of conditions and the following disclaimer in the documentation
+>    and/or other materials provided with the distribution.
+>
+> 3. Neither the name of the copyright holder nor the names of its
+>    contributors may be used to endorse or promote products derived from
+>    this software without specific prior written permission.
+>
+> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+> AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+> IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+> DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+> FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+> DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+> SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+> CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+> OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+> OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 <a id="license-b2a541f10560a218"></a>
 
 ### license-b2a541f10560a218
@@ -13438,6 +14092,212 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >    misrepresented as being the original software.
 > 3. This notice may not be removed or altered from any source distribution.
 
+<a id="license-b969ab4be2f63a5d"></a>
+
+### license-b969ab4be2f63a5d
+
+> Apache License
+>                            Version 2.0, January 2004
+>                         http://www.apache.org/licenses/
+>
+>    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+>
+>    1. Definitions.
+>
+>       "License" shall mean the terms and conditions for use, reproduction,
+>       and distribution as defined by Sections 1 through 9 of this document.
+>
+>       "Licensor" shall mean the copyright owner or entity authorized by
+>       the copyright owner that is granting the License.
+>
+>       "Legal Entity" shall mean the union of the acting entity and all
+>       other entities that control, are controlled by, or are under common
+>       control with that entity. For the purposes of this definition,
+>       "control" means (i) the power, direct or indirect, to cause the
+>       direction or management of such entity, whether by contract or
+>       otherwise, or (ii) ownership of fifty percent (50%) or more of the
+>       outstanding shares, or (iii) beneficial ownership of such entity.
+>
+>       "You" (or "Your") shall mean an individual or Legal Entity
+>       exercising permissions granted by this License.
+>
+>       "Source" form shall mean the preferred form for making modifications,
+>       including but not limited to software source code, documentation
+>       source, and configuration files.
+>
+>       "Object" form shall mean any form resulting from mechanical
+>       transformation or translation of a Source form, including but
+>       not limited to compiled object code, generated documentation,
+>       and conversions to other media types.
+>
+>       "Work" shall mean the work of authorship, whether in Source or
+>       Object form, made available under the License, as indicated by a
+>       copyright notice that is included in or attached to the work
+>       (an example is provided in the Appendix below).
+>
+>       "Derivative Works" shall mean any work, whether in Source or Object
+>       form, that is based on (or derived from) the Work and for which the
+>       editorial revisions, annotations, elaborations, or other modifications
+>       represent, as a whole, an original work of authorship. For the purposes
+>       of this License, Derivative Works shall not include works that remain
+>       separable from, or merely link (or bind by name) to the interfaces of,
+>       the Work and Derivative Works thereof.
+>
+>       "Contribution" shall mean any work of authorship, including
+>       the original version of the Work and any modifications or additions
+>       to that Work or Derivative Works thereof, that is intentionally
+>       submitted to Licensor for inclusion in the Work by the copyright owner
+>       or by an individual or Legal Entity authorized to submit on behalf of
+>       the copyright owner. For the purposes of this definition, "submitted"
+>       means any form of electronic, verbal, or written communication sent
+>       to the Licensor or its representatives, including but not limited to
+>       communication on electronic mailing lists, source code control systems,
+>       and issue tracking systems that are managed by, or on behalf of, the
+>       Licensor for the purpose of discussing and improving the Work, but
+>       excluding communication that is conspicuously marked or otherwise
+>       designated in writing by the copyright owner as "Not a Contribution."
+>
+>       "Contributor" shall mean Licensor and any individual or Legal Entity
+>       on behalf of whom a Contribution has been received by Licensor and
+>       subsequently incorporated within the Work.
+>
+>    2. Grant of Copyright License. Subject to the terms and conditions of
+>       this License, each Contributor hereby grants to You a perpetual,
+>       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+>       copyright license to reproduce, prepare Derivative Works of,
+>       publicly display, publicly perform, sublicense, and distribute the
+>       Work and such Derivative Works in Source or Object form.
+>
+>    3. Grant of Patent License. Subject to the terms and conditions of
+>       this License, each Contributor hereby grants to You a perpetual,
+>       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+>       (except as stated in this section) patent license to make, have made,
+>       use, offer to sell, sell, import, and otherwise transfer the Work,
+>       where such license applies only to those patent claims licensable
+>       by such Contributor that are necessarily infringed by their
+>       Contribution(s) alone or by combination of their Contribution(s)
+>       with the Work to which such Contribution(s) was submitted. If You
+>       institute patent litigation against any entity (including a
+>       cross-claim or counterclaim in a lawsuit) alleging that the Work
+>       or a Contribution incorporated within the Work constitutes direct
+>       or contributory patent infringement, then any patent licenses
+>       granted to You under this License for that Work shall terminate
+>       as of the date such litigation is filed.
+>
+>    4. Redistribution. You may reproduce and distribute copies of the
+>       Work or Derivative Works thereof in any medium, with or without
+>       modifications, and in Source or Object form, provided that You
+>       meet the following conditions:
+>
+>       (a) You must give any other recipients of the Work or
+>           Derivative Works a copy of this License; and
+>
+>       (b) You must cause any modified files to carry prominent notices
+>           stating that You changed the files; and
+>
+>       (c) You must retain, in the Source form of any Derivative Works
+>           that You distribute, all copyright, patent, trademark, and
+>           attribution notices from the Source form of the Work,
+>           excluding those notices that do not pertain to any part of
+>           the Derivative Works; and
+>
+>       (d) If the Work includes a "NOTICE" text file as part of its
+>           distribution, then any Derivative Works that You distribute must
+>           include a readable copy of the attribution notices contained
+>           within such NOTICE file, excluding those notices that do not
+>           pertain to any part of the Derivative Works, in at least one
+>           of the following places: within a NOTICE text file distributed
+>           as part of the Derivative Works; within the Source form or
+>           documentation, if provided along with the Derivative Works; or,
+>           within a display generated by the Derivative Works, if and
+>           wherever such third-party notices normally appear. The contents
+>           of the NOTICE file are for informational purposes only and
+>           do not modify the License. You may add Your own attribution
+>           notices within Derivative Works that You distribute, alongside
+>           or as an addendum to the NOTICE text from the Work, provided
+>           that such additional attribution notices cannot be construed
+>           as modifying the License.
+>
+>       You may add Your own copyright statement to Your modifications and
+>       may provide additional or different license terms and conditions
+>       for use, reproduction, or distribution of Your modifications, or
+>       for any such Derivative Works as a whole, provided Your use,
+>       reproduction, and distribution of the Work otherwise complies with
+>       the conditions stated in this License.
+>
+>    5. Submission of Contributions. Unless You explicitly state otherwise,
+>       any Contribution intentionally submitted for inclusion in the Work
+>       by You to the Licensor shall be under the terms and conditions of
+>       this License, without any additional terms or conditions.
+>       Notwithstanding the above, nothing herein shall supersede or modify
+>       the terms of any separate license agreement you may have executed
+>       with Licensor regarding such Contributions.
+>
+>    6. Trademarks. This License does not grant permission to use the trade
+>       names, trademarks, service marks, or product names of the Licensor,
+>       except as required for reasonable and customary use in describing the
+>       origin of the Work and reproducing the content of the NOTICE file.
+>
+>    7. Disclaimer of Warranty. Unless required by applicable law or
+>       agreed to in writing, Licensor provides the Work (and each
+>       Contributor provides its Contributions) on an "AS IS" BASIS,
+>       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+>       implied, including, without limitation, any warranties or conditions
+>       of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+>       PARTICULAR PURPOSE. You are solely responsible for determining the
+>       appropriateness of using or redistributing the Work and assume any
+>       risks associated with Your exercise of permissions under this License.
+>
+>    8. Limitation of Liability. In no event and under no legal theory,
+>       whether in tort (including negligence), contract, or otherwise,
+>       unless required by applicable law (such as deliberate and grossly
+>       negligent acts) or agreed to in writing, shall any Contributor be
+>       liable to You for damages, including any direct, indirect, special,
+>       incidental, or consequential damages of any character arising as a
+>       result of this License or out of the use or inability to use the
+>       Work (including but not limited to damages for loss of goodwill,
+>       work stoppage, computer failure or malfunction, or any and all
+>       other commercial damages or losses), even if such Contributor
+>       has been advised of the possibility of such damages.
+>
+>    9. Accepting Warranty or Additional Liability. While redistributing
+>       the Work or Derivative Works thereof, You may choose to offer,
+>       and charge a fee for, acceptance of support, warranty, indemnity,
+>       or other liability obligations and/or rights consistent with this
+>       License. However, in accepting such obligations, You may act only
+>       on Your own behalf and on Your sole responsibility, not on behalf
+>       of any other Contributor, and only if You agree to indemnify,
+>       defend, and hold each Contributor harmless for any liability
+>       incurred by, or claims asserted against, such Contributor by reason
+>       of your accepting any such warranty or additional liability.
+>
+>    END OF TERMS AND CONDITIONS
+>
+>    APPENDIX: How to apply the Apache License to your work.
+>
+>       To apply the Apache License to your work, attach the following
+>       boilerplate notice, with the fields enclosed by brackets "[]"
+>       replaced with your own identifying information. (Don't include
+>       the brackets!)  The text should be enclosed in the appropriate
+>       comment syntax for the file format. We also recommend that a
+>       file or class name and description of purpose be included on the
+>       same "printed page" as the copyright notice for easier
+>       identification within third-party archives.
+>
+>    Copyright 2011 Google Inc.
+>
+>    Licensed under the Apache License, Version 2.0 (the "License");
+>    you may not use this file except in compliance with the License.
+>    You may obtain a copy of the License at
+>
+>        http://www.apache.org/licenses/LICENSE-2.0
+>
+>    Unless required by applicable law or agreed to in writing, software
+>    distributed under the License is distributed on an "AS IS" BASIS,
+>    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+>    See the License for the specific language governing permissions and
+>    limitations under the License.
+
 <a id="license-b99f9d43803f2ac9"></a>
 
 ### license-b99f9d43803f2ac9
@@ -13756,6 +14616,36 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > See the License for the specific language governing permissions and
 > limitations under the License.
 
+<a id="license-bfb09da988fcf916"></a>
+
+### license-bfb09da988fcf916
+
+> Copyright 2020 the Vello Authors
+>
+> Permission is hereby granted, free of charge, to any
+> person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the
+> Software without restriction, including without
+> limitation the rights to use, copy, modify, merge,
+> publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software
+> is furnished to do so, subject to the following
+> conditions:
+>
+> The above copyright notice and this permission notice
+> shall be included in all copies or substantial portions
+> of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+> ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+> TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+> PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+> SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+> IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> DEALINGS IN THE SOFTWARE.
+
 <a id="license-c0333bf270663b07"></a>
 
 ### license-c0333bf270663b07
@@ -13785,33 +14675,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 > OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 > OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-<a id="license-c0fdcda1a4ffc5fd"></a>
-
-### license-c0fdcda1a4ffc5fd
-
-> MIT License
->
-> Copyright (c) 2019 Yoshua Wuyts
-> Copyright (c) Tokio Contributors
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in all
-> copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
 
 <a id="license-c18ee669bac9b829"></a>
 
@@ -14143,30 +15006,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
-
-<a id="license-c804065b0956d00a"></a>
-
-### license-c804065b0956d00a
-
-> Copyright (c) 2014 Carl Lerche and other MIO contributors
->
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
->
-> The above copyright notice and this permission notice shall be included in
-> all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-> THE SOFTWARE.
 
 <a id="license-c80c671db14363b2"></a>
 
@@ -15648,6 +16487,26 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 
+<a id="license-e08d6d9195b9428a"></a>
+
+### license-e08d6d9195b9428a
+
+> Copyright Mozilla Foundation
+>
+> Licensed under the Apache License (Version 2.0), or the MIT license,
+> (the "Licenses") at your option. You may not use this file except in
+> compliance with one of the Licenses. You may obtain copies of the
+> Licenses at:
+>
+>    https://www.apache.org/licenses/LICENSE-2.0
+>    https://opensource.org/licenses/MIT
+>
+> Unless required by applicable law or agreed to in writing, software
+> distributed under the Licenses is distributed on an "AS IS" BASIS,
+> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+> See the Licenses for the specific language governing permissions and
+> limitations under the Licenses.
+
 <a id="license-e1926b3d9f1e0a32"></a>
 
 ### license-e1926b3d9f1e0a32
@@ -16300,6 +17159,31 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 >
 > 3. This notice may not be removed or altered from any source distribution.
 
+<a id="license-ec5d7c32366268f1"></a>
+
+### license-ec5d7c32366268f1
+
+> The MIT License (MIT)
+>
+> Copyright (c) 2014-2022 Steven Fackler, Yuki Okushi
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of
+> this software and associated documentation files (the "Software"), to deal in
+> the Software without restriction, including without limitation the rights to
+> use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software is furnished to do so,
+> subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+> FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+> COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+> IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+> CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 <a id="license-ed2fda479dacddad"></a>
 
 ### license-ed2fda479dacddad
@@ -16323,6 +17207,25 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+<a id="license-ee3c852dd133c6ca"></a>
+
+### license-ee3c852dd133c6ca
+
+> Permission is hereby granted, free of charge, to any person obtaining a
+> copy of this software and associated documentation files (the
+> "Software"), to deal in the Software without restriction, including
+> without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+> OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+> IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+> TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+> SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 <a id="license-f03893164caafcc4"></a>
 
@@ -16689,24 +17592,6 @@ su atribución. Véanse DEVICON-LICENSE, CODICONS-LICENSE y crates/peek-ui/asset
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
-
-<a id="license-f68878c9ca61b25d"></a>
-
-### license-f68878c9ca61b25d
-
-> Copyright (c) Hanno Braun and contributors
->
-> Permission to use, copy, modify, and/or distribute this software for any purpose
-> with or without fee is hereby granted, provided that the above copyright notice
-> and this permission notice appear in all copies.
->
-> THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-> REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
-> FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-> INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-> OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-> TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
-> THIS SOFTWARE.
 
 <a id="license-f853326256f7bf7c"></a>
 

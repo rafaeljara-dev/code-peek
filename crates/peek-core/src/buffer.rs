@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use ropey::Rope;
+use std::borrow::Cow;
 use std::fs::File;
 use std::io::BufReader;
 use std::ops::Range;
@@ -20,12 +21,72 @@ impl LineEnding {
     }
 }
 
+/// On-disk text encoding. Legacy encodings are decoded for display and re-encoded on save.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum TextEncoding {
+    #[default]
+    Utf8,
+    Utf16Le,
+    Utf16Be,
+    Windows1252,
+}
+
+impl TextEncoding {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Utf8 => "UTF-8",
+            Self::Utf16Le => "UTF-16 LE",
+            Self::Utf16Be => "UTF-16 BE",
+            Self::Windows1252 => "Windows-1252",
+        }
+    }
+}
+
+/// Decodes text bytes that may not be UTF-8 (UTF-8/UTF-16 BOM, then Windows-1252).
+/// Returns the text without BOM, the detected encoding and whether a BOM was present.
+pub fn decode_text_bytes(bytes: &[u8]) -> Result<(Cow<'_, str>, TextEncoding, bool)> {
+    if let Some(rest) = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]) {
+        if let Ok(text) = std::str::from_utf8(rest) {
+            return Ok((Cow::Borrowed(text), TextEncoding::Utf8, true));
+        }
+    }
+    for (bom, encoding, decoder) in [
+        ([0xFF, 0xFE], TextEncoding::Utf16Le, encoding_rs::UTF_16LE),
+        ([0xFE, 0xFF], TextEncoding::Utf16Be, encoding_rs::UTF_16BE),
+    ] {
+        if let Some(rest) = bytes.strip_prefix(&bom) {
+            let (text, had_errors) = decoder.decode_without_bom_handling(rest);
+            if had_errors {
+                bail!("El archivo UTF-16 contiene secuencias inválidas");
+            }
+            return Ok((Cow::Owned(text.into_owned()), encoding, true));
+        }
+    }
+    if let Ok(text) = std::str::from_utf8(bytes) {
+        return Ok((Cow::Borrowed(text), TextEncoding::Utf8, false));
+    }
+    let controls = bytes
+        .iter()
+        .filter(|b| matches!(b, 0..=8 | 0x0E..=0x1F))
+        .count();
+    if bytes.contains(&0) || controls * 20 > bytes.len() {
+        bail!("El archivo es binario; CodePeek muestra archivos de texto");
+    }
+    let (text, _) = encoding_rs::WINDOWS_1252.decode_without_bom_handling(bytes);
+    Ok((
+        Cow::Owned(text.into_owned()),
+        TextEncoding::Windows1252,
+        false,
+    ))
+}
+
 #[derive(Debug, Clone)]
 pub struct TextBuffer {
     pub rope: Rope,
     pub path: Option<PathBuf>,
     pub line_ending: LineEnding,
     pub has_bom: bool,
+    pub encoding: TextEncoding,
     pub is_dirty: bool,
     pub revision: u64,
 }
@@ -58,6 +119,7 @@ impl TextBuffer {
             path: None,
             line_ending: LineEnding::Lf,
             has_bom: false,
+            encoding: TextEncoding::Utf8,
             is_dirty: false,
             revision: 0,
         }
@@ -80,6 +142,7 @@ impl TextBuffer {
             path: None,
             line_ending,
             has_bom,
+            encoding: TextEncoding::Utf8,
             is_dirty: false,
             revision: 0,
         }
@@ -96,10 +159,23 @@ impl TextBuffer {
         if !metadata.is_file() {
             bail!("La ruta no es un archivo regular");
         }
-        let mut rope = Rope::from_reader(BufReader::new(file))
-            .context("No se pudo leer el archivo como texto UTF-8")?;
-        let has_bom = rope.chars().next() == Some('\u{FEFF}');
-        if has_bom {
+        let mut encoding = TextEncoding::Utf8;
+        let (mut rope, mut has_bom) = match Rope::from_reader(BufReader::new(file)) {
+            Ok(rope) => (rope, false),
+            Err(error) if error.kind() == std::io::ErrorKind::InvalidData => {
+                // Not UTF-8: legacy Windows files (UTF-16 with BOM, Windows-1252) are still text.
+                let bytes = std::fs::read(path)
+                    .with_context(|| format!("Failed to open file: {}", path.display()))?;
+                let (text, detected, bom) = decode_text_bytes(&bytes)?;
+                encoding = detected;
+                (Rope::from_str(&text), bom)
+            }
+            Err(error) => {
+                return Err(error).context("No se pudo leer el archivo de texto");
+            }
+        };
+        if rope.chars().next() == Some('\u{FEFF}') {
+            has_bom = true;
             rope.remove(0..1);
         }
         let mut crlf = 0;
@@ -121,6 +197,7 @@ impl TextBuffer {
         let mut buffer = Self {
             rope,
             has_bom,
+            encoding,
             line_ending: if crlf > lf {
                 LineEnding::Crlf
             } else {
@@ -288,5 +365,43 @@ impl TextBuffer {
         }
 
         output
+    }
+
+    /// Serializes the buffer in its original on-disk encoding (BOM and line endings preserved).
+    pub fn to_bytes_with_endings(&self) -> Result<Vec<u8>> {
+        match self.encoding {
+            TextEncoding::Utf8 => Ok(self.to_string_with_endings().into_bytes()),
+            TextEncoding::Utf16Le | TextEncoding::Utf16Be => {
+                let little = self.encoding == TextEncoding::Utf16Le;
+                let mut out = Vec::with_capacity(self.rope.len_chars() * 2 + 2);
+                let mut push = |unit: u16| {
+                    out.extend_from_slice(&if little {
+                        unit.to_le_bytes()
+                    } else {
+                        unit.to_be_bytes()
+                    });
+                };
+                if self.has_bom {
+                    push(0xFEFF);
+                }
+                let mut units = [0u16; 2];
+                for ch in self.rope.chars() {
+                    for unit in ch.encode_utf16(&mut units) {
+                        push(*unit);
+                    }
+                }
+                Ok(out)
+            }
+            TextEncoding::Windows1252 => {
+                let text = self.rope.to_string();
+                let (bytes, _, unmappable) = encoding_rs::WINDOWS_1252.encode(&text);
+                if unmappable {
+                    bail!(
+                        "El archivo está en Windows-1252 y el texto nuevo tiene caracteres que esa codificación no admite"
+                    );
+                }
+                Ok(bytes.into_owned())
+            }
+        }
     }
 }

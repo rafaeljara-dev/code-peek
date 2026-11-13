@@ -43,8 +43,11 @@ La primera vez, al abrir sin argumentos, CodePeek te invita a elegir una carpeta
 | Seleccionar todo / seleccionar palabra | `Ctrl+A` / doble clic |
 | Desplazar horizontalmente el editor | `Shift+rueda` o rueda horizontal |
 | Recargar archivo e índice | `F5` |
-| Mostrar/ocultar explorador | `Ctrl+B` |
+| Mostrar/ocultar explorador | `Ctrl+B` o «Explorador» en la cabecera |
+| Mostrar/ocultar lista de proyectos | `Ctrl+Shift+B` o «Proyectos» en la cabecera |
 | Zoom del código | `Ctrl++` / `Ctrl+-` |
+| Zoom del documento (Markdown, Word, hojas, PDF) | `Ctrl++` / `Ctrl+-` / `Ctrl+0` |
+| Página anterior / siguiente del PDF | `RePág` / `AvPág`, flechas, rueda en el borde o miniaturas |
 | Zoom de la interfaz | `Ctrl+Shift++` / `Ctrl+Shift+-` |
 | Cerrar diálogo | `Esc` |
 
@@ -56,7 +59,9 @@ La primera vez, al abrir sin argumentos, CodePeek te invita a elegir una carpeta
 - El índice respeta `.gitignore` y conserva archivos ocultos de configuración útiles. Omite `.git`, `node_modules`, `target` y directorios de compilación/caché conocidos.
 - El archivo activo se comprueba aproximadamente cada segundo de inactividad del trabajador. Los cambios externos se recargan automáticamente si no hay edición ni cambios locales pendientes. `F5` actualiza también el árbol y el índice.
 - El guardado usa un temporal único, conserva permisos y comprueba el contenido original antes de reemplazar el archivo. Si otro programa lo cambió, rechaza el guardado. Esta comprobación no constituye un bloqueo exclusivo frente a escritores externos.
-- Los saltos de línea, incluidos archivos mixtos LF/CRLF, y el BOM UTF-8 se conservan. Archivos binarios y otras codificaciones muestran un error sin vaciar el archivo que estaba abierto.
+- Los saltos de línea, incluidos archivos mixtos LF/CRLF, y el BOM UTF-8 se conservan. Los archivos de texto y CSV en Windows-1252 o UTF-16 con BOM se leen con sus tildes y `ñ`, y se guardan en su codificación original; si el texto nuevo tiene caracteres que Windows-1252 no admite, el guardado se rechaza en vez de escribir `?`. Los binarios muestran un error sin vaciar el archivo que estaba abierto.
+- **Una sola ventana:** abrir un archivo desde el Explorador o con `peek <archivo>` mientras CodePeek está abierto lo añade como pestaña a esa ventana y la trae al frente. `peek --new-window <archivo>` abre una ventana aparte. El aviso viaja por un canal local del usuario (named pipe), sin red.
+- **Documentos de solo lectura:** PDF (miniaturas, ajuste al ancho, búsqueda por página), Word `.docx`, hojas `.xlsx`/`.xlsm`/`.xlsb`/`.xls`/`.ods` y `.csv`/`.tsv`. Las fechas de Excel se muestran como `AAAA-MM-DD`; cada hoja se carga al abrirla. Cada pestaña recuerda su página, hoja y posición. `.doc`, `.odt` y presentaciones muestran un aviso de formato no soportado.
 - Las pestañas, las carpetas desplegadas y la posición de lectura se restauran durante la sesión. En disco se guardan la lista de proyectos, el inicio, el último proyecto, el historial y los dos tamaños de fuente, no el contenido de los archivos.
 - Las líneas se ajustan al ancho disponible en Lectura/Vista previa. El editor conserva las líneas físicas y desplaza horizontalmente el contenido al mover el cursor o usar Shift+rueda. Los controles «Interfaz» y «Código» están en «Configuración» y ajustan sus tamaños por separado.
 - Las pestañas tienen × y cierre con botón central; los proyectos usan un menú `⋯`. Los diálogos tienen cierre visible además de Esc. Los iconos de extensiones usan fuentes incrustadas recortadas de 12,0 KiB, sin SVG.

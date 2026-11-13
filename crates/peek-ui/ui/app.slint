@@ -56,6 +56,35 @@ export struct EditorSpanItem { text: string, column: int, color: color }
 export struct EditorRowItem { line-number: int, selection-start: int, selection-end: int, spans: [EditorSpanItem] }
 export struct CodeSpanItem { text: string, color: color, bold: bool, italic: bool }
 export struct CodeLineItem { line-number: int, continuation: bool, line-type: int, is-markdown: bool, spans: [CodeSpanItem] }
+export struct DocLinkItem { label: string, url: string }
+export struct DocSpanItem { text: string, color: color, bold: bool, italic: bool, strikethrough: bool, code: bool, link: string }
+export struct DocRowLine { spans: [DocSpanItem] }
+export struct DocTableRow { cells: [string] }
+export struct DocHeadingItem { title: string, level: int, block-index: int }
+export struct SheetHeaderItem { label: string, col-index: int, width: int }
+export struct PdfThumbItem { page: int, image: image, has-image: bool }
+export struct SheetCellItem { text: string, kind: int, col-index: int, selected: bool, matched: bool }
+export struct SheetRowItem { row-number: int, cells: [SheetCellItem] }
+export struct DocBlockItem {
+    index: int,
+    kind: int,
+    level: int,
+    prefix: string,
+    plain-text: string,
+    lines: [DocRowLine],
+    table-headers: [string],
+    table-rows: [DocTableRow],
+    col-widths: [int],
+    col-aligns: [int],
+    more-lines: int,
+    expanded: bool,
+    has-image: bool,
+    image: image,
+    image-alt: string,
+    links: [DocLinkItem],
+    selected: bool,
+    highlighted: bool,
+}
 
 component Hint inherits Rectangle {
     in property <string> text;
@@ -103,6 +132,39 @@ component Action inherits Rectangle {
     touch := TouchArea { enabled: root.enabled; clicked => { keys.focus(); root.clicked(); } pointer-event(e) => { if e.button == PointerEventButton.middle && e.kind == PointerEventKind.up { root.middle-clicked(); } } }
 }
 
+component DocRichLines inherits VerticalLayout {
+    in property <[DocRowLine]> lines;
+    in property <length> body-font-size;
+    in property <string> code-font-family;
+    in property <bool> heading-mode: false;
+    in property <color> default-color: Theme.file-text;
+    spacing: root.heading-mode ? 4px : 6px;
+    alignment: start;
+    for rline in root.lines: HorizontalLayout {
+        alignment: start;
+        spacing: 2px;
+        for span in rline.spans: Rectangle {
+            width: inner-text.preferred-width + (span.code ? 10px : 0px);
+            height: inner-text.preferred-height + (span.code ? 2px : 0px);
+            border-radius: span.code ? 4px : 0px;
+            background: span.code ? (Theme.light ? #e2e8f0 : #233143) : transparent;
+            border-width: span.code ? 1px : 0px;
+            border-color: span.code ? (Theme.light ? #cbd5e1 : #33455e) : transparent;
+            inner-text := Text {
+                x: span.code ? 5px : 0px;
+                y: span.code ? 1px : 0px;
+                text: span.text;
+                color: span.link != "" ? Theme.focus : root.heading-mode && !span.code ? root.default-color : span.color;
+                font-family: span.code ? root.code-font-family : "Segoe UI";
+                font-size: span.code ? max(11px, root.body-font-size - 1px) : root.body-font-size;
+                font-weight: root.heading-mode || span.bold ? 700 : 400;
+                font-italic: span.italic;
+                vertical-alignment: center;
+            }
+        }
+    }
+}
+
 export component MainWindow inherits Window {
     init => { Palette.color-scheme = root.light-mode ? ColorScheme.light : ColorScheme.dark; }
     in-out property <bool> light-mode: false;
@@ -122,6 +184,7 @@ export component MainWindow inherits Window {
     in-out property <string> default-path;
     in-out property <string> current-file-path;
     in-out property <string> selected-path;
+    in-out property <string> standalone-parent-path;
     private property <length> tab-offset;
     changed selected-path => { root.tab-offset = 0px; }
     in-out property <string> status-info: "Abriendo CodePeek…";
@@ -184,6 +247,55 @@ export component MainWindow inherits Window {
     in-out property <[SearchItem]> recent-files;
     in-out property <[SearchItem]> search-results;
     in-out property <[CodeLineItem]> code-lines;
+    in-out property <[DocBlockItem]> doc-blocks;
+    in-out property <[DocHeadingItem]> doc-headings;
+    in-out property <bool> show-toc: false;
+    in-out property <bool> doc-readonly: false;
+    in-out property <int> doc-total-blocks;
+    in-out property <int> doc-window-start;
+    in-out property <bool> doc-has-more-before;
+    in-out property <bool> doc-has-more-after;
+    in-out property <float> doc-zoom: 1;
+    out property <length> doc-font: Typography.size * root.doc-zoom;
+    in-out property <int> doc-scroll-target: -1;
+    in-out property <int> doc-scroll-seq: 0;
+    private property <int> doc-scroll-done: 0;
+    in-out property <bool> is-sheet: false;
+    in-out property <[string]> sheet-tabs;
+    in-out property <int> active-sheet: 0;
+    in-out property <[SheetHeaderItem]> sheet-headers;
+    in-out property <[SheetRowItem]> sheet-rows;
+    in-out property <int> sheet-total-rows: 0;
+    in-out property <int> sheet-total-cols: 0;
+    in-out property <int> sheet-row-start: 0;
+    in-out property <int> sheet-col-start: 0;
+    in-out property <bool> sheet-has-prev-rows: false;
+    in-out property <bool> sheet-has-next-rows: false;
+    in-out property <bool> sheet-has-prev-cols: false;
+    in-out property <bool> sheet-has-next-cols: false;
+    in-out property <bool> sheet-truncated: false;
+    in-out property <string> sheet-cell-ref;
+    in-out property <string> sheet-cell-text;
+    in-out property <bool> is-pdf: false;
+    in-out property <int> pdf-page: 0;
+    in-out property <int> pdf-total-pages: 0;
+    in-out property <int> pdf-zoom-percent: 135;
+    in-out property <image> pdf-image;
+    in-out property <bool> pdf-loading: false;
+    in-out property <bool> pdf-fit-width: true;
+    in-out property <float> pdf-page-width: 0;
+    in-out property <float> pdf-page-height: 0;
+    in-out property <[PdfThumbItem]> pdf-thumbs;
+    in-out property <float> pdf-thumb-height: 170;
+    in-out property <bool> show-pdf-thumbs: true;
+    in-out property <bool> markdown-default-preview: true;
+    in-out property <bool> open-single-file-without-project: true;
+    in-out property <bool> windows-integration-supported: false;
+    in-out property <bool> windows-context-menu: true;
+    in-out property <bool> windows-open-with-markdown: true;
+    in-out property <bool> windows-open-with-code: true;
+    in-out property <bool> windows-open-with-docs: true;
+    in-out property <string> windows-integration-status;
     in-out property <int> palette-mode: 0; // 1 files, 2 projects, 4 text content
     in-out property <bool> content-searching;
     in-out property <bool> content-query-short;
@@ -241,6 +353,38 @@ export component MainWindow inherits Window {
     callback find-text(string, bool);
     callback cancel-edit();
     callback browse-folder(string);
+    callback select-doc-block(int, bool);
+    callback select-doc-all();
+    callback copy-doc-selection();
+    callback copy-doc-all();
+    callback jump-doc-block(int);
+    callback step-doc-window(bool);
+    callback open-doc-link(string);
+    callback toggle-markdown-default-preview();
+    callback toggle-single-file-mode();
+    callback set-windows-integration(bool, bool, bool, bool);
+    callback apply-windows-integration();
+    callback select-sheet(int);
+    callback step-sheet-rows(bool);
+    callback step-sheet-cols(bool);
+    callback select-sheet-cell(int, int);
+    callback copy-sheet-cell();
+    callback copy-sheet-row();
+    callback pdf-step-page(int);
+    callback pdf-go-page(string);
+    callback pdf-zoom(int);
+    callback copy-pdf-text();
+    callback pdf-wheel-page(int);
+    callback pdf-thumbs-viewport(int, int);
+    callback zoom-doc(int);
+    callback reading-width-changed(float);
+    callback toggle-code-block(int);
+    pure function doc-mode() -> bool { return root.preview && (root.markdown-file || root.is-sheet); }
+    public function zoom-active(delta: int) {
+        if root.is-pdf { root.pdf-zoom(delta); }
+        else if root.doc-mode() { root.zoom-doc(delta); }
+        else if delta != 0 { root.zoom(delta); }
+    }
 
     public function copy-line() { clipboard.text = root.selected-text; clipboard.select-all(); clipboard.copy(); clipboard.text = ""; }
 
@@ -292,15 +436,22 @@ export component MainWindow inherits Window {
             if e.modifiers.control && (e.text == "f" || e.text == "F" || e.text == "\u{6}") { root.show-find = true; return accept; }
             if e.modifiers.control && (e.text == "h" || e.text == "H" || e.text == "\u{8}") { root.show-find = true; root.show-replace = true; return accept; }
             if e.modifiers.control && (e.text == "g" || e.text == "G" || e.text == "\u{7}") { root.show-goto = true; return accept; }
-            if root.preview && e.modifiers.control && (e.text == "c" || e.text == "C" || e.text == "\u{3}") { root.copy-line(); return accept; }
+            if root.is-pdf && e.modifiers.control && (e.text == "c" || e.text == "C" || e.text == "\u{3}") { root.copy-pdf-text(); return accept; }
+            if root.is-sheet && root.preview && e.modifiers.control && (e.text == "c" || e.text == "C" || e.text == "\u{3}") { root.copy-sheet-cell(); return accept; }
+            if root.preview && root.markdown-file && e.modifiers.control && (e.text == "a" || e.text == "A" || e.text == "\u{1}") { root.select-doc-all(); return accept; }
+            if root.preview && e.modifiers.control && (e.text == "c" || e.text == "C" || e.text == "\u{3}") { if root.markdown-file { root.copy-doc-selection(); } else { root.copy-line(); } return accept; }
             if e.modifiers.control && (e.text == "p" || e.text == "P" || e.text == "\u{10}") { root.open-palette(e.modifiers.shift ? 2 : 1); return accept; }
             if e.modifiers.alt && (e.text == "c" || e.text == "C") { root.open-palette(2); return accept; }
             if e.modifiers.control && (e.text == "o" || e.text == "O" || e.text == "\u{f}") { root.path-input = root.project-path; root.show-path = true; return accept; }
             if e.modifiers.control && (e.text == "s" || e.text == "S" || e.text == "\u{13}") { root.save(); return accept; }
-            if e.modifiers.control && (e.text == "b" || e.text == "B" || e.text == "\u{2}") { root.show-tree = !root.show-tree; root.set-panels(root.show-library, root.show-tree); return accept; }
+            if e.modifiers.control && (e.text == "b" || e.text == "B" || e.text == "\u{2}") {
+                if e.modifiers.shift { root.show-library = !root.show-library; } else { root.show-tree = !root.show-tree; }
+                root.set-panels(root.show-library, root.show-tree); return accept;
+            }
             if e.modifiers.control && (e.text == "z" || e.text == "Z" || e.text == "\u{1a}") { if e.modifiers.shift { root.redo(); } else { root.undo(); } return accept; }
-            if e.modifiers.control && (e.text == "+" || e.text == "=") { if e.modifiers.shift { root.zoom-ui(1); } else { root.zoom(1); } return accept; }
-            if e.modifiers.control && (e.text == "-" || e.text == "_") { if e.modifiers.shift { root.zoom-ui(-1); } else { root.zoom(-1); } return accept; }
+            if e.modifiers.control && (e.text == "+" || e.text == "=") { if e.modifiers.shift && !root.is-pdf && !root.doc-mode() { root.zoom-ui(1); } else { root.zoom-active(1); } return accept; }
+            if e.modifiers.control && (e.text == "-" || e.text == "_") { if e.modifiers.shift && !root.is-pdf && !root.doc-mode() { root.zoom-ui(-1); } else { root.zoom-active(-1); } return accept; }
+            if e.modifiers.control && e.text == "0" { root.zoom-active(0); return accept; }
             if e.modifiers.control && (e.text == "y" || e.text == "Y" || e.text == "\u{19}") { root.redo(); return accept; }
             if e.text == Key.F3 { root.find-next(!e.modifiers.shift); return accept; }
             if e.text == Key.F5 { root.reload(); return accept; }
@@ -309,7 +460,18 @@ export component MainWindow inherits Window {
 
         clipboard := TextInput { visible: false; width: 0px; height: 0px; single-line: false; }
         key-pressed(e) => {
-            if root.modal || !root.preview { return reject; }
+            if root.modal { return reject; }
+            if root.is-pdf {
+                if e.text == Key.PageDown || e.text == Key.RightArrow { root.pdf-step-page(1); return accept; }
+                if e.text == Key.PageUp || e.text == Key.LeftArrow { root.pdf-step-page(-1); return accept; }
+                reject
+            }
+            if root.is-sheet && root.preview {
+                if e.text == Key.PageDown { root.step-sheet-rows(true); return accept; }
+                if e.text == Key.PageUp { root.step-sheet-rows(false); return accept; }
+                reject
+            }
+            if !root.preview || root.markdown-file { return reject; }
             if e.text == Key.DownArrow { root.scroll-lines(1); return accept; }
             if e.text == Key.UpArrow { root.scroll-lines(-1); return accept; }
             if e.text == Key.PageDown { root.scroll-lines(30); return accept; }
@@ -325,8 +487,10 @@ export component MainWindow inherits Window {
                 height: Typography.size + 42px; background: Theme.header;
                 HorizontalLayout {
                     padding: 12px; spacing: 10px;
+                    Action { text: "Proyectos"; accessible-text: root.show-library ? "Ocultar la lista de proyectos (Ctrl+Shift+B)" : "Mostrar la lista de proyectos (Ctrl+Shift+B)"; primary: root.show-library; clicked => { root.show-library = !root.show-library; root.set-panels(root.show-library, root.show-tree); } }
+                    Action { text: "Explorador"; accessible-text: root.show-tree ? "Ocultar el explorador (Ctrl+B)" : "Mostrar el explorador (Ctrl+B)"; primary: root.show-tree; clicked => { root.show-tree = !root.show-tree; root.set-panels(root.show-library, root.show-tree); } }
                     Text { text: "CodePeek"; font-size: Typography.size + 4px; font-weight: 700; color: Theme.heading; vertical-alignment: center; }
-                    Action { text: "Proyectos"; clicked => { root.open-palette(2); } }
+                    Action { text: "Cambiar proyecto"; clicked => { root.open-palette(2); } }
                     Action { text: "Abrir carpeta"; clicked => { root.path-input = root.project-path; root.show-path = true; } }
                     Rectangle { horizontal-stretch: 1; }
                     Action { text: ""; icon: "\u{ea6d}"; accessible-text: "Buscar archivos o texto"; primary: true; clicked => { root.open-palette(1); } }
@@ -349,7 +513,11 @@ export component MainWindow inherits Window {
                     width: root.library-width; background: Theme.header;
                     VerticalLayout {
                         padding: 10px; spacing: 8px;
-                        Text { text: "Tus proyectos"; color: Theme.button-text; font-weight: 600; font-size: Typography.size + 1px; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Text { text: "Tus proyectos"; color: Theme.button-text; font-weight: 600; font-size: Typography.size + 1px; vertical-alignment: center; horizontal-stretch: 1; overflow: elide; }
+                            Action { text: "«"; accessible-text: "Ocultar la lista de proyectos (Ctrl+Shift+B)"; clicked => { root.show-library = false; root.set-panels(false, root.show-tree); root.focus-content(); } }
+                        }
                         Action { text: "Abrir proyecto…"; text-left: true; clicked => { root.path-input = ""; root.show-path = true; } }
                         ListView {
                             for item in root.recent-projects: HorizontalLayout {
@@ -400,8 +568,11 @@ export component MainWindow inherits Window {
                     width: root.tree-width; background: Theme.sidebar;
                     VerticalLayout {
                         padding: 10px; spacing: 8px;
-                        Text { text: root.project-name == "" ? "Explorador" : root.project-name; color: Theme.heading; font-size: Typography.size + 1px; font-weight: 600; overflow: elide; }
-                        Text { text: "Archivos y configuración"; color: Theme.caption; font-size: Typography.size - 1px; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Text { text: root.project-name == "" ? "Explorador" : root.project-name; color: Theme.heading; font-size: Typography.size + 1px; font-weight: 600; overflow: elide; vertical-alignment: center; horizontal-stretch: 1; }
+                            Action { text: "«"; accessible-text: "Ocultar el explorador (Ctrl+B)"; clicked => { root.show-tree = false; root.set-panels(root.show-library, false); root.focus-content(); } }
+                        }
                         ListView {
                             private property <int> first-visible-row: floor(max(0px, -self.viewport-y) / (root.tree-font-size + 16px));
                             private property <int> visible-row-count: ceil(self.height / (root.tree-font-size + 16px));
@@ -438,7 +609,11 @@ export component MainWindow inherits Window {
                                 }
                             }
                         }
-                        if root.tree-items.length == 0: Text { text: "Carpeta vacía o sin archivos visibles."; color: Theme.empty-text; wrap: word-wrap; }
+                        if root.tree-items.length == 0 && root.project-path == "" && root.standalone-parent-path != "": VerticalLayout {
+                            spacing: 10px; padding-top: 8px;
+                            Action { text: "Abrir carpeta en proyectos"; primary: true; clicked => { root.open-project(root.standalone-parent-path); } }
+                        }
+                        if root.tree-items.length == 0 && (root.project-path != "" || root.standalone-parent-path == ""): Text { text: "Carpeta vacía o sin archivos visibles."; color: Theme.empty-text; wrap: word-wrap; }
                     }
                 }
                 if root.show-tree: TouchArea {
@@ -457,13 +632,24 @@ export component MainWindow inherits Window {
                                 text: root.image-actual-size ? "Ajustar a ventana" : "Tamaño real (100%)";
                                 clicked => { root.image-actual-size = !root.image-actual-size; }
                             }
-                            if root.selected-path != "" && !root.is-image: Action { text: root.markdown-file ? "Vista previa" : "Lectura"; primary: root.preview; clicked => { root.preview = true; } }
-                            if root.selected-path != "" && !root.is-image: Action { text: "Editor"; primary: !root.preview; clicked => { root.preview = false; } }
-                            if root.selected-path != "" && !root.is-image: Action { text: ""; icon: "\u{eae2}"; accessible-text: "Deshacer (Ctrl+Z)"; enabled: root.can-undo; clicked => { root.undo(); } }
-                            if root.selected-path != "" && !root.is-image: Action { text: ""; icon: "\u{ebb0}"; accessible-text: "Rehacer (Ctrl+Shift+Z)"; enabled: root.can-redo; clicked => { root.redo(); } }
-                            if root.selected-path != "" && !root.is-image: Action { text: ""; icon: "\u{ea6d}"; accessible-text: "Buscar y reemplazar (Ctrl+H)"; clicked => { root.show-find = true; root.show-replace = true; } }
-                            if root.is-dirty && !root.is-image: Action { text: ""; icon: "\u{ea77}"; accessible-text: "Revertir cambios"; enabled: !root.busy; clicked => { root.revert(); } }
-                            if root.is-dirty && !root.is-image: Action { text: ""; icon: "\u{eb4b}"; accessible-text: "Guardar cambios (Ctrl+S)"; primary: true; enabled: !root.busy; clicked => { root.save(); } }
+                            if root.selected-path != "" && root.is-pdf: Action { text: "‹"; accessible-text: "Página anterior"; enabled: root.pdf-page > 0; clicked => { root.pdf-step-page(-1); } }
+                            if root.selected-path != "" && root.is-pdf: Text { text: "Pág. " + (root.pdf-page + 1) + " / " + max(1, root.pdf-total-pages); color: Theme.file-text; vertical-alignment: center; }
+                            if root.selected-path != "" && root.is-pdf: Action { text: "›"; accessible-text: "Página siguiente"; enabled: root.pdf-page + 1 < root.pdf-total-pages; clicked => { root.pdf-step-page(1); } }
+                            if root.selected-path != "" && root.is-pdf && root.pdf-total-pages > 1: Action { text: "Miniaturas"; accessible-text: root.show-pdf-thumbs ? "Ocultar miniaturas de página" : "Mostrar miniaturas de página"; primary: root.show-pdf-thumbs; clicked => { root.show-pdf-thumbs = !root.show-pdf-thumbs; } }
+                            if root.selected-path != "" && root.is-pdf: Action { text: "Ajustar"; accessible-text: "Ajustar al ancho (Ctrl+0)"; primary: root.pdf-fit-width; clicked => { root.pdf-zoom(0); } }
+                            if root.selected-path != "" && (root.is-pdf || root.doc-mode()): Action { text: "−"; accessible-text: "Alejar (Ctrl+-)"; clicked => { root.zoom-active(-1); } }
+                            if root.selected-path != "" && (root.is-pdf || root.doc-mode()): Text { text: (root.is-pdf ? root.pdf-zoom-percent : round(root.doc-zoom * 100)) + "%"; color: Theme.muted; vertical-alignment: center; }
+                            if root.selected-path != "" && (root.is-pdf || root.doc-mode()): Action { text: "+"; accessible-text: "Acercar (Ctrl++)"; clicked => { root.zoom-active(1); } }
+                            if root.selected-path != "" && root.is-pdf: Action { text: "Copiar página"; clicked => { root.copy-pdf-text(); } }
+                            if root.selected-path != "" && root.project-path == "" && root.standalone-parent-path != "": Action { text: "Abrir carpeta"; clicked => { root.open-project(root.standalone-parent-path); } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && root.markdown-file && root.preview && root.doc-headings.length > 0: Action { text: "Índice"; primary: root.show-toc; clicked => { root.show-toc = !root.show-toc; } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: root.is-sheet ? "Tabla" : root.markdown-file ? "Vista previa" : "Lectura"; primary: root.preview; clicked => { root.preview = true; } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: "Editor"; primary: !root.preview; clicked => { root.preview = false; } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: ""; icon: "\u{eae2}"; accessible-text: "Deshacer (Ctrl+Z)"; enabled: root.can-undo; clicked => { root.undo(); } }
+                            if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly: Action { text: ""; icon: "\u{ebb0}"; accessible-text: "Rehacer (Ctrl+Shift+Z)"; enabled: root.can-redo; clicked => { root.redo(); } }
+                            if root.selected-path != "" && !root.is-image: Action { text: ""; icon: "\u{ea6d}"; accessible-text: "Buscar en el archivo (Ctrl+F)"; clicked => { root.show-find = true; root.show-replace = !(root.doc-readonly || root.is-pdf || (root.preview && (root.markdown-file || root.is-sheet))); } }
+                            if root.is-dirty && !root.is-image && !root.doc-readonly: Action { text: ""; icon: "\u{ea77}"; accessible-text: "Revertir cambios"; enabled: !root.busy; clicked => { root.revert(); } }
+                            if root.is-dirty && !root.is-image && !root.doc-readonly: Action { text: ""; icon: "\u{eb4b}"; accessible-text: "Guardar cambios (Ctrl+S)"; primary: true; enabled: !root.busy; clicked => { root.save(); } }
                         }
                     }
                     if root.recent-files.length > 0: Rectangle {
@@ -493,7 +679,7 @@ export component MainWindow inherits Window {
                         }
                     }
                     if root.show-find && root.selected-path != "" && !root.is-image: Rectangle {
-                        height: root.show-replace ? 3 * Typography.size + 68px : 2 * Typography.size + 40px; background: Theme.find-surface;
+                        height: root.show-replace && !root.doc-readonly && !root.is-pdf ? 3 * Typography.size + 68px : 2 * Typography.size + 40px; background: Theme.find-surface;
                         VerticalLayout {
                             padding: 6px; spacing: 4px;
                             HorizontalLayout {
@@ -502,10 +688,10 @@ export component MainWindow inherits Window {
                                 Action { text: ""; icon: "\u{eaa1}"; accessible-text: "Coincidencia anterior (Shift+F3)"; clicked => { root.find-next(false); } }
                                 Action { text: ""; icon: "\u{ea9a}"; accessible-text: "Coincidencia siguiente (F3)"; clicked => { root.find-next(true); } }
                                 Action { text: "Aa"; accessible-text: "Distinguir mayúsculas"; primary: root.find-case; clicked => { root.find-case = !root.find-case; root.find-next(true); } }
-                                Action { text: "ab"; accessible-text: "Palabra completa"; primary: root.find-whole; clicked => { root.find-whole = !root.find-whole; root.find-next(true); } }
+                                if !root.is-pdf && !root.is-sheet && !root.markdown-file: Action { text: "ab"; accessible-text: "Palabra completa"; primary: root.find-whole; clicked => { root.find-whole = !root.find-whole; root.find-next(true); } }
                                 Action { text: "×"; accessible-text: "Cerrar búsqueda"; clicked => { root.show-find = false; root.show-replace = false; root.focus-content(); } }
                             }
-                            if root.show-replace: HorizontalLayout {
+                            if root.show-replace && !root.doc-readonly && !root.is-pdf: HorizontalLayout {
                                 spacing: 5px;
                                 LineEdit { placeholder-text: "Reemplazar por…"; accessible-label: "Texto de reemplazo"; text <=> root.replace-query; }
                                 Action { text: "Reemplazar"; clicked => { root.replace-text(root.find-query, root.replace-query, false, root.find-case, root.find-whole); } }
@@ -521,8 +707,14 @@ export component MainWindow inherits Window {
                         height: Typography.size + 30px; background: Theme.find-surface;
                         HorizontalLayout {
                             padding: 6px; spacing: 6px;
-                            LineEdit { placeholder-text: "Ir a la línea (1–" + root.total-lines + ")…"; accessible-label: "Número de línea"; text <=> root.goto-input; init => { self.focus(); } accepted => { root.go-line(self.text); } }
-                            Action { text: "Ir"; primary: true; clicked => { root.go-line(root.goto-input); } }
+                            LineEdit {
+                                placeholder-text: root.is-pdf ? "Ir a la página (1–" + max(1, root.pdf-total-pages) + ")…" : "Ir a la línea (1–" + root.total-lines + ")…";
+                                accessible-label: root.is-pdf ? "Número de página" : "Número de línea";
+                                text <=> root.goto-input;
+                                init => { self.focus(); }
+                                accepted => { if root.is-pdf { root.pdf-go-page(self.text); } else { root.go-line(self.text); } }
+                            }
+                            Action { text: "Ir"; primary: true; clicked => { if root.is-pdf { root.pdf-go-page(root.goto-input); } else { root.go-line(root.goto-input); } } }
                             Action { text: "×"; accessible-text: "Cerrar navegación"; clicked => { root.show-goto = false; root.focus-content(); } }
                         }
                     }
@@ -533,6 +725,12 @@ export component MainWindow inherits Window {
                         measure := Text { visible: false; text: "0000000000"; font-family: root.code-font-family; font-size: root.code-font-size; }
                         private property <int> wrap-columns: max(4, floor((self.width - 85px) / max(1px, measure.preferred-width / 10)));
                         changed wrap-columns => { root.wrap-columns-changed(self.wrap-columns); }
+                        // Width left for a page or a document once side strips and the scrollbar are taken out.
+                        private property <length> reading-width: self.width
+                            - (root.is-pdf ? 18px + (root.show-pdf-thumbs && root.pdf-total-pages > 1 ? 164px : 0px) : 0px)
+                            - (root.markdown-file && root.preview && root.show-toc && root.doc-headings.length > 0 ? 230px : 0px);
+                        changed reading-width => { root.reading-width-changed(self.reading-width / 1px); }
+                        init => { root.reading-width-changed(self.reading-width / 1px); }
                         if root.selected-path == "": VerticalLayout {
                             padding: 36px; spacing: 16px; alignment: center;
                             Text { text: "Tu código, a mano."; color: Theme.title; font-size: 26px; font-weight: 600; }
@@ -589,7 +787,7 @@ export component MainWindow inherits Window {
                                 }
                             }
                         }
-                        if root.selected-path != "" && !root.is-image && !root.preview: editor := FocusScope {
+                        if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.doc-readonly && !root.preview: editor := FocusScope {
                             width: parent.width - 14px; height: parent.height;
                             forward-focus: committed-input;
                             init => { committed-input.focus(); }
@@ -672,7 +870,462 @@ export component MainWindow inherits Window {
                                 }
                             }
                         }
-                        if root.selected-path != "" && !root.is-image && root.preview: TouchArea {
+                        if root.selected-path != "" && !root.is-image && root.markdown-file && root.preview: HorizontalLayout {
+                            spacing: 0px;
+                            if root.show-toc && root.doc-headings.length > 0: Rectangle {
+                                width: 230px; background: Theme.sidebar;
+                                border-width: 1px; border-color: Theme.border;
+                                VerticalLayout {
+                                    padding: 10px; spacing: 6px;
+                                    Text { text: "Contenido"; color: Theme.heading; font-weight: 600; font-size: Typography.size; }
+                                    ListView {
+                                        for heading in root.doc-headings: TouchArea {
+                                            height: Typography.size + 14px;
+                                            clicked => { root.jump-doc-block(heading.block-index); root.focus-content(); }
+                                            Rectangle { border-radius: 4px; background: parent.has-hover ? Theme.tree-hover : transparent; }
+                                            Text {
+                                                x: max(0, heading.level - 1) * 12px + 6px;
+                                                width: parent.width - self.x - 6px;
+                                                text: heading.title;
+                                                color: Theme.file-text;
+                                                font-size: Typography.size - 1px;
+                                                font-weight: heading.level == 1 ? 600 : 400;
+                                                overflow: elide;
+                                                vertical-alignment: center;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            doc-scroll := ScrollView {
+                                horizontal-stretch: 1;
+                                viewport-width: self.visible-width;
+                                viewport-height: doc-content.preferred-height;
+                                doc-content := VerticalLayout {
+                                    width: doc-scroll.visible-width;
+                                    padding-left: max(28px, (doc-scroll.visible-width - 860px * root.doc-zoom) / 2);
+                                    padding-right: max(28px, (doc-scroll.visible-width - 860px * root.doc-zoom) / 2);
+                                    padding-top: 24px;
+                                    padding-bottom: 36px;
+                                    spacing: 10px;
+                                    alignment: start;
+                                    if root.doc-has-more-before: HorizontalLayout {
+                                        alignment: center;
+                                        Action { text: "Cargar bloques anteriores (" + root.doc-window-start + " ocultos)"; clicked => { root.step-doc-window(false); } }
+                                    }
+                                    for block in root.doc-blocks: Rectangle {
+                                        accessible-role: list-item;
+                                        accessible-label: "doc-block-" + block.index;
+                                        // Índice and search results scroll their block into view.
+                                        property <int> scroll-seq: root.doc-scroll-seq;
+                                        function reveal() {
+                                            if block.index == root.doc-scroll-target && root.doc-scroll-done != root.doc-scroll-seq {
+                                                root.doc-scroll-done = root.doc-scroll-seq;
+                                                doc-scroll.viewport-y = -max(0px, min(self.y - 12px, doc-scroll.viewport-height - doc-scroll.visible-height));
+                                            }
+                                        }
+                                        changed scroll-seq => { self.reveal(); }
+                                        init => { self.reveal(); }
+                                        preferred-height: block-body.preferred-height;
+                                        min-height: block-body.preferred-height;
+                                        border-radius: 6px;
+                                        background: block.selected ? Theme.code-selection : block.highlighted ? Theme.find-surface : block.kind == 4 ? Theme.sidebar : block.kind == 2 ? (Theme.light ? #f1f5f9 : #192534) : transparent;
+                                        border-width: block.kind == 4 || block.highlighted ? 1px : 0px;
+                                        border-color: block.highlighted ? Theme.focus : Theme.border;
+                                        TouchArea {
+                                            width: 100%;
+                                            height: 100%;
+                                            pointer-event(e) => {
+                                                if e.button == PointerEventButton.left && e.kind == PointerEventKind.down {
+                                                    root.select-doc-block(block.index, e.modifiers.shift);
+                                                    root.focus-content();
+                                                }
+                                            }
+                                        }
+                                        ContextMenuArea {
+                                            width: 100%;
+                                            height: 100%;
+                                            Menu {
+                                                MenuItem { title: "Copiar bloque"; activated => { root.select-doc-block(block.index, false); root.copy-doc-selection(); } }
+                                                MenuItem { title: "Copiar selección"; activated => { root.copy-doc-selection(); } }
+                                                MenuItem { title: "Copiar todo el documento"; activated => { root.copy-doc-all(); } }
+                                            }
+                                        }
+                                        block-body := VerticalLayout {
+                                            padding-left: block.kind == 4 || block.kind == 5 || block.kind == 7 ? 0px : 6px;
+                                            padding-right: block.kind == 4 || block.kind == 5 || block.kind == 7 ? 0px : 6px;
+                                            padding-top: block.kind == 1 ? (block.level == 1 ? 8px : block.level == 2 ? 14px : 8px) : block.kind == 4 || block.kind == 5 ? 0px : 3px;
+                                            padding-bottom: block.kind == 1 && block.level <= 2 ? 6px : block.kind == 4 || block.kind == 5 ? 0px : 3px;
+                                            spacing: 8px;
+                                            alignment: start;
+
+                                            if block.kind == 1: VerticalLayout {
+                                                spacing: 8px;
+                                                if block.lines.length == 0: Text {
+                                                    text: block.plain-text;
+                                                    color: Theme.heading;
+                                                    font-size: root.doc-font + (block.level == 1 ? 11px : block.level == 2 ? 7px : block.level == 3 ? 3px : 1px);
+                                                    font-weight: 700;
+                                                    wrap: word-wrap;
+                                                }
+                                                if block.lines.length > 0: DocRichLines {
+                                                    lines: block.lines;
+                                                    body-font-size: root.doc-font + (block.level == 1 ? 11px : block.level == 2 ? 7px : block.level == 3 ? 3px : 1px);
+                                                    code-font-family: root.code-font-family;
+                                                    heading-mode: true;
+                                                    default-color: Theme.heading;
+                                                }
+                                                if block.level <= 2: Rectangle { height: 1px; background: Theme.border; }
+                                            }
+                                            if block.kind == 0: VerticalLayout {
+                                                spacing: 6px;
+                                                if block.lines.length == 0: Text {
+                                                    text: block.plain-text;
+                                                    color: Theme.file-text;
+                                                    font-size: root.doc-font + 1px;
+                                                    wrap: word-wrap;
+                                                }
+                                                if block.lines.length > 0: DocRichLines {
+                                                    lines: block.lines;
+                                                    body-font-size: root.doc-font + 1px;
+                                                    code-font-family: root.code-font-family;
+                                                }
+                                            }
+                                            if block.kind == 2: HorizontalLayout {
+                                                padding: 10px; spacing: 12px;
+                                                Rectangle {
+                                                    width: 4px; border-radius: 2px;
+                                                    background: block.level == 1 ? #38bdf8 : block.level == 2 ? #34d399 : block.level == 3 ? #a78bfa : block.level == 4 ? #fbbf24 : block.level == 5 ? #f87171 : Theme.focus;
+                                                }
+                                                VerticalLayout {
+                                                    horizontal-stretch: 1; spacing: 6px;
+                                                    if block.prefix != "": Text {
+                                                        text: block.prefix;
+                                                        font-weight: 700;
+                                                        font-size: root.doc-font;
+                                                        color: block.level == 1 ? #38bdf8 : block.level == 2 ? #34d399 : block.level == 3 ? #a78bfa : block.level == 4 ? #fbbf24 : block.level == 5 ? #f87171 : Theme.heading;
+                                                    }
+                                                    if block.lines.length == 0: Text {
+                                                        text: block.plain-text;
+                                                        color: Theme.file-text;
+                                                        font-size: root.doc-font;
+                                                        font-italic: block.level == 0;
+                                                        wrap: word-wrap;
+                                                    }
+                                                    if block.lines.length > 0: DocRichLines {
+                                                        lines: block.lines;
+                                                        body-font-size: root.doc-font;
+                                                        code-font-family: root.code-font-family;
+                                                    }
+                                                }
+                                            }
+                                            if block.kind == 3: HorizontalLayout {
+                                                padding-left: block.level * 22px + 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px; spacing: 8px;
+                                                Text {
+                                                    width: 24px;
+                                                    text: block.prefix;
+                                                    color: block.prefix == "☑" ? #10b981 : block.prefix == "☐" ? Theme.muted : Theme.focus;
+                                                    font-weight: 700;
+                                                    font-size: root.doc-font + 1px;
+                                                    vertical-alignment: top;
+                                                }
+                                                VerticalLayout {
+                                                    horizontal-stretch: 1; spacing: 4px;
+                                                    if block.lines.length == 0: Text {
+                                                        text: block.plain-text;
+                                                        color: Theme.file-text;
+                                                        font-size: root.doc-font + 1px;
+                                                        wrap: word-wrap;
+                                                    }
+                                                    if block.lines.length > 0: DocRichLines {
+                                                        lines: block.lines;
+                                                        body-font-size: root.doc-font + 1px;
+                                                        code-font-family: root.code-font-family;
+                                                    }
+                                                }
+                                            }
+                                            if block.kind == 4: VerticalLayout {
+                                                padding: 0px; spacing: 0px;
+                                                Rectangle {
+                                                    height: root.doc-font + 18px; background: Theme.header; border-radius: 5px;
+                                                    HorizontalLayout {
+                                                        padding-left: 12px; padding-right: 8px; spacing: 8px;
+                                                        Text { text: block.prefix; color: Theme.muted; font-family: root.code-font-family; font-size: root.doc-font - 1px; vertical-alignment: center; horizontal-stretch: 1; }
+                                                        Action { text: "Copiar"; clicked => { root.write-clipboard(block.plain-text); } }
+                                                    }
+                                                }
+                                                ScrollView {
+                                                    height: min(460px, code-inner.preferred-height + 4px);
+                                                    viewport-height: code-inner.preferred-height;
+                                                    viewport-width: code-inner.preferred-width;
+                                                    code-inner := VerticalLayout {
+                                                        padding: 12px; spacing: 4px; alignment: start;
+                                                        for rline in block.lines: HorizontalLayout {
+                                                            alignment: start; spacing: 0px;
+                                                            for span in rline.spans: Text {
+                                                                text: span.text; color: span.color;
+                                                                font-family: root.code-font-family; font-size: root.code-font-size * root.doc-zoom;
+                                                                font-weight: span.bold ? 700 : 400; font-italic: span.italic;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if block.more-lines > 0: HorizontalLayout {
+                                                    padding: 6px; alignment: start;
+                                                    Action { text: block.expanded ? "Contraer" : "Mostrar " + block.more-lines + " líneas más"; clicked => { root.toggle-code-block(block.index); } }
+                                                }
+                                            }
+                                            if block.kind == 5: ScrollView {
+                                                height: min(520px, tbl.preferred-height + 4px);
+                                                viewport-height: tbl.preferred-height;
+                                                viewport-width: tbl.preferred-width;
+                                                tbl := VerticalLayout {
+                                                    padding: 2px; spacing: 0px;
+                                                    if block.table-headers.length > 0: Rectangle {
+                                                        background: Theme.header; border-width: 1px; border-color: Theme.border;
+                                                        HorizontalLayout {
+                                                            padding-left: 10px; padding-right: 10px; padding-top: 7px; padding-bottom: 7px; spacing: 14px;
+                                                            for h[ci] in block.table-headers: Text {
+                                                                width: block.col-widths[ci] * root.doc-font / 10; text: h; color: Theme.heading;
+                                                                font-weight: 700; font-size: root.doc-font; wrap: word-wrap;
+                                                                horizontal-alignment: block.col-aligns[ci] == 1 ? center : block.col-aligns[ci] == 2 ? right : left;
+                                                            }
+                                                        }
+                                                    }
+                                                    for trow[ridx] in block.table-rows: Rectangle {
+                                                        background: mod(ridx, 2) == 1 ? (Theme.light ? #f8fafc : #172330) : Theme.canvas;
+                                                        border-width: 1px; border-color: Theme.border;
+                                                        HorizontalLayout {
+                                                            padding-left: 10px; padding-right: 10px; padding-top: 6px; padding-bottom: 6px; spacing: 14px;
+                                                            for cell[ci] in trow.cells: Text {
+                                                                width: block.col-widths[ci] * root.doc-font / 10; text: cell; color: Theme.file-text;
+                                                                font-size: root.doc-font; wrap: word-wrap;
+                                                                horizontal-alignment: block.col-aligns[ci] == 1 ? center : block.col-aligns[ci] == 2 ? right : left;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if block.kind == 6: VerticalLayout {
+                                                padding: 4px; spacing: 6px; alignment: start;
+                                                if block.has-image: Image {
+                                                    source: block.image;
+                                                    max-height: 460px;
+                                                    image-fit: contain;
+                                                }
+                                                Text { text: block.image-alt; color: Theme.caption; font-size: root.doc-font - 1px; wrap: word-wrap; }
+                                            }
+                                            if block.kind == 7: VerticalLayout {
+                                                padding-top: 6px; padding-bottom: 6px;
+                                                Rectangle { height: 1px; background: Theme.border; }
+                                            }
+                                            if block.links.length > 0: HorizontalLayout {
+                                                padding-top: 2px; spacing: 6px; alignment: start;
+                                                for lnk in block.links: Action { text: lnk.label; clicked => { root.open-doc-link(lnk.url); } }
+                                            }
+                                        }
+                                    }
+                                    if root.doc-has-more-after: HorizontalLayout {
+                                        alignment: center;
+                                        Action { text: "Cargar bloques siguientes"; clicked => { root.step-doc-window(true); } }
+                                    }
+                                }
+                            }
+                        }
+                        if root.selected-path != "" && root.is-sheet && root.preview: VerticalLayout {
+                            spacing: 0px;
+                            Rectangle {
+                                height: Typography.size + 26px; background: Theme.sidebar;
+                                border-width: 1px; border-color: Theme.border;
+                                HorizontalLayout {
+                                    padding-left: 8px; padding-right: 8px; spacing: 6px; alignment: start;
+                                    for tab[idx] in root.sheet-tabs: Action {
+                                        text: tab;
+                                        primary: idx == root.active-sheet;
+                                        clicked => { root.select-sheet(idx); root.focus-content(); }
+                                    }
+                                    Rectangle { horizontal-stretch: 1; }
+                                    if root.sheet-has-prev-cols: Action { text: "‹ Cols"; clicked => { root.step-sheet-cols(false); } }
+                                    if root.sheet-has-next-cols: Action { text: "Cols ›"; clicked => { root.step-sheet-cols(true); } }
+                                    if root.sheet-has-prev-rows: Action { text: "‹ Filas"; clicked => { root.step-sheet-rows(false); } }
+                                    if root.sheet-has-next-rows: Action { text: "Filas ›"; clicked => { root.step-sheet-rows(true); } }
+                                    Action { text: "Copiar fila"; clicked => { root.copy-sheet-row(); } }
+                                }
+                            }
+                            Rectangle {
+                                height: Typography.size + 18px; background: Theme.canvas;
+                                border-width: 1px; border-color: Theme.border;
+                                HorizontalLayout {
+                                    padding-left: 10px; padding-right: 10px; spacing: 12px;
+                                    Text { width: 72px; text: root.sheet-cell-ref; color: Theme.muted; font-family: root.code-font-family; vertical-alignment: center; accessible-label: "Celda seleccionada"; }
+                                    Text { text: root.sheet-cell-text; color: Theme.file-text; overflow: elide; vertical-alignment: center; horizontal-stretch: 1; accessible-label: "Contenido de la celda"; }
+                                }
+                            }
+                            if root.sheet-truncated: Rectangle {
+                                height: Typography.size + 14px; background: Theme.find-surface;
+                                Text { x: 10px; text: "Hoja demasiado grande: solo se cargó la primera parte."; color: Theme.muted; font-size: Typography.size - 2px; vertical-alignment: center; }
+                            }
+                            Rectangle {
+                                height: root.doc-font + 16px; background: Theme.sidebar; clip: true;
+                                // Column letters stay put while the rows scroll underneath.
+                                HorizontalLayout {
+                                    x: sheet-scroll.viewport-x; width: self.preferred-width; height: parent.height;
+                                    spacing: 0px; alignment: start;
+                                    Rectangle {
+                                        width: root.doc-font * 3.8; background: Theme.sidebar;
+                                        border-width: 1px; border-color: Theme.border;
+                                        Text { text: "#"; color: Theme.line-number; font-size: root.doc-font - 1px; font-weight: 700; horizontal-alignment: center; vertical-alignment: center; }
+                                    }
+                                    for col in root.sheet-headers: Rectangle {
+                                        width: col.width * root.doc-font / 10; background: Theme.sidebar;
+                                        border-width: 1px; border-color: Theme.border;
+                                        Text { text: col.label; color: Theme.heading; font-size: root.doc-font - 1px; font-weight: 700; horizontal-alignment: center; vertical-alignment: center; }
+                                    }
+                                }
+                            }
+                            sheet-scroll := ScrollView {
+                                horizontal-stretch: 1;
+                                vertical-stretch: 1;
+                                viewport-width: sheet-grid.preferred-width;
+                                viewport-height: sheet-grid.preferred-height;
+                                sheet-grid := VerticalLayout {
+                                    padding: 0px; spacing: 0px; alignment: start;
+                                    for row in root.sheet-rows: HorizontalLayout {
+                                        height: root.doc-font + 16px; spacing: 0px; alignment: start;
+                                        Rectangle {
+                                            width: root.doc-font * 3.8; background: Theme.sidebar;
+                                            border-width: 1px; border-color: Theme.border;
+                                            Text { text: row.row-number; color: Theme.line-number; font-family: root.code-font-family; font-size: root.doc-font - 2px; horizontal-alignment: center; vertical-alignment: center; }
+                                        }
+                                        for cell[ci] in row.cells: Rectangle {
+                                            width: root.sheet-headers[ci].width * root.doc-font / 10;
+                                            background: cell.selected ? Theme.code-selection : cell.matched ? Theme.find-surface : transparent;
+                                            border-width: cell.selected ? 2px : 1px;
+                                            border-color: cell.selected ? Theme.focus : Theme.border;
+                                            TouchArea {
+                                                clicked => { root.select-sheet-cell(row.row-number - 1, cell.col-index); root.focus-content(); }
+                                            }
+                                            ContextMenuArea {
+                                                Menu {
+                                                    MenuItem { title: "Copiar celda"; activated => { root.select-sheet-cell(row.row-number - 1, cell.col-index); root.copy-sheet-cell(); } }
+                                                    MenuItem { title: "Copiar fila completa"; activated => { root.select-sheet-cell(row.row-number - 1, cell.col-index); root.copy-sheet-row(); } }
+                                                }
+                                            }
+                                            Text {
+                                                x: 8px; width: parent.width - 16px; height: parent.height;
+                                                text: cell.text;
+                                                color: cell.kind == 5 ? Theme.error-text : cell.kind == 2 ? (Theme.light ? #0369a1 : #7dd3fc) : cell.kind == 3 ? (Theme.light ? #9333ea : #d8b4fe) : cell.kind == 4 ? (Theme.light ? #0f766e : #5eead4) : Theme.file-text;
+                                                font-family: cell.kind == 2 ? root.code-font-family : "Segoe UI";
+                                                font-size: root.doc-font - 1px;
+                                                horizontal-alignment: cell.kind == 2 || cell.kind == 4 ? right : left;
+                                                vertical-alignment: center;
+                                                overflow: elide;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if root.selected-path != "" && root.is-pdf: HorizontalLayout {
+                            spacing: 0px;
+                            if root.show-pdf-thumbs && root.pdf-total-pages > 1: Rectangle {
+                                width: 164px; background: Theme.sidebar;
+                                border-width: 1px; border-color: Theme.border;
+                                // Keep the current page's thumbnail in view while paging.
+                                property <int> current: root.pdf-page;
+                                changed current => {
+                                    if -thumb-list.viewport-y > self.current * thumb-list.row-height {
+                                        thumb-list.viewport-y = -self.current * thumb-list.row-height;
+                                    } else if -thumb-list.viewport-y + thumb-list.height < (self.current + 1) * thumb-list.row-height {
+                                        thumb-list.viewport-y = thumb-list.height - (self.current + 1) * thumb-list.row-height;
+                                    }
+                                }
+                                thumb-list := ListView {
+                                    property <length> row-height: root.pdf-thumb-height * 1px + 36px;
+                                    private property <int> first-row: floor(max(0px, -self.viewport-y) / self.row-height);
+                                    private property <int> row-count: ceil(self.height / self.row-height) + 1;
+                                    changed first-row => { root.pdf-thumbs-viewport(self.first-row, self.row-count); }
+                                    changed row-count => { root.pdf-thumbs-viewport(self.first-row, self.row-count); }
+                                    for item in root.pdf-thumbs: TouchArea {
+                                        height: thumb-list.row-height;
+                                        accessible-role: button;
+                                        accessible-label: "Ir a la página " + (item.page + 1);
+                                        clicked => { root.pdf-go-page(item.page + 1); root.focus-content(); }
+                                        Rectangle {
+                                            x: (parent.width - self.width) / 2; y: 6px;
+                                            width: 140px; height: root.pdf-thumb-height * 1px + 8px;
+                                            border-radius: 4px; background: #ffffff;
+                                            border-width: item.page == root.pdf-page ? 3px : 1px;
+                                            border-color: item.page == root.pdf-page ? Theme.focus : Theme.border;
+                                            if item.has-image: Image {
+                                                x: 4px; y: 4px; width: 132px; height: root.pdf-thumb-height * 1px;
+                                                source: item.image; image-fit: contain;
+                                            }
+                                        }
+                                        Text {
+                                            y: parent.height - 20px; height: 16px; width: parent.width;
+                                            text: item.page + 1;
+                                            color: item.page == root.pdf-page ? Theme.focus : Theme.muted;
+                                            font-size: Typography.size - 2px; font-weight: item.page == root.pdf-page ? 700 : 400;
+                                            horizontal-alignment: center; vertical-alignment: center;
+                                        }
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                background: Theme.canvas;
+                                clip: true;
+                                horizontal-stretch: 1;
+                                // Wheel events the page cannot use (already at an edge) turn the page.
+                                TouchArea {
+                                    scroll-event(e) => {
+                                        if e.delta-y < 0px { root.pdf-wheel-page(1); return accept; }
+                                        if e.delta-y > 0px { root.pdf-wheel-page(-1); return accept; }
+                                        reject
+                                    }
+                                    pdf-scroll := ScrollView {
+                                        property <int> page: root.pdf-page;
+                                        changed page => { self.viewport-y = 0px; }
+                                        viewport-width: max(self.visible-width, root.pdf-page-width * 1px + 48px);
+                                        viewport-height: max(self.visible-height, root.pdf-page-height * 1px + 48px);
+                                        Rectangle {
+                                            x: max(24px, (pdf-scroll.viewport-width - self.width) / 2);
+                                            y: 24px;
+                                            width: max(1px, root.pdf-page-width * 1px);
+                                            height: max(1px, root.pdf-page-height * 1px);
+                                            background: #ffffff;
+                                            drop-shadow-blur: 12px;
+                                            drop-shadow-color: #00000040;
+                                            // Laid out at the page's logical size; the bitmap carries the screen's real pixels.
+                                            Image {
+                                                source: root.pdf-image;
+                                                width: parent.width;
+                                                height: parent.height;
+                                                image-fit: fill;
+                                            }
+                                        }
+                                    }
+                                }
+                                if root.pdf-loading: Rectangle {
+                                    y: 16px;
+                                    x: (parent.width - self.width) / 2;
+                                    width: pdf-load-label.preferred-width + 24px;
+                                    height: 30px;
+                                    border-radius: 15px;
+                                    background: Theme.scrim;
+                                    border-width: 1px;
+                                    border-color: Theme.dialog-border;
+                                    pdf-load-label := Text {
+                                        x: 12px;
+                                        text: "Renderizando página…";
+                                        color: #ffffff;
+                                        font-size: Typography.size - 1px;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                        if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.markdown-file && !root.is-sheet && root.preview: TouchArea {
                             width: parent.width - 14px;
                             scroll-event(e) => {
                                 if !root.show-edit && e.delta-y != 0px { root.scroll-lines(e.delta-y < 0px ? 3 : -3); }
@@ -705,7 +1358,7 @@ export component MainWindow inherits Window {
                                 }
                             }
                         }
-                        if root.selected-path != "" && !root.is-image: Rectangle {
+                        if root.selected-path != "" && !root.is-image && !root.is-pdf && !(root.markdown-file && root.preview) && !(root.is-sheet && root.preview): Rectangle {
                             x: parent.width - 14px; width: 14px; height: parent.height; background: Theme.toolbar;
                             TouchArea {
                                 pointer-event(e) => { if e.button == PointerEventButton.left { root.scroll-content(clamp((self.mouse-y - thumb.height / 2) / max(1px, self.height - thumb.height), 0, 1)); } }
@@ -722,8 +1375,10 @@ export component MainWindow inherits Window {
                 HorizontalLayout {
                     padding-left: 10px; padding-right: 10px; spacing: 10px;
                     Text { text: root.show-edit ? "Editando en el archivo · Enter aplica · Esc cancela" : root.busy ? "Cargando…" : root.status-info + (root.indexing ? " · Indexando archivos…" : ""); color: Theme.muted; vertical-alignment: center; overflow: elide; horizontal-stretch: 1; }
-                    if root.selected-path != "" && !root.is-image: Text { text: root.language-name + " · Ln " + root.caret-line + ", Col " + root.cursor-column; color: Theme.muted; vertical-alignment: center; }
-                    Text { text: root.selected-path == "" ? "" : root.is-dirty ? "● Sin guardar" : "Guardado"; color: Theme.muted; vertical-alignment: center; }
+                    if root.selected-path != "" && !root.is-image && !root.is-pdf && !root.is-sheet: Text { text: root.language-name + " · Ln " + root.caret-line + ", Col " + root.cursor-column; color: Theme.muted; vertical-alignment: center; }
+                    if root.selected-path != "" && root.is-sheet: Text { text: root.sheet-total-rows + " filas · " + root.sheet-total-cols + " cols"; color: Theme.muted; vertical-alignment: center; }
+                    if root.selected-path != "" && root.is-pdf: Text { text: "PDF · Pág. " + (root.pdf-page + 1) + " / " + max(1, root.pdf-total-pages); color: Theme.muted; vertical-alignment: center; }
+                    Text { text: root.selected-path == "" || root.is-image || root.is-pdf || root.doc-readonly ? "" : root.is-dirty ? "● Sin guardar" : "Guardado"; color: Theme.muted; vertical-alignment: center; }
                 }
             }
         }
@@ -833,6 +1488,43 @@ export component MainWindow inherits Window {
                         spacing: 8px;
                         Action { text: root.default-path == root.project-path && root.project-path != "" ? "Quitar proyecto predeterminado" : "Usar el proyecto actual"; enabled: root.project-path != ""; clicked => { root.set-default(); } }
                         Action { text: "Ir al predeterminado"; enabled: root.default-path != ""; clicked => { root.go-default(); root.show-settings = false; } }
+                    }
+                    Text { text: "Lectura y archivos"; color: Theme.title; font-weight: 600; }
+                    HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "Markdown al abrir"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.markdown-default-preview ? "Vista previa" : "Editor"; primary: root.markdown-default-preview; clicked => { root.toggle-markdown-default-preview(); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "Archivos sueltos"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.open-single-file-without-project ? "Visor rápido" : "Abrir carpeta"; primary: root.open-single-file-without-project; clicked => { root.toggle-single-file-mode(); } }
+                    }
+                    if root.windows-integration-supported: Text { text: "Integración con Windows"; color: Theme.title; font-weight: 600; }
+                    if root.windows-integration-supported: HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "Menú contextual «Abrir con CodePeek»"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.windows-context-menu ? "Activado" : "Desactivado"; primary: root.windows-context-menu; clicked => { root.windows-context-menu = !root.windows-context-menu; root.set-windows-integration(root.windows-context-menu, root.windows-open-with-markdown, root.windows-open-with-code, root.windows-open-with-docs); } }
+                    }
+                    if root.windows-integration-supported: HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "«Abrir con» para Markdown (.md)"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.windows-open-with-markdown ? "Activado" : "Desactivado"; primary: root.windows-open-with-markdown; clicked => { root.windows-open-with-markdown = !root.windows-open-with-markdown; root.set-windows-integration(root.windows-context-menu, root.windows-open-with-markdown, root.windows-open-with-code, root.windows-open-with-docs); } }
+                    }
+                    if root.windows-integration-supported: HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "«Abrir con» para código y texto"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.windows-open-with-code ? "Activado" : "Desactivado"; primary: root.windows-open-with-code; clicked => { root.windows-open-with-code = !root.windows-open-with-code; root.set-windows-integration(root.windows-context-menu, root.windows-open-with-markdown, root.windows-open-with-code, root.windows-open-with-docs); } }
+                    }
+                    if root.windows-integration-supported: HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: "«Abrir con» para documentos (PDF, Excel, Word)"; color: Theme.dialog-description; vertical-alignment: center; horizontal-stretch: 1; }
+                        Action { text: root.windows-open-with-docs ? "Activado" : "Desactivado"; primary: root.windows-open-with-docs; clicked => { root.windows-open-with-docs = !root.windows-open-with-docs; root.set-windows-integration(root.windows-context-menu, root.windows-open-with-markdown, root.windows-open-with-code, root.windows-open-with-docs); } }
+                    }
+                    if root.windows-integration-supported: HorizontalLayout {
+                        spacing: 10px;
+                        Text { text: root.windows-integration-status; color: Theme.dialog-hint; font-size: Typography.size - 1px; vertical-alignment: center; horizontal-stretch: 1; overflow: elide; }
+                        Action { text: "Aplicar en Windows"; primary: true; enabled: !root.busy; clicked => { root.apply-windows-integration(); } }
                     }
                 } }
                 if root.show-confirm: VerticalLayout {

@@ -2,12 +2,15 @@ pub mod atomic_save;
 pub mod buffer;
 pub mod projects;
 pub mod settings;
+pub mod single_instance;
+pub mod windows_integration;
 pub mod workspace;
 
-pub use atomic_save::{save_atomic, save_buffer};
-pub use buffer::{LineEnding, TextBuffer};
+pub use atomic_save::{save_atomic, save_atomic_bytes, save_buffer};
+pub use buffer::{decode_text_bytes, LineEnding, TextBuffer, TextEncoding};
 pub use projects::{ProjectItem, ProjectManager};
 pub use settings::UserSettings;
+pub use windows_integration::{WindowsIntegrationOptions, WindowsIntegrationStatus};
 pub use workspace::Workspace;
 
 #[cfg(test)]
@@ -145,7 +148,14 @@ mod tests {
                 .to_string_with_endings(),
             text
         );
+        // A lone UTF-16 BOM is an empty UTF-16 file; undecodable bytes are still binary.
         fs::write(&path, [0xff, 0xfe]).unwrap();
+        let empty = TextBuffer::from_file(&path).unwrap();
+        assert_eq!(empty.encoding, TextEncoding::Utf16Le);
+        assert_eq!(empty.to_bytes_with_endings().unwrap(), [0xff, 0xfe]);
+        fs::write(&path, [0xff, 0xfe, 0x00]).unwrap();
+        assert!(TextBuffer::from_file(&path).is_err());
+        fs::write(&path, [0x01, 0x02, 0xff, 0x03, 0x04, 0x05]).unwrap();
         assert!(TextBuffer::from_file(&path).is_err());
         fs::write(&path, b"a\0b").unwrap();
         assert!(TextBuffer::from_file(&path).is_err());

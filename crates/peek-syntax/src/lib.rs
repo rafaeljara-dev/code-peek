@@ -1,11 +1,20 @@
+pub mod docx;
 pub mod highlighter;
 pub mod languages;
+pub mod rich_doc;
+pub mod spreadsheet;
 pub mod themes;
 
+pub use docx::{is_docx_extension, load_docx_file, load_docx_reader};
 pub use highlighter::SyntaxHighlighter;
 pub use languages::{
     ExtensionRegistry, HighlightSpan, HighlightedLine, LanguageExtension, LineContext, LineType,
     MarkdownExtension, NextJsExtension, RustExtension,
+};
+pub use rich_doc::{CalloutKind, DocHeading, RichBlock, RichDocument, RichSpan, TableAlign};
+pub use spreadsheet::{
+    column_label, is_delimited_text, is_spreadsheet_extension, CellKind, SheetCell, SheetData,
+    SpreadsheetDocument,
 };
 pub use themes::{ColorRgb, EditorTheme};
 

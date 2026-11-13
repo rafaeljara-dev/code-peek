@@ -1,8 +1,11 @@
 mod controller;
+mod doc_view;
 // Public only for the performance probes in `examples/`; not a stable API.
 #[doc(hidden)]
 pub mod editor;
 pub mod image_loader;
+mod pdf_view;
+mod sheet_view;
 mod theme;
 mod thumbnails;
 pub mod viewport;
@@ -30,6 +33,13 @@ pub fn run_app(initial_path: Option<PathBuf>) -> Result<(), slint::PlatformError
     let weak = window.as_weak();
     let worker_tx = tx.clone();
     std::thread::spawn(move || Controller::run(initial_path, weak, rx, worker_tx));
+    {
+        // Files opened from the shell while this window is running arrive here as tabs.
+        let tx = tx.clone();
+        peek_core::single_instance::listen(move |path| {
+            let _ = tx.send(Command::OpenFile(path));
+        });
+    }
 
     macro_rules! connect {
         ($method:ident, || $command:expr) => {{
@@ -133,6 +143,68 @@ pub fn run_app(initial_path: Option<PathBuf>) -> Result<(), slint::PlatformError
     connect!(on_tree_viewport_changed, |first, count| {
         Command::TreeViewport(first.max(0) as usize, count.max(1) as usize)
     });
+    connect!(on_select_doc_block, |idx, extend| Command::SelectDocBlock(
+        idx.max(0) as usize,
+        extend
+    ));
+    connect!(on_select_doc_all, || Command::SelectDocAll);
+    connect!(on_copy_doc_selection, || Command::CopyDocSelection(false));
+    connect!(on_copy_doc_all, || Command::CopyDocSelection(true));
+    connect!(on_jump_doc_block, |idx| Command::JumpDocBlock(
+        idx.max(0) as usize
+    ));
+    connect!(on_step_doc_window, |forward| Command::StepDocWindow(
+        forward
+    ));
+    connect!(on_open_doc_link, |url| Command::OpenDocLink(
+        url.to_string()
+    ));
+    connect!(on_toggle_markdown_default_preview, || {
+        Command::ToggleMarkdownDefaultPreview
+    });
+    connect!(on_toggle_single_file_mode, || Command::ToggleSingleFileMode);
+    connect!(on_set_windows_integration, |context, md, code, docs| {
+        Command::SetWindowsIntegration(context, md, code, docs)
+    });
+    connect!(on_apply_windows_integration, || {
+        Command::ApplyWindowsIntegration
+    });
+    connect!(on_select_sheet, |index| Command::SelectSheet(
+        index.max(0) as usize
+    ));
+    connect!(on_step_sheet_rows, |forward| Command::StepSheetRows(
+        forward
+    ));
+    connect!(on_step_sheet_cols, |forward| Command::StepSheetCols(
+        forward
+    ));
+    connect!(on_select_sheet_cell, |row, col| Command::SelectSheetCell(
+        row.max(0) as usize,
+        col.max(0) as usize
+    ));
+    connect!(on_copy_sheet_cell, || Command::CopySheetCell(false));
+    connect!(on_copy_sheet_row, || Command::CopySheetCell(true));
+    connect!(on_pdf_step_page, |delta| Command::PdfStepPage(delta));
+    connect!(on_pdf_go_page, |page| Command::PdfGoPage(page.to_string()));
+    connect!(on_pdf_zoom, |delta| Command::PdfZoom(delta));
+    connect!(on_copy_pdf_text, || Command::CopyPdfText);
+    connect!(on_pdf_wheel_page, |delta| Command::PdfWheelPage(delta));
+    connect!(on_pdf_thumbs_viewport, |first, count| {
+        Command::PdfThumbsViewport(first.max(0) as usize, count.max(1) as usize)
+    });
+    connect!(on_zoom_doc, |delta| Command::DocZoom(delta));
+    connect!(on_toggle_code_block, |index| Command::ToggleCodeBlock(
+        index.max(0) as usize
+    ));
+    {
+        // Pages are rasterized for the real screen: report its pixel ratio with the width.
+        let tx = tx.clone();
+        let weak = window.as_weak();
+        window.on_reading_width_changed(move |width| {
+            let pixel_ratio = weak.upgrade().map_or(1.0, |w| w.window().scale_factor());
+            let _ = tx.send(Command::ReadingWidth(width, pixel_ratio));
+        });
+    }
     {
         let weak = window.as_weak();
         window.on_browse_folder(move |start| {
@@ -337,7 +409,7 @@ mod tests {
                     for label in [
                         "Deshacer (Ctrl+Z)",
                         "Guardar cambios (Ctrl+S)",
-                        "Buscar y reemplazar (Ctrl+H)",
+                        "Buscar en el archivo (Ctrl+F)",
                     ] {
                         let element = i_slint_backend_testing::ElementQuery::from_root(&window)
                             .match_descendants()
@@ -483,5 +555,251 @@ mod tests {
                 button.size()
             );
         }
+    }
+
+    #[test]
+    fn markdown_blocks_never_overlap_and_size_to_content() {
+        i_slint_backend_testing::init_no_event_loop();
+        let window = MainWindow::new().unwrap();
+        window
+            .window()
+            .set_size(slint::LogicalSize::new(1180.0, 820.0));
+        window.set_selected_path("C:/sample/NOTAS.md".into());
+        window.set_current_file_path("NOTAS.md".into());
+        window.set_markdown_file(true);
+        window.set_preview(true);
+
+        let syntax = peek_syntax::ExtensionRegistry::new();
+        let md = concat!(
+            "# Encabezado principal largo de prueba\n\n",
+            "Primer párrafo con `código en línea`, **negrita** y texto largo suficiente para envolver en múltiples líneas.\n\n",
+            "- Elemento uno con `token.rs`\n",
+            "- Elemento dos con detalle extra\n\n",
+            "## Segunda sección\n\n",
+            "> [!NOTE]\n> Nota importante separada claramente.\n\n",
+            "```rust\nfn hola() {\n    println!(\"mundo\");\n}\n```\n"
+        );
+        let mut doc_state = crate::doc_view::DocViewState::default();
+        doc_state.ensure_markdown_parsed(md, 1, None, None, &syntax);
+        let prepared = doc_state.prepare_models(crate::doc_view::DocLayout {
+            width: 900.0,
+            font: 15.0,
+            zoom: 1.0,
+        });
+        let count = prepared.blocks.len();
+        let (blocks, headings) = prepared.into_slint(false);
+        window.set_doc_blocks(ModelRc::new(VecModel::from(blocks)));
+        window.set_doc_headings(ModelRc::new(VecModel::from(headings)));
+        window.show().unwrap();
+
+        let mut boxes = Vec::with_capacity(count);
+        for index in 0..count {
+            let label = format!("doc-block-{index}");
+            let element = i_slint_backend_testing::ElementQuery::from_root(&window)
+                .match_descendants()
+                .match_predicate(move |element| {
+                    element.accessible_label().is_some_and(|text| text == label)
+                })
+                .find_first()
+                .unwrap();
+            let pos = element.absolute_position();
+            let size = element.size();
+            assert!(
+                size.height >= 16.0,
+                "block {index} collapsed vertically: {size:?}"
+            );
+            boxes.push((pos.y, pos.y + size.height));
+        }
+
+        for pair in boxes.windows(2) {
+            assert!(
+                pair[1].0 >= pair[0].1 - 0.5,
+                "Markdown blocks overlapped: prev_bottom={} next_top={}",
+                pair[0].1,
+                pair[1].0
+            );
+        }
+    }
+
+    fn find_by_label(
+        window: &MainWindow,
+        label: &str,
+    ) -> Option<i_slint_backend_testing::ElementHandle> {
+        let label = label.to_owned();
+        i_slint_backend_testing::ElementQuery::from_root(window)
+            .match_descendants()
+            .match_predicate(move |element| {
+                element.accessible_label().is_some_and(|text| text == label)
+            })
+            .find_first()
+    }
+
+    fn settle() {
+        i_slint_backend_testing::mock_elapsed_time(std::time::Duration::from_millis(50));
+    }
+
+    #[test]
+    fn index_and_search_scroll_the_target_block_into_view() {
+        i_slint_backend_testing::init_no_event_loop();
+        let window = MainWindow::new().unwrap();
+        window
+            .window()
+            .set_size(slint::LogicalSize::new(1180.0, 820.0));
+        window.set_selected_path("C:/sample/NOTAS.md".into());
+        window.set_current_file_path("NOTAS.md".into());
+        window.set_markdown_file(true);
+        window.set_preview(true);
+
+        let syntax = peek_syntax::ExtensionRegistry::new();
+        let md: String = (0..60)
+            .map(|i| format!("## Sección {i}\n\nPárrafo número {i} con algo de texto.\n\n"))
+            .collect();
+        let mut doc_state = crate::doc_view::DocViewState::default();
+        doc_state.ensure_markdown_parsed(&md, 1, None, None, &syntax);
+        let prepared = doc_state.prepare_models(crate::doc_view::DocLayout {
+            width: 900.0,
+            font: 15.0,
+            zoom: 1.0,
+        });
+        let (blocks, headings) = prepared.into_slint(false);
+        window.set_doc_blocks(ModelRc::new(VecModel::from(blocks)));
+        window.set_doc_headings(ModelRc::new(VecModel::from(headings)));
+        window.show().unwrap();
+        settle();
+
+        // Off-screen blocks are clipped away: block 100 only exists for the query once revealed.
+        assert!(find_by_label(&window, "doc-block-0").is_some());
+        assert!(find_by_label(&window, "doc-block-100").is_none());
+
+        window.set_doc_scroll_target(100);
+        window.set_doc_scroll_seq(window.get_doc_scroll_seq() + 1);
+        settle();
+        let revealed = find_by_label(&window, "doc-block-100")
+            .expect("block 100 was not scrolled into view")
+            .absolute_position()
+            .y;
+        assert!(
+            (0.0..400.0).contains(&revealed),
+            "block 100 at y={revealed}"
+        );
+        assert!(find_by_label(&window, "doc-block-0").is_none());
+
+        // A second jump to another block works too, and rebuilding the model does not jump back.
+        window.set_doc_scroll_target(4);
+        window.set_doc_scroll_seq(window.get_doc_scroll_seq() + 1);
+        settle();
+        assert!(find_by_label(&window, "doc-block-4").is_some());
+        assert!(find_by_label(&window, "doc-block-100").is_none());
+    }
+
+    #[test]
+    fn panels_collapse_from_the_header_and_documents_render_in_their_modes() {
+        i_slint_backend_testing::init_no_event_loop();
+        let window = MainWindow::new().unwrap();
+        window
+            .window()
+            .set_size(slint::LogicalSize::new(1320.0, 820.0));
+        window.set_busy(false);
+        window.show().unwrap();
+
+        // Both panels can be hidden and reopened from the header.
+        for (hide, show) in [
+            (
+                "Ocultar la lista de proyectos (Ctrl+Shift+B)",
+                "Mostrar la lista de proyectos (Ctrl+Shift+B)",
+            ),
+            (
+                "Ocultar el explorador (Ctrl+B)",
+                "Mostrar el explorador (Ctrl+B)",
+            ),
+        ] {
+            let button = find_by_label(&window, hide).unwrap();
+            assert!(
+                button.absolute_position().y < 60.0,
+                "{hide} is not in the header"
+            );
+            button.invoke_accessible_default_action();
+            settle();
+            let reopen = find_by_label(&window, show).unwrap();
+            assert!(reopen.absolute_position().y < 60.0);
+        }
+        assert!(!window.get_show_library() && !window.get_show_tree());
+        find_by_label(&window, "Mostrar el explorador (Ctrl+B)")
+            .unwrap()
+            .invoke_accessible_default_action();
+        settle();
+        assert!(window.get_show_tree());
+
+        // PDF: page laid out at its logical size with the thumbnail strip on the left.
+        let pixels = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::new(8, 8);
+        window.set_selected_path("C:/sample/manual.pdf".into());
+        window.set_is_pdf(true);
+        window.set_pdf_total_pages(3);
+        window.set_pdf_page_width(600.0);
+        window.set_pdf_page_height(400.0);
+        window.set_pdf_image(slint::Image::from_rgba8(pixels.clone()));
+        window.set_pdf_thumb_height(88.0);
+        window.set_pdf_thumbs(ModelRc::new(VecModel::from(
+            (0..3)
+                .map(|page| PdfThumbItem {
+                    page,
+                    has_image: true,
+                    image: slint::Image::from_rgba8(pixels.clone()),
+                })
+                .collect::<Vec<_>>(),
+        )));
+        settle();
+        let first = find_by_label(&window, "Ir a la página 1").unwrap();
+        let second = find_by_label(&window, "Ir a la página 2").unwrap();
+        assert!(second.absolute_position().y > first.absolute_position().y);
+        assert!(first.size().width <= 164.0);
+        assert!(find_by_label(&window, "Ocultar miniaturas de página").is_some());
+        find_by_label(&window, "Ocultar miniaturas de página")
+            .unwrap()
+            .invoke_accessible_default_action();
+        settle();
+        assert!(find_by_label(&window, "Ir a la página 1").is_none());
+
+        // Spreadsheet: the selected cell is readable in full above the grid.
+        window.set_is_pdf(false);
+        window.set_selected_path("C:/sample/datos.xlsx".into());
+        window.set_is_sheet(true);
+        window.set_preview(true);
+        window.set_sheet_headers(ModelRc::new(VecModel::from(vec![
+            SheetHeaderItem {
+                label: "A".into(),
+                col_index: 0,
+                width: 60,
+            },
+            SheetHeaderItem {
+                label: "B".into(),
+                col_index: 1,
+                width: 240,
+            },
+        ])));
+        window.set_sheet_rows(ModelRc::new(VecModel::from(vec![SheetRowItem {
+            row_number: 1,
+            cells: ModelRc::new(VecModel::from(vec![
+                SheetCellItem {
+                    text: "Año".into(),
+                    kind: 1,
+                    col_index: 0,
+                    selected: true,
+                    matched: false,
+                },
+                SheetCellItem {
+                    text: "Descripción larga de la canción".into(),
+                    kind: 1,
+                    col_index: 1,
+                    selected: false,
+                    matched: false,
+                },
+            ])),
+        }])));
+        window.set_sheet_cell_ref("A1".into());
+        window.set_sheet_cell_text("Año".into());
+        settle();
+        assert!(find_by_label(&window, "Celda seleccionada").is_some());
+        assert!(find_by_label(&window, "Contenido de la celda").is_some());
     }
 }

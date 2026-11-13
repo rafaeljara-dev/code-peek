@@ -15,7 +15,8 @@ rfd = "0.17"
 unicode-segmentation = "1"
 unicode-width = "0.2"
 flate2 = "1"
-roxmltree = "0.21"
+roxmltree.workspace = true
+hayro.workspace = true
 rayon.workspace = true
 image.workspace = true
 resvg.workspace = true
@@ -28,3 +29,4 @@ slint-build.workspace = true
 [dev-dependencies]
 i-slint-backend-testing = { version = "=1.17.1", features = ["renderer-software"] }
 tempfile.workspace = true
+encoding_rs = "0.8"

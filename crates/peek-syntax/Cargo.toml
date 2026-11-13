@@ -8,4 +8,14 @@ license.workspace = true
 [dependencies]
 peek-core = { path = "../peek-core" }
 syntect.workspace = true
+pulldown-cmark.workspace = true
+roxmltree.workspace = true
+calamine.workspace = true
+csv.workspace = true
+zip.workspace = true
 anyhow.workspace = true
+ropey.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+encoding_rs = "0.8"

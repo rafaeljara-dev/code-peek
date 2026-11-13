@@ -73,11 +73,19 @@ impl ExtensionRegistry {
                     .and_then(|s| s.to_str())
                     .and_then(|ext| {
                         self.fallback_syntect
-                            .syntax_set
+                            .syntax_set()
                             .find_syntax_by_extension(ext)
                     })
                     .map_or_else(|| "Texto plano".into(), |syntax| syntax.name.clone())
             })
+    }
+
+    pub fn highlight_code_snippet(
+        &self,
+        lang: Option<&str>,
+        code: &str,
+    ) -> Vec<Vec<super::traits::HighlightSpan>> {
+        self.fallback_syntect.highlight_code_snippet(lang, code)
     }
 
     /// Find matching language extension for a given path

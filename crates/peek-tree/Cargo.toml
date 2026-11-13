@@ -9,9 +9,6 @@ license.workspace = true
 peek-core = { path = "../peek-core" }
 ignore.workspace = true
 nucleo.workspace = true
-notify.workspace = true
-crossbeam-channel.workspace = true
-rayon.workspace = true
 anyhow.workspace = true
 
 [dev-dependencies]

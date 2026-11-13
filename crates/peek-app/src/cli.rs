@@ -21,7 +21,15 @@ pub struct Cli {
     #[arg(long = "uninstall")]
     pub uninstall: bool,
 
-    /// Register "Abrir con CodePeek" in Windows context menu
+    /// Register "Abrir con CodePeek" in Windows context menu and "Open with"
     #[arg(long = "install-context-menu")]
     pub install_context_menu: bool,
+
+    /// Unregister "Abrir con CodePeek" from Windows context menu and "Open with"
+    #[arg(long = "uninstall-context-menu")]
+    pub uninstall_context_menu: bool,
+
+    /// Abre siempre una ventana nueva en vez de añadir el archivo como pestaña a la que ya está abierta
+    #[arg(long = "new-window")]
+    pub new_window: bool,
 }

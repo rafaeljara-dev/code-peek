@@ -45,6 +45,20 @@ La [auditoría inicial de recursos](docs/PERFORMANCE-AUDIT.md) prioriza trabajo 
 - [x] Compilación release e instalación por usuario en Windows, accesos directos en Inicio y escritorio y hash del ejecutable verificados.
 - [ ] Validar interactivamente el menú contextual de Windows.
 
+### Visor de documentos (noviembre de 2026)
+
+- [x] Abrir un archivo con CodePeek ya en ejecución lo añade como pestaña a esa ventana (canal local por usuario; `--new-window` fuerza una ventana aparte).
+- [x] Cada pestaña recuerda su posición: página y zoom del PDF, hoja y ventana de filas, bloque del documento y línea del código.
+- [x] Paneles de proyectos y explorador plegables desde la cabecera (`Ctrl+Shift+B` / `Ctrl+B`).
+- [x] PDF: miniaturas de página, ajuste al ancho, nitidez según la escala de pantalla, render y búsqueda en segundo plano.
+- [x] Hojas: fechas legibles, carga por hoja, ancho de columna por contenido, barra con el contenido de la celda.
+- [x] Texto y CSV en Windows-1252 y UTF-16 se leen con tildes y se guardan en su codificación original.
+- [ ] **TODO — Vista dividida: dos pestañas una al lado de la otra.** Permitir fijar un segundo documento a la derecha del activo (por ejemplo un PDF junto a una hoja de cálculo) con un divisor arrastrable. Requiere que el controlador mantenga dos documentos vivos a la vez (hoy solo existe un `workspace.buffer`, un `pdf_view`, un `sheet_view` y un `doc_view`), un panel con foco al que se enrutan atajos, búsqueda y zoom, y que `app.slint` instancie el área de contenido como componente reutilizable en lugar de un único `viewport`. Las pestañas deben poder arrastrarse o enviarse al otro lado con una acción «Abrir al lado».
+- [ ] Resaltar dentro de la página las coincidencias de la búsqueda en PDF (hoy la búsqueda salta a la página).
+- [ ] Conservar negrita, código y enlaces dentro de las celdas de tablas Markdown y Word (hoy se muestran como texto plano alineado).
+- [ ] PDF protegidos con contraseña y formatos `.doc`, `.odt` y `.pptx`.
+- [ ] Desplazamiento continuo entre páginas del PDF (hoy la rueda cambia de página al llegar al borde).
+
 ### Pendientes de la siguiente iteración de UI y navegación
 
 Estos puntos registran el trabajo anterior; la iteración de octubre incorpora el editor con resaltado y una auditoría nativa. Consulta [el informe actualizado](docs/EDITOR-UI-AUDIT.md) para las verificaciones y límites.

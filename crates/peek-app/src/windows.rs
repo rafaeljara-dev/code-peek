@@ -2,7 +2,7 @@ use anyhow::Result;
 
 #[cfg(windows)]
 mod native {
-    use anyhow::{bail, Context, Result};
+    use anyhow::{Context, Result};
     use std::fs;
     use std::os::windows::process::CommandExt;
     use std::path::PathBuf;
@@ -10,7 +10,6 @@ mod native {
 
     /// Keeps PowerShell and the relaunched viewer from flashing a console window.
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-    const INTEGRATION: &str = include_str!("../../../scripts/windows-integration.ps1");
     const RESOURCES: &[(&str, &[u8])] = &[
         ("icon.ico", include_bytes!("../../../assets/icon.ico")),
         ("icon.png", include_bytes!("../../../assets/icon.png")),
@@ -45,31 +44,16 @@ mod native {
         for (name, data) in RESOURCES {
             fs::write(payload.path().join(name), data)?;
         }
-        // Paths are environment data, never interpolated into PowerShell source.
-        let system_root = std::env::var_os("SystemRoot").context("No se pudo localizar Windows")?;
-        let powershell =
-            PathBuf::from(system_root).join("System32/WindowsPowerShell/v1.0/powershell.exe");
-        let mut command = Command::new(powershell);
-        command
-            .args(["-NoProfile", "-NonInteractive", "-Command", INTEGRATION])
-            // PowerShell 7 exports module paths incompatible with Windows PowerShell.
-            // Let the system host initialize its own standard module search path.
-            .env_remove("PSModulePath")
-            .env("CODEPEEK_INSTALL_MODE", mode)
-            .env("CODEPEEK_INSTALL_SOURCE", std::env::current_exe()?)
-            .env("CODEPEEK_INSTALL_ASSETS", payload.path())
-            .env("CODEPEEK_INSTALL_VERSION", env!("CARGO_PKG_VERSION"))
-            .creation_flags(CREATE_NO_WINDOW);
-        let output = command
-            .output()
-            .context("No se pudo ejecutar la integración de Windows")?;
-        if !output.status.success() {
-            bail!(
-                "Falló la integración de Windows: {}",
-                String::from_utf8_lossy(&output.stderr).trim()
-            );
-        }
-        println!("{}", String::from_utf8_lossy(&output.stdout).trim());
+        let settings = peek_core::UserSettings::load().unwrap_or_default();
+        let options = peek_core::WindowsIntegrationOptions::from(&settings);
+        let message = peek_core::windows_integration::run_integration(
+            mode,
+            &std::env::current_exe()?,
+            payload.path(),
+            &options,
+            env!("CARGO_PKG_VERSION"),
+        )?;
+        println!("{message}");
         Ok(())
     }
 

@@ -12,6 +12,11 @@ mod platform;
 
 /// Save on the same volume. Windows binds replacement to an exclusive handle.
 pub fn save_atomic(target_path: &Path, content: &str) -> Result<()> {
+    save_atomic_bytes(target_path, content.as_bytes())
+}
+
+/// Same guarantees as [`save_atomic`] for content that is not UTF-8 on disk.
+pub fn save_atomic_bytes(target_path: &Path, content: &[u8]) -> Result<()> {
     #[cfg(windows)]
     return platform::save(target_path, content);
 
@@ -20,7 +25,7 @@ pub fn save_atomic(target_path: &Path, content: &str) -> Result<()> {
 }
 
 #[cfg(not(windows))]
-fn save_portable(target_path: &Path, content: &str) -> Result<()> {
+fn save_portable(target_path: &Path, content: &[u8]) -> Result<()> {
     let parent = target_path
         .parent()
         .filter(|p| !p.as_os_str().is_empty())
@@ -34,7 +39,7 @@ fn save_portable(target_path: &Path, content: &str) -> Result<()> {
             .as_file()
             .set_permissions(metadata.permissions())?;
     }
-    temporary.write_all(content.as_bytes())?;
+    temporary.write_all(content)?;
     temporary.as_file().sync_all()?;
     temporary
         .persist(target_path)
@@ -44,7 +49,7 @@ fn save_portable(target_path: &Path, content: &str) -> Result<()> {
 
 pub fn save_buffer(buffer: &mut TextBuffer) -> Result<()> {
     let path = buffer.path.as_ref().context("No hay un archivo asociado")?;
-    save_atomic(path, &buffer.to_string_with_endings())?;
+    save_atomic_bytes(path, &buffer.to_bytes_with_endings()?)?;
     buffer.is_dirty = false;
     Ok(())
 }
@@ -52,7 +57,10 @@ pub fn save_buffer(buffer: &mut TextBuffer) -> Result<()> {
 /// Refuse to overwrite changes made by an agent since the file was opened.
 pub fn save_if_unchanged(buffer: &mut TextBuffer, original: &TextBuffer) -> Result<()> {
     let disk = TextBuffer::from_file(buffer.path.as_ref().context("No hay archivo abierto")?)?;
-    if disk.rope != original.rope || disk.has_bom != original.has_bom {
+    if disk.rope != original.rope
+        || disk.has_bom != original.has_bom
+        || disk.encoding != original.encoding
+    {
         bail!("El archivo cambió en disco. Recarga y revisa los cambios antes de guardar.");
     }
     save_buffer(buffer)

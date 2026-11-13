@@ -1,4 +1,4 @@
-param([switch]$SkipBuild)
+﻿param([switch]$SkipBuild)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 if (-not $SkipBuild) {
@@ -10,5 +10,5 @@ if (-not $SkipBuild) {
 }
 $releaseExe = Join-Path $projectRoot 'target\release\peek.exe'
 if (-not (Test-Path -LiteralPath $releaseExe -PathType Leaf)) { throw 'Falta compilar target/release/peek.exe.' }
-& $releaseExe --install
-if ($LASTEXITCODE -ne 0) { throw 'Falló la instalación de CodePeek.' }
+$proc = Start-Process -FilePath $releaseExe -ArgumentList '--install' -Wait -PassThru
+if ($proc.ExitCode -ne 0) { throw "Falló la instalación de CodePeek (código $($proc.ExitCode))." }
