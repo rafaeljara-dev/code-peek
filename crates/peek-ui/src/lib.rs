@@ -64,6 +64,10 @@ pub fn run_app(initial_path: Option<PathBuf>) -> Result<(), slint::PlatformError
     connect!(on_close_file, |p| Command::CloseFile(PathBuf::from(
         p.as_str()
     )));
+    connect!(on_move_tab, |from, to| Command::MoveTab(
+        from.max(0) as usize,
+        to.max(0) as usize
+    ));
     connect!(on_close_project, |p| Command::CloseProject(PathBuf::from(
         p.as_str()
     )));

@@ -31,6 +31,7 @@ pub enum Command {
     OpenFile(PathBuf),
     OpenAt(PathBuf, usize),
     CloseFile(PathBuf),
+    MoveTab(usize, usize),
     CloseProject(PathBuf),
     Toggle(PathBuf, bool),
     Library(PathBuf),
@@ -583,7 +584,14 @@ impl Controller {
             Command::OpenProject(path) => self.open_project(&path)?,
             Command::CloseFile(path) => {
                 if self.workspace.current_file.as_ref() == Some(&path) {
-                    if let Some(next) = self.recent_files.iter().find(|p| **p != path).cloned() {
+                    let index = self.recent_files.iter().position(|p| *p == path);
+                    let next = index.and_then(|i| {
+                        self.recent_files
+                            .get(i + 1)
+                            .or_else(|| i.checked_sub(1).and_then(|j| self.recent_files.get(j)))
+                            .cloned()
+                    });
+                    if let Some(next) = next {
                         self.open_file(&next)?;
                     } else {
                         self.clear_file();
@@ -592,6 +600,14 @@ impl Controller {
                 self.recent_files.retain(|p| p != &path);
                 self.view_memos.remove(&path);
                 self.navigation_dirty = true;
+            }
+            Command::MoveTab(from, to) => {
+                if from < self.recent_files.len() && from != to {
+                    let tab = self.recent_files.remove(from);
+                    let to = to.min(self.recent_files.len());
+                    self.recent_files.insert(to, tab);
+                    self.navigation_dirty = true;
+                }
             }
             Command::CloseProject(path) => {
                 if self.workspace.root_dir.as_ref() == Some(&path) {
@@ -1548,8 +1564,9 @@ impl Controller {
         self.content_width = 0.0;
         self.last_find.clear();
         self.navigation_dirty = true;
-        self.recent_files.retain(|p| p != canonical);
-        self.recent_files.insert(0, canonical.to_path_buf());
+        if !self.recent_files.iter().any(|p| p == canonical) {
+            self.recent_files.push(canonical.to_path_buf());
+        }
         if self.workspace.root_dir.is_some() {
             let mut parent = canonical.parent();
             while let Some(dir) = parent.filter(|p| p.starts_with(&self.tree.root)) {
@@ -2073,6 +2090,12 @@ impl Controller {
             .iter()
             .map(|p| (p.to_string_lossy().into_owned(), name(p)))
             .collect();
+        let active_tab = self
+            .workspace
+            .current_file
+            .as_ref()
+            .and_then(|f| self.recent_files.iter().position(|p| p == f))
+            .map_or(-1, |i| i as i32);
         let recent_files = self
             .recent_files
             .iter()
@@ -2488,6 +2511,7 @@ impl Controller {
                 w.set_library_items(tree_model(library, light_mode, &thumbs));
                 w.set_recent_projects(project_model(recent_projects, &logos));
                 w.set_recent_files(search_model(recent_files));
+                w.set_active_tab(active_tab);
             }
             w.set_is_dirty(dirty);
             w.set_show_confirm(confirm);
@@ -3202,6 +3226,33 @@ mod tests {
             Some("original")
         );
         assert_eq!(fs::read_to_string(source).unwrap(), "original\n");
+    }
+
+    #[test]
+    fn tabs_keep_their_order_and_can_be_moved() {
+        let dir = tempfile::tempdir().unwrap();
+        let paths: Vec<_> = ["a.txt", "b.txt", "c.txt"]
+            .iter()
+            .map(|n| {
+                let p = dir.path().join(n);
+                fs::write(&p, n).unwrap();
+                fs::canonicalize(&p).unwrap()
+            })
+            .collect();
+        let (_window, mut app) = fixture(dir.path());
+        for p in &paths {
+            app.open_file(p).unwrap();
+        }
+        app.open_file(&paths[0]).unwrap();
+        assert_eq!(app.recent_files, paths);
+        app.handle(Command::MoveTab(0, 2)).unwrap();
+        assert_eq!(
+            app.recent_files,
+            [&paths[1], &paths[2], &paths[0]].map(Clone::clone)
+        );
+        app.handle(Command::OpenFile(paths[2].clone())).unwrap();
+        app.handle(Command::CloseFile(paths[2].clone())).unwrap();
+        assert_eq!(app.workspace.current_file.as_ref(), Some(&paths[0]));
     }
 
     #[test]

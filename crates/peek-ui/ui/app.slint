@@ -186,7 +186,12 @@ export component MainWindow inherits Window {
     in-out property <string> selected-path;
     in-out property <string> standalone-parent-path;
     private property <length> tab-offset;
-    changed selected-path => { root.tab-offset = 0px; }
+    in property <int> active-tab: -1;
+    private property <int> drag-tab: -1;
+    private property <length> tab-drag-dx;
+    private property <bool> tab-dragging;
+    private property <bool> tab-drag-ended;
+    private property <int> drop-tab: max(0, min(root.recent-files.length - 1, round((root.drag-tab * 194px + root.tab-drag-dx) / 194px)));
     in-out property <string> status-info: "Abriendo CodePeek…";
     in-out property <string> error-message;
     in-out property <bool> is-dirty;
@@ -337,6 +342,7 @@ export component MainWindow inherits Window {
     callback zoom-ui(int);
     callback wrap-columns-changed(int);
     callback close-file(string);
+    callback move-tab(int, int);
     callback close-project(string);
     callback select-line(int);
     callback undo();
@@ -654,13 +660,21 @@ export component MainWindow inherits Window {
                     }
                     if root.recent-files.length > 0: Rectangle {
                         height: Typography.size + 20px; background: Theme.sidebar;
-                        ScrollView {
+                        property <int> active: root.active-tab;
+                        changed active => {
+                            if self.active >= 0 {
+                                if -root.tab-offset > self.active * 194px { root.tab-offset = -self.active * 194px; }
+                                if -root.tab-offset + tabs-scroll.visible-width < self.active * 194px + 190px { root.tab-offset = min(0px, tabs-scroll.visible-width - self.active * 194px - 190px); }
+                            }
+                        }
+                        tabs-scroll := ScrollView {
                             viewport-x <=> root.tab-offset;
                             viewport-height: self.height;
                             viewport-width: history.preferred-width;
                             history := HorizontalLayout {
                                 spacing: 4px;
-                                for item in root.recent-files: Rectangle {
+                                for item[i] in root.recent-files: Rectangle {
+                                    opacity: root.drag-tab == i && root.tab-dragging ? 0.35 : 1;
                                     width: 190px; background: root.selected-path == item.path ? Theme.canvas : Theme.sidebar;
                                     Rectangle { x: 0px; y: 0px; width: parent.width; height: 2px; background: root.selected-path == item.path ? Theme.focus : transparent; }
                                     accessible-role: button; accessible-label: "Abrir " + item.path;
@@ -669,12 +683,44 @@ export component MainWindow inherits Window {
                                     tab-keys := FocusScope { key-pressed(e) => { if e.text == Key.Return || e.text == " " { root.open-file(item.path); root.focus-content(); return accept; } reject } }
                                     Rectangle { height: parent.height; width: parent.width; background: transparent; border-width: tab-keys.has-focus ? 1px : 0px; border-color: Theme.focus; }
                                     tab-touch := TouchArea {
-                                        clicked => { root.open-file(item.path); root.focus-content(); }
-                                        pointer-event(e) => { if e.button == PointerEventButton.middle && e.kind == PointerEventKind.up { root.close-file(item.path); } }
+                                        mouse-cursor: root.tab-dragging ? MouseCursor.grabbing : MouseCursor.default;
+                                        clicked => {
+                                            if root.tab-drag-ended { root.tab-drag-ended = false; return; }
+                                            root.open-file(item.path); root.focus-content();
+                                        }
+                                        moved => {
+                                            if self.pressed {
+                                                root.drag-tab = i;
+                                                root.tab-drag-dx = self.mouse-x - self.pressed-x;
+                                                if abs(root.tab-drag-dx / 1px) > 6 { root.tab-dragging = true; }
+                                            }
+                                        }
+                                        pointer-event(e) => {
+                                            if e.button == PointerEventButton.middle && e.kind == PointerEventKind.up { root.close-file(item.path); }
+                                            if e.button == PointerEventButton.left && e.kind == PointerEventKind.up {
+                                                if root.tab-dragging {
+                                                    root.move-tab(i, root.drop-tab);
+                                                    root.tab-drag-ended = true;
+                                                }
+                                                root.tab-dragging = false;
+                                                root.drag-tab = -1;
+                                            }
+                                        }
                                     }
                                     Text { x: 12px; y: 0px; height: parent.height; width: parent.width - 52px; text: item.display-path + (root.selected-path == item.path && root.is-dirty ? " ●" : ""); color: Theme.file-text; overflow: elide; vertical-alignment: center; }
                                     Action { width: self.preferred-width; x: parent.width - self.width - 4px; y: (parent.height - self.height) / 2; text: "×"; accessible-text: "Cerrar " + item.display-path; clicked => { root.close-file(item.path); } middle-clicked => { root.close-file(item.path); } }
                                 }
+                            }
+                            if root.tab-dragging: Rectangle {
+                                x: (root.drop-tab > root.drag-tab ? root.drop-tab + 1 : root.drop-tab) * 194px - 3px;
+                                y: 4px; width: 2px; height: parent.height - 8px; background: Theme.focus;
+                            }
+                            if root.tab-dragging: Rectangle {
+                                x: root.drag-tab * 194px + root.tab-drag-dx; y: 2px;
+                                width: 190px; height: parent.height - 4px;
+                                background: Theme.canvas; opacity: 0.85;
+                                border-width: 1px; border-color: Theme.focus; border-radius: 4px;
+                                Text { x: 12px; width: parent.width - 24px; height: parent.height; vertical-alignment: center; overflow: elide; color: Theme.file-text; text: root.recent-files[root.drag-tab].display-path; }
                             }
                         }
                     }
